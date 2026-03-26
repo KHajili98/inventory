@@ -18,6 +18,27 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
   String _sortColumn = 'sku';
   bool _sortAscending = true;
 
+  // Shared horizontal scroll controller for header + rows
+  final ScrollController _hScrollController = ScrollController();
+
+  // Total table width for horizontal scrolling
+  static double get _tableWidth =>
+      _colCheck +
+      _colIdx +
+      _colSku +
+      _colName +
+      _colColor +
+      _colActQty +
+      _colInvQty +
+      _colUnit +
+      _colInvTotal +
+      _colActTotal +
+      _colBarcode +
+      _colCoord +
+      _colSource +
+      _colStatus +
+      _colActions;
+
   // ── Column widths ────────────────────────────────────────────────────────────
   static const double _colCheck = 48;
   static const double _colIdx = 48;
@@ -36,6 +57,12 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
   static const double _colActions = 80;
 
   // ── Filtering & Sorting ──────────────────────────────────────────────────────
+  @override
+  void dispose() {
+    _hScrollController.dispose();
+    super.dispose();
+  }
+
   void _applyFilter() {
     setState(() {
       _filtered = _allProducts.where((p) {
@@ -311,80 +338,83 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
   }
 
   Widget _buildFilterBar() {
-    return Row(
-      children: [
-        SizedBox(
-          width: 300,
-          height: 40,
-          child: TextField(
-            onChanged: (v) {
-              _searchQuery = v;
-              _applyFilter();
-            },
-            decoration: InputDecoration(
-              hintText: 'Search SKU, name, barcode, location…',
-              hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
-              prefixIcon: const Icon(Icons.search_rounded, size: 18, color: Color(0xFF94A3B8)),
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          SizedBox(
+            width: 300,
+            height: 40,
+            child: TextField(
+              onChanged: (v) {
+                _searchQuery = v;
+                _applyFilter();
+              },
+              decoration: InputDecoration(
+                hintText: 'Search SKU, name, barcode, location…',
+                hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+                prefixIcon: const Icon(Icons.search_rounded, size: 18, color: Color(0xFF94A3B8)),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
+                ),
               ),
             ),
           ),
-        ),
-        const SizedBox(width: 12),
-        _FilterChip(
-          label: 'All',
-          selected: _statusFilter == null,
-          onTap: () {
-            _statusFilter = null;
-            _applyFilter();
-          },
-        ),
-        const SizedBox(width: 8),
-        _FilterChip(
-          label: 'In Stock',
-          selected: _statusFilter == ProductStatus.inStock,
-          color: const Color(0xFF22C55E),
-          onTap: () {
-            _statusFilter = ProductStatus.inStock;
-            _applyFilter();
-          },
-        ),
-        const SizedBox(width: 8),
-        _FilterChip(
-          label: 'Low Stock',
-          selected: _statusFilter == ProductStatus.lowStock,
-          color: const Color(0xFFF59E0B),
-          onTap: () {
-            _statusFilter = ProductStatus.lowStock;
-            _applyFilter();
-          },
-        ),
-        const SizedBox(width: 8),
-        _FilterChip(
-          label: 'Out of Stock',
-          selected: _statusFilter == ProductStatus.outOfStock,
-          color: const Color(0xFFEF4444),
-          onTap: () {
-            _statusFilter = ProductStatus.outOfStock;
-            _applyFilter();
-          },
-        ),
-        const Spacer(),
-        Text('${_filtered.length} of ${_allProducts.length} products', style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8))),
-      ],
+          const SizedBox(width: 12),
+          _FilterChip(
+            label: 'All',
+            selected: _statusFilter == null,
+            onTap: () {
+              _statusFilter = null;
+              _applyFilter();
+            },
+          ),
+          const SizedBox(width: 8),
+          _FilterChip(
+            label: 'In Stock',
+            selected: _statusFilter == ProductStatus.inStock,
+            color: const Color(0xFF22C55E),
+            onTap: () {
+              _statusFilter = ProductStatus.inStock;
+              _applyFilter();
+            },
+          ),
+          const SizedBox(width: 8),
+          _FilterChip(
+            label: 'Low Stock',
+            selected: _statusFilter == ProductStatus.lowStock,
+            color: const Color(0xFFF59E0B),
+            onTap: () {
+              _statusFilter = ProductStatus.lowStock;
+              _applyFilter();
+            },
+          ),
+          const SizedBox(width: 8),
+          _FilterChip(
+            label: 'Out of Stock',
+            selected: _statusFilter == ProductStatus.outOfStock,
+            color: const Color(0xFFEF4444),
+            onTap: () {
+              _statusFilter = ProductStatus.outOfStock;
+              _applyFilter();
+            },
+          ),
+          const SizedBox(width: 16),
+          Text('${_filtered.length} of ${_allProducts.length} products', style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8))),
+        ],
+      ),
     );
   }
 
@@ -398,65 +428,93 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
       ),
       child: Column(
         children: [
-          _buildTableHeader(),
+          // ── Sticky header (mirrors horizontal scroll position of body) ────
+          SingleChildScrollView(
+            controller: _hScrollController,
+            scrollDirection: Axis.horizontal,
+            physics: const NeverScrollableScrollPhysics(),
+            child: _buildHeaderRow(),
+          ),
+          // ── Scrollable body ───────────────────────────────────────────────
           Expanded(
             child: _filtered.isEmpty
                 ? const Center(
                     child: Text('No products match your search.', style: TextStyle(fontSize: 14, color: Color(0xFF94A3B8))),
                   )
-                : ListView.separated(
-                    itemCount: _filtered.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                    itemBuilder: (_, i) => _buildProductRow(i, _filtered[i]),
+                : SingleChildScrollView(
+                    controller: _hScrollController,
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: _tableWidth,
+                      child: ListView.separated(
+                        itemCount: _filtered.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                        itemBuilder: (_, i) => _buildProductRow(i, _filtered[i]),
+                      ),
+                    ),
                   ),
+          ),
+          // ── Horizontal scrollbar ──────────────────────────────────────────
+          RawScrollbar(
+            controller: _hScrollController,
+            thumbVisibility: true,
+            trackVisibility: true,
+            thickness: 8,
+            radius: const Radius.circular(4),
+            thumbColor: const Color(0xFFCBD5E1),
+            trackColor: const Color(0xFFF1F5F9),
+            trackBorderColor: const Color(0xFFE2E8F0),
+            scrollbarOrientation: ScrollbarOrientation.bottom,
+            child: SingleChildScrollView(
+              controller: _hScrollController,
+              scrollDirection: Axis.horizontal,
+              child: SizedBox(width: _tableWidth, height: 0),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTableHeader() {
+  Widget _buildHeaderRow() {
     return Container(
       decoration: const BoxDecoration(
         color: Color(0xFFF8FAFC),
         border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
         borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            SizedBox(
-              width: _colCheck,
-              height: 44,
-              child: Checkbox(
-                value: _selectedIds.length == _filtered.length && _filtered.isNotEmpty,
-                tristate: _selectedIds.isNotEmpty && _selectedIds.length < _filtered.length,
-                onChanged: (v) => setState(() {
-                  if (v == true)
-                    _selectedIds.addAll(_filtered.map((p) => p.id));
-                  else
-                    _selectedIds.clear();
-                }),
-                activeColor: const Color(0xFF6366F1),
-              ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: _colCheck,
+            height: 44,
+            child: Checkbox(
+              value: _selectedIds.length == _filtered.length && _filtered.isNotEmpty,
+              tristate: _selectedIds.isNotEmpty && _selectedIds.length < _filtered.length,
+              onChanged: (v) => setState(() {
+                if (v == true)
+                  _selectedIds.addAll(_filtered.map((p) => p.id));
+                else
+                  _selectedIds.clear();
+              }),
+              activeColor: const Color(0xFF6366F1),
             ),
-            _headerCell('#', _colIdx, null),
-            _headerCell('SKU', _colSku, 'sku'),
-            _headerCell('Model', _colName, null),
-            _headerCell('Color', _colColor, 'color'),
-            _headerCell('Actual Qty', _colActQty, 'qty'),
-            _headerCell('Invoice Qty', _colInvQty, null),
-            _headerCell('Unit Price', _colUnit, 'unit'),
-            _headerCell('Invoice Total', _colInvTotal, null),
-            _headerCell('Actual Total', _colActTotal, 'total'),
-            _headerCell('Barcode', _colBarcode, 'barcode'),
-            _headerCell('Location', _colCoord, 'coord'),
-            _headerCell('Source', _colSource, null),
-            _headerCell('Status', _colStatus, null),
-            SizedBox(width: _colActions),
-          ],
-        ),
+          ),
+          _headerCell('#', _colIdx, null),
+          _headerCell('SKU', _colSku, 'sku'),
+          _headerCell('Model', _colName, null),
+          _headerCell('Color', _colColor, 'color'),
+          _headerCell('Actual Qty', _colActQty, 'qty'),
+          _headerCell('Invoice Qty', _colInvQty, null),
+          _headerCell('Unit Price', _colUnit, 'unit'),
+          _headerCell('Invoice Total', _colInvTotal, null),
+          _headerCell('Actual Total', _colActTotal, 'total'),
+          _headerCell('Barcode', _colBarcode, 'barcode'),
+          _headerCell('Location', _colCoord, 'coord'),
+          _headerCell('Source', _colSource, null),
+          _headerCell('Status', _colStatus, null),
+          SizedBox(width: _colActions),
+        ],
       ),
     );
   }
@@ -474,14 +532,19 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
           border: Border(right: BorderSide(color: Color(0xFFE2E8F0))),
         ),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.3,
-                color: isActive ? const Color(0xFF6366F1) : const Color(0xFF475569),
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.3,
+                  color: isActive ? const Color(0xFF6366F1) : const Color(0xFF475569),
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
             if (sortKey != null) ...[
@@ -512,65 +575,73 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
       onTap: () => _showProductDialog(product: product),
       child: Container(
         color: rowBg,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              SizedBox(
-                width: _colCheck,
-                height: 52,
-                child: Checkbox(
-                  value: isSelected,
-                  onChanged: (v) => setState(() {
-                    if (v == true)
-                      _selectedIds.add(product.id);
-                    else
-                      _selectedIds.remove(product.id);
-                  }),
-                  activeColor: const Color(0xFF6366F1),
-                ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: _colCheck,
+              height: 52,
+              child: Checkbox(
+                value: isSelected,
+                onChanged: (v) => setState(() {
+                  if (v == true)
+                    _selectedIds.add(product.id);
+                  else
+                    _selectedIds.remove(product.id);
+                }),
+                activeColor: const Color(0xFF6366F1),
               ),
-              _cell('${index + 1}', _colIdx, style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
-              _cell(
-                product.sku,
-                _colSku,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
-              ),
-              _cell(product.name, _colName, style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
-              // Color
-              SizedBox(
-                width: _colColor,
-                height: 52,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(
-                    children: [
-                      if (product.color != '—') ...[
-                        Container(
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: _colorDot(product.color),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
-                          ),
+            ),
+            _cell('${index + 1}', _colIdx, style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+            _cell(
+              product.sku,
+              _colSku,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+            ),
+            _cell(product.name, _colName, style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
+            // Color
+            SizedBox(
+              width: _colColor,
+              height: 52,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (product.color != '—') ...[
+                      Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: _colorDot(product.color),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
                         ),
-                        const SizedBox(width: 6),
-                      ],
-                      Text(product.color, style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
+                      ),
+                      const SizedBox(width: 6),
                     ],
-                  ),
+                    Flexible(
+                      child: Text(
+                        product.color,
+                        style: const TextStyle(fontSize: 13, color: Color(0xFF475569)),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              // Actual Qty
-              SizedBox(
-                width: _colActQty,
-                height: 52,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(
-                    children: [
-                      Text(
+            ),
+            // Actual Qty
+            SizedBox(
+              width: _colActQty,
+              height: 52,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
                         '${product.quantity}',
                         style: TextStyle(
                           fontSize: 13,
@@ -581,147 +652,153 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
                               ? const Color(0xFFF59E0B)
                               : const Color(0xFF1E293B),
                         ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      if (hasDiscrepancy) ...[
-                        const SizedBox(width: 4),
-                        Tooltip(
-                          message: 'Discrepancy: ${product.qtyDiscrepancy! > 0 ? '+' : ''}${product.qtyDiscrepancy} vs invoice',
-                          child: Icon(
-                            product.qtyDiscrepancy! > 0 ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
-                            size: 13,
-                            color: product.qtyDiscrepancy! > 0 ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
-                          ),
+                    ),
+                    if (hasDiscrepancy) ...[
+                      const SizedBox(width: 4),
+                      Tooltip(
+                        message: 'Discrepancy: ${product.qtyDiscrepancy! > 0 ? '+' : ''}${product.qtyDiscrepancy} vs invoice',
+                        child: Icon(
+                          product.qtyDiscrepancy! > 0 ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                          size: 13,
+                          color: product.qtyDiscrepancy! > 0 ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
                         ),
-                      ],
+                      ),
                     ],
-                  ),
+                  ],
                 ),
               ),
-              // Invoice Qty
-              _cell(
-                product.invoiceQty != null ? '${product.invoiceQty}' : '—',
-                _colInvQty,
-                style: TextStyle(fontSize: 13, color: product.invoiceQty != null ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
-              ),
-              // Unit price
-              _cell('\$${product.unitPrice.toStringAsFixed(4)}', _colUnit, style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
-              // Invoice Total
-              _cell(
-                product.invoiceTotalPrice != null ? '\$${product.invoiceTotalPrice!.toStringAsFixed(2)}' : '—',
-                _colInvTotal,
-                style: TextStyle(fontSize: 13, color: product.invoiceTotalPrice != null ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
-              ),
-              // Actual Total
-              _cell(
-                '\$${product.totalPrice.toStringAsFixed(2)}',
-                _colActTotal,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
-              ),
-              // Barcode
-              SizedBox(
-                width: _colBarcode,
-                height: 52,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.qr_code_rounded, size: 14, color: Color(0xFF94A3B8)),
-                      const SizedBox(width: 6),
-                      Text(
+            ),
+            // Invoice Qty
+            _cell(
+              product.invoiceQty != null ? '${product.invoiceQty}' : '—',
+              _colInvQty,
+              style: TextStyle(fontSize: 13, color: product.invoiceQty != null ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
+            ),
+            // Unit price
+            _cell('\$${product.unitPrice.toStringAsFixed(4)}', _colUnit, style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
+            // Invoice Total
+            _cell(
+              product.invoiceTotalPrice != null ? '\$${product.invoiceTotalPrice!.toStringAsFixed(2)}' : '—',
+              _colInvTotal,
+              style: TextStyle(fontSize: 13, color: product.invoiceTotalPrice != null ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
+            ),
+            // Actual Total
+            _cell(
+              '\$${product.totalPrice.toStringAsFixed(2)}',
+              _colActTotal,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+            ),
+            // Barcode
+            SizedBox(
+              width: _colBarcode,
+              height: 52,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.qr_code_rounded, size: 14, color: Color(0xFF94A3B8)),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
                         product.barcode,
                         style: const TextStyle(fontSize: 12, color: Color(0xFF64748B), fontFamily: 'monospace'),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              // Coordinate
-              SizedBox(
-                width: _colCoord,
-                height: 52,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(6)),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.location_on_rounded, size: 13, color: Color(0xFF6366F1)),
-                        const SizedBox(width: 4),
-                        Text(
-                          product.coordinate.label,
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF6366F1)),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              // Source
-              SizedBox(
-                width: _colSource,
-                height: 52,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: product.sourceInvoiceNo != null
-                      ? Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(color: const Color(0xFFE0F2FE), borderRadius: BorderRadius.circular(6)),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.receipt_long_rounded, size: 12, color: Color(0xFF0284C7)),
-                              const SizedBox(width: 4),
-                              Flexible(
-                                child: Text(
-                                  product.sourceInvoiceNo!,
-                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF0284C7)),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : const Text('—', style: TextStyle(fontSize: 13, color: Color(0xFFCBD5E1))),
-                ),
-              ),
-              // Status
-              SizedBox(
-                width: _colStatus,
-                height: 52,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: _StatusBadge(status: product.status),
-                ),
-              ),
-              // Actions
-              SizedBox(
-                width: _colActions,
-                height: 52,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _IconBtn(
-                      icon: Icons.edit_outlined,
-                      tooltip: 'Edit',
-                      onTap: () => _showProductDialog(product: product),
-                    ),
-                    _IconBtn(
-                      icon: Icons.delete_outline_rounded,
-                      tooltip: 'Delete',
-                      color: const Color(0xFFEF4444),
-                      onTap: () => setState(() {
-                        _allProducts.removeWhere((p) => p.id == product.id);
-                        _selectedIds.remove(product.id);
-                        _applyFilter();
-                      }),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+            // Coordinate
+            SizedBox(
+              width: _colCoord,
+              height: 52,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(6)),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.location_on_rounded, size: 13, color: Color(0xFF6366F1)),
+                      const SizedBox(width: 4),
+                      Text(
+                        product.coordinate.label,
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF6366F1)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Source
+            SizedBox(
+              width: _colSource,
+              height: 52,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: product.sourceInvoiceNo != null
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(color: const Color(0xFFE0F2FE), borderRadius: BorderRadius.circular(6)),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.receipt_long_rounded, size: 12, color: Color(0xFF0284C7)),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                product.sourceInvoiceNo!,
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF0284C7)),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : const Text('—', style: TextStyle(fontSize: 13, color: Color(0xFFCBD5E1))),
+              ),
+            ),
+            // Status
+            SizedBox(
+              width: _colStatus,
+              height: 52,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: _StatusBadge(status: product.status),
+              ),
+            ),
+            // Actions
+            SizedBox(
+              width: _colActions,
+              height: 52,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _IconBtn(
+                    icon: Icons.edit_outlined,
+                    tooltip: 'Edit',
+                    onTap: () => _showProductDialog(product: product),
+                  ),
+                  _IconBtn(
+                    icon: Icons.delete_outline_rounded,
+                    tooltip: 'Delete',
+                    color: const Color(0xFFEF4444),
+                    onTap: () => setState(() {
+                      _allProducts.removeWhere((p) => p.id == product.id);
+                      _selectedIds.remove(product.id);
+                      _applyFilter();
+                    }),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -735,7 +812,12 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Align(
           alignment: Alignment.centerLeft,
-          child: Text(text, style: style ?? const TextStyle(fontSize: 13, color: Color(0xFF475569))),
+          child: Text(
+            text,
+            style: style ?? const TextStyle(fontSize: 13, color: Color(0xFF475569)),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
         ),
       ),
     );

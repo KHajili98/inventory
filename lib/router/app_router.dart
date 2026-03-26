@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inventory/pages/finance_page.dart';
 import 'package:inventory/pages/inventory_products_page.dart';
@@ -6,6 +7,9 @@ import 'package:inventory/widgets/app_shell.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/invoices',
+  // ── Disable browser back/forward history navigation on web ──────────────
+  routerNeglect: kIsWeb,
+  debugLogDiagnostics: false,
   routes: [
     ShellRoute(
       builder: (context, state, child) => AppShell(child: child),
