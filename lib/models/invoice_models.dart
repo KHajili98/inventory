@@ -1,0 +1,342 @@
+class InvoiceRecord {
+  final String id;
+  final String invoiceNo;
+  final String date;
+  final String supplier;
+  final String buyer;
+  final int totalItems;
+  final double totalAmount;
+  final InvoiceStatus status;
+  final List<InvoiceRow> rows;
+
+  InvoiceRecord({
+    required this.id,
+    required this.invoiceNo,
+    required this.date,
+    required this.supplier,
+    required this.buyer,
+    required this.totalItems,
+    required this.totalAmount,
+    required this.status,
+    required this.rows,
+  });
+}
+
+enum InvoiceStatus { pending, confirmed, cancelled }
+
+class InvoiceRow {
+  String modelCode;
+  String sku;
+  String size;
+  String color;
+  int qty;
+  double unitPrice;
+  double get total => qty * unitPrice;
+  String boxDimensions;
+  double cbm;
+  double netWeight;
+  double grossWeight;
+  String notes;
+  bool hasWarning;
+
+  InvoiceRow({
+    required this.modelCode,
+    required this.sku,
+    required this.size,
+    required this.color,
+    required this.qty,
+    required this.unitPrice,
+    required this.boxDimensions,
+    required this.cbm,
+    required this.netWeight,
+    required this.grossWeight,
+    required this.notes,
+    this.hasWarning = false,
+  });
+
+  InvoiceRow copyWith({
+    String? modelCode,
+    String? sku,
+    String? size,
+    String? color,
+    int? qty,
+    double? unitPrice,
+    String? boxDimensions,
+    double? cbm,
+    double? netWeight,
+    double? grossWeight,
+    String? notes,
+    bool? hasWarning,
+  }) {
+    return InvoiceRow(
+      modelCode: modelCode ?? this.modelCode,
+      sku: sku ?? this.sku,
+      size: size ?? this.size,
+      color: color ?? this.color,
+      qty: qty ?? this.qty,
+      unitPrice: unitPrice ?? this.unitPrice,
+      boxDimensions: boxDimensions ?? this.boxDimensions,
+      cbm: cbm ?? this.cbm,
+      netWeight: netWeight ?? this.netWeight,
+      grossWeight: grossWeight ?? this.grossWeight,
+      notes: notes ?? this.notes,
+      hasWarning: hasWarning ?? this.hasWarning,
+    );
+  }
+}
+
+// ── Mock data matching the invoice image ──────────────────────────────────────
+final List<InvoiceRow> mockOcrRows = [
+  InvoiceRow(
+    modelCode: 'X-1',
+    sku: 'X-1-500',
+    size: 'ø500',
+    color: '',
+    qty: 26,
+    unitPrice: 2.1306,
+    boxDimensions: '84×51×52',
+    cbm: 0.22,
+    netWeight: 9.18,
+    grossWeight: 10.97,
+    notes: '',
+  ),
+  InvoiceRow(
+    modelCode: 'X-34',
+    sku: 'X-34-300',
+    size: 'ø300',
+    color: '',
+    qty: 26,
+    unitPrice: 1.1363,
+    boxDimensions: '84×51×52',
+    cbm: 0.22,
+    netWeight: 9.18,
+    grossWeight: 10.97,
+    notes: '',
+  ),
+  InvoiceRow(
+    modelCode: 'X-1',
+    sku: 'X-1-500',
+    size: 'ø500',
+    color: '',
+    qty: 12,
+    unitPrice: 2.1305,
+    boxDimensions: '84×51×52',
+    cbm: 0.22,
+    netWeight: 9.18,
+    grossWeight: 10.97,
+    notes: '',
+  ),
+  InvoiceRow(
+    modelCode: 'X-34',
+    sku: 'X-34-300',
+    size: 'ø300',
+    color: '',
+    qty: 12,
+    unitPrice: 1.1363,
+    boxDimensions: '84×51×52',
+    cbm: 0.22,
+    netWeight: 9.18,
+    grossWeight: 10.97,
+    notes: '',
+  ),
+  InvoiceRow(
+    modelCode: 'X-2',
+    sku: 'X-2-500-SL',
+    size: 'ø500',
+    color: 'SL',
+    qty: 48,
+    unitPrice: 2.1306,
+    boxDimensions: '84×51×52',
+    cbm: 0.22,
+    netWeight: 6.86,
+    grossWeight: 8.65,
+    notes: '',
+  ),
+  InvoiceRow(
+    modelCode: 'X-3',
+    sku: 'X-3-500-GD',
+    size: 'ø500',
+    color: 'GD',
+    qty: 30,
+    unitPrice: 2.1306,
+    boxDimensions: '104×51×52',
+    cbm: 0.28,
+    netWeight: 17.07,
+    grossWeight: 19.12,
+    notes: '',
+  ),
+  InvoiceRow(
+    modelCode: 'X-24',
+    sku: 'X-24-400',
+    size: 'ø400',
+    color: '',
+    qty: 30,
+    unitPrice: 1.7044,
+    boxDimensions: '104×51×52',
+    cbm: 0.28,
+    netWeight: 17.07,
+    grossWeight: 19.12,
+    notes: '',
+  ),
+  InvoiceRow(
+    modelCode: 'X-3',
+    sku: 'X-3-500-WH',
+    size: 'ø500',
+    color: 'WH',
+    qty: 28,
+    unitPrice: 2.1306,
+    boxDimensions: '84×51×52',
+    cbm: 0.22,
+    netWeight: 17.0,
+    grossWeight: 19.1,
+    notes: '',
+  ),
+  InvoiceRow(
+    modelCode: 'X-4',
+    sku: 'X-4-500',
+    size: 'ø500',
+    color: '',
+    qty: 34,
+    unitPrice: 2.1306,
+    boxDimensions: '84×51×52',
+    cbm: 0.22,
+    netWeight: 16.85,
+    grossWeight: 18.64,
+    notes: '',
+  ),
+  InvoiceRow(
+    modelCode: 'X-5',
+    sku: 'X-5-500',
+    size: 'ø500',
+    color: '',
+    qty: 60,
+    unitPrice: 2.1306,
+    boxDimensions: '84×51×52',
+    cbm: 0.22,
+    netWeight: 7.0,
+    grossWeight: 8.0,
+    notes: '',
+  ),
+  InvoiceRow(
+    modelCode: 'X-6',
+    sku: 'X-6-500',
+    size: 'ø500',
+    color: '',
+    qty: 16,
+    unitPrice: 2.1306,
+    boxDimensions: '84×51×52',
+    cbm: 0.22,
+    netWeight: 7.0,
+    grossWeight: 8.0,
+    notes: '',
+  ),
+  InvoiceRow(
+    modelCode: 'X-5',
+    sku: 'X-5-500',
+    size: 'ø500',
+    color: '',
+    qty: 10,
+    unitPrice: 2.1306,
+    boxDimensions: '',
+    cbm: 0.0,
+    netWeight: 0.0,
+    grossWeight: 0.0,
+    notes: 'No weight data',
+    hasWarning: true,
+  ),
+  InvoiceRow(
+    modelCode: 'X-2',
+    sku: 'X-2-500-SL',
+    size: 'ø500',
+    color: 'SL',
+    qty: 2,
+    unitPrice: 2.1306,
+    boxDimensions: '75×51×52',
+    cbm: 0.20,
+    netWeight: 6.44,
+    grossWeight: 8.23,
+    notes: '',
+  ),
+  InvoiceRow(
+    modelCode: 'X-3',
+    sku: 'X-3-500-WH',
+    size: 'ø500',
+    color: 'WH',
+    qty: 1,
+    unitPrice: 2.1306,
+    boxDimensions: '',
+    cbm: 0.0,
+    netWeight: 0.0,
+    grossWeight: 0.0,
+    notes: 'No weight data',
+    hasWarning: true,
+  ),
+  InvoiceRow(
+    modelCode: 'X-7',
+    sku: 'X-7-500',
+    size: 'ø500',
+    color: '',
+    qty: 45,
+    unitPrice: 2.1306,
+    boxDimensions: '84×51×52',
+    cbm: 0.22,
+    netWeight: 7.01,
+    grossWeight: 8.8,
+    notes: '',
+  ),
+  InvoiceRow(
+    modelCode: 'X-6',
+    sku: 'X-6-500',
+    size: 'ø500',
+    color: '',
+    qty: 10,
+    unitPrice: 2.1306,
+    boxDimensions: '104×51×52',
+    cbm: 0.28,
+    netWeight: 7.0,
+    grossWeight: 8.0,
+    notes: '',
+  ),
+  InvoiceRow(
+    modelCode: 'X-7',
+    sku: 'X-7-500',
+    size: 'ø500',
+    color: '',
+    qty: 5,
+    unitPrice: 2.1306,
+    boxDimensions: '104×51×52',
+    cbm: 0.28,
+    netWeight: 0.0,
+    grossWeight: 0.0,
+    notes: 'No weight data',
+    hasWarning: true,
+  ),
+  InvoiceRow(
+    modelCode: 'X-8',
+    sku: 'X-8-900',
+    size: 'ø900',
+    color: '',
+    qty: 7,
+    unitPrice: 2.1306,
+    boxDimensions: '',
+    cbm: 0.0,
+    netWeight: 0.0,
+    grossWeight: 0.0,
+    notes: 'No weight data',
+    hasWarning: true,
+  ),
+];
+
+final List<InvoiceRecord> mockInvoices = [
+  InvoiceRecord(
+    id: '1',
+    invoiceNo: 'Az251111',
+    date: '2025-11-11',
+    supplier: 'Zhongshan Lanzi Lighting Co., LTD',
+    buyer: 'Aydinoglu Trend NO.1LLC',
+    totalItems: 372,
+    totalAmount: 712.54,
+    status: InvoiceStatus.pending,
+    rows: mockOcrRows,
+  ),
+];

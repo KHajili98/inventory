@@ -1,0 +1,19 @@
+import 'package:go_router/go_router.dart';
+import 'package:inventory/pages/finance_page.dart';
+import 'package:inventory/pages/inventory_products_page.dart';
+import 'package:inventory/pages/invoices_page.dart';
+import 'package:inventory/widgets/app_shell.dart';
+
+final appRouter = GoRouter(
+  initialLocation: '/invoices',
+  routes: [
+    ShellRoute(
+      builder: (context, state, child) => AppShell(child: child),
+      routes: [
+        GoRoute(path: '/invoices', builder: (context, state) => const InvoicesPage()),
+        GoRoute(path: '/inventory-products', builder: (context, state) => const InventoryProductsPage()),
+        GoRoute(path: '/finance', builder: (context, state) => const FinancePage()),
+      ],
+    ),
+  ],
+);
