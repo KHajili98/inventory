@@ -18,8 +18,44 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
   String _sortColumn = 'sku';
   bool _sortAscending = true;
 
-  // Shared horizontal scroll controller for header + rows
+  // Primary horizontal scroll controller (drives the body rows)
   final ScrollController _hScrollController = ScrollController();
+  // Mirror controllers kept in sync via listener (header + bottom scrollbar)
+  final ScrollController _hHeaderController = ScrollController();
+  final ScrollController _hBarController = ScrollController();
+  // Vertical scroll controller for rows
+  final ScrollController _vScrollController = ScrollController();
+
+  static const double _hScrollStep = 200.0;
+  static const double _vScrollStep = 200.0;
+
+  // ── Sync all horizontal controllers together ──────────────────────────────
+  bool _hSyncing = false;
+  void _onHScroll() {
+    if (_hSyncing) return;
+    _hSyncing = true;
+    final offset = _hScrollController.offset;
+    if (_hHeaderController.hasClients && _hHeaderController.offset != offset) {
+      _hHeaderController.jumpTo(offset);
+    }
+    if (_hBarController.hasClients && _hBarController.offset != offset) {
+      _hBarController.jumpTo(offset);
+    }
+    _hSyncing = false;
+  }
+
+  void _onHBarScroll() {
+    if (_hSyncing) return;
+    _hSyncing = true;
+    final offset = _hBarController.offset;
+    if (_hScrollController.hasClients && _hScrollController.offset != offset) {
+      _hScrollController.jumpTo(offset);
+    }
+    if (_hHeaderController.hasClients && _hHeaderController.offset != offset) {
+      _hHeaderController.jumpTo(offset);
+    }
+    _hSyncing = false;
+  }
 
   // Total table width for horizontal scrolling
   static double get _tableWidth =>
@@ -58,8 +94,20 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
 
   // ── Filtering & Sorting ──────────────────────────────────────────────────────
   @override
+  void initState() {
+    super.initState();
+    _hScrollController.addListener(_onHScroll);
+    _hBarController.addListener(_onHBarScroll);
+  }
+
+  @override
   void dispose() {
+    _hScrollController.removeListener(_onHScroll);
+    _hBarController.removeListener(_onHBarScroll);
     _hScrollController.dispose();
+    _hHeaderController.dispose();
+    _hBarController.dispose();
+    _vScrollController.dispose();
     super.dispose();
   }
 
@@ -418,6 +466,17 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
     );
   }
 
+  void _scrollH(double delta) {
+    if (!_hScrollController.hasClients) return;
+    final target = (_hScrollController.offset + delta).clamp(0.0, _hScrollController.position.maxScrollExtent);
+    _hScrollController.animateTo(target, duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
+  }
+
+  void _scrollV(double delta) {
+    final target = (_vScrollController.offset + delta).clamp(0.0, _vScrollController.position.maxScrollExtent);
+    _vScrollController.animateTo(target, duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
+  }
+
   Widget _buildTable() {
     return Container(
       decoration: BoxDecoration(
@@ -428,49 +487,166 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
       ),
       child: Column(
         children: [
-          // ── Sticky header (mirrors horizontal scroll position of body) ────
+          // ── Top navigation bar (scroll left/right & jump to top/bottom) ──
+          _buildHNavBar(),
+          // ── Sticky header ─────────────────────────────────────────────────
           SingleChildScrollView(
-            controller: _hScrollController,
+            controller: _hHeaderController,
             scrollDirection: Axis.horizontal,
             physics: const NeverScrollableScrollPhysics(),
             child: _buildHeaderRow(),
           ),
-          // ── Scrollable body ───────────────────────────────────────────────
+          // ── Scrollable body + right vertical scrollbar ────────────────────
           Expanded(
             child: _filtered.isEmpty
                 ? const Center(
                     child: Text('No products match your search.', style: TextStyle(fontSize: 14, color: Color(0xFF94A3B8))),
                   )
-                : SingleChildScrollView(
-                    controller: _hScrollController,
-                    scrollDirection: Axis.horizontal,
-                    child: SizedBox(
-                      width: _tableWidth,
-                      child: ListView.separated(
-                        itemCount: _filtered.length,
-                        separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                        itemBuilder: (_, i) => _buildProductRow(i, _filtered[i]),
+                : Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Table rows with horizontal scroll
+                      Expanded(
+                        child: SingleChildScrollView(
+                          controller: _hScrollController,
+                          scrollDirection: Axis.horizontal,
+                          child: SizedBox(
+                            width: _tableWidth,
+                            child: Scrollbar(
+                              controller: _vScrollController,
+                              thumbVisibility: true,
+                              trackVisibility: true,
+                              child: ListView.separated(
+                                controller: _vScrollController,
+                                itemCount: _filtered.length,
+                                separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                                itemBuilder: (_, i) => _buildProductRow(i, _filtered[i]),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                      // ── Right-side vertical nav buttons ─────────────────
+                      _buildVNavBar(),
+                    ],
                   ),
           ),
-          // ── Horizontal scrollbar ──────────────────────────────────────────
-          RawScrollbar(
-            controller: _hScrollController,
-            thumbVisibility: true,
-            trackVisibility: true,
-            thickness: 8,
-            radius: const Radius.circular(4),
-            thumbColor: const Color(0xFFCBD5E1),
-            trackColor: const Color(0xFFF1F5F9),
-            trackBorderColor: const Color(0xFFE2E8F0),
-            scrollbarOrientation: ScrollbarOrientation.bottom,
-            child: SingleChildScrollView(
-              controller: _hScrollController,
-              scrollDirection: Axis.horizontal,
-              child: SizedBox(width: _tableWidth, height: 0),
+          // ── Bottom horizontal scrollbar + nav buttons ─────────────────────
+          _buildHScrollBar(),
+        ],
+      ),
+    );
+  }
+
+  /// Top bar: ← scroll left  |  → scroll right  |  spacer  |  ↑ top  |  ↓ bottom
+  Widget _buildHNavBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: const BoxDecoration(
+        color: Color(0xFFF8FAFC),
+        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+      ),
+      child: Row(
+        children: [
+          _NavBtn(
+            icon: Icons.keyboard_double_arrow_left_rounded,
+            tooltip: 'Scroll to start',
+            onTap: () {
+              if (_hScrollController.hasClients) {
+                _hScrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+              }
+            },
+          ),
+          const SizedBox(width: 4),
+          _NavBtn(icon: Icons.chevron_left_rounded, tooltip: 'Scroll left', onTap: () => _scrollH(-_hScrollStep)),
+          const SizedBox(width: 4),
+          _NavBtn(icon: Icons.chevron_right_rounded, tooltip: 'Scroll right', onTap: () => _scrollH(_hScrollStep)),
+          const SizedBox(width: 4),
+          _NavBtn(
+            icon: Icons.keyboard_double_arrow_right_rounded,
+            tooltip: 'Scroll to end',
+            onTap: () {
+              if (_hScrollController.hasClients) {
+                _hScrollController.animateTo(
+                  _hScrollController.position.maxScrollExtent,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOut,
+                );
+              }
+            },
+          ),
+          const Spacer(),
+          const Text('Horizontal', style: TextStyle(fontSize: 11, color: Color(0xFFCBD5E1))),
+          const SizedBox(width: 12),
+          const VerticalDivider(width: 1, thickness: 1, color: Color(0xFFE2E8F0)),
+          const SizedBox(width: 12),
+          const Text('Vertical', style: TextStyle(fontSize: 11, color: Color(0xFFCBD5E1))),
+          const SizedBox(width: 4),
+          _NavBtn(
+            icon: Icons.keyboard_double_arrow_up_rounded,
+            tooltip: 'Scroll to top',
+            onTap: () => _vScrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut),
+          ),
+          const SizedBox(width: 4),
+          _NavBtn(
+            icon: Icons.keyboard_double_arrow_down_rounded,
+            tooltip: 'Scroll to bottom',
+            onTap: () => _vScrollController.animateTo(
+              _vScrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  /// Right-side column with up/down step buttons
+  Widget _buildVNavBar() {
+    return Container(
+      width: 32,
+      decoration: const BoxDecoration(
+        color: Color(0xFFF8FAFC),
+        border: Border(left: BorderSide(color: Color(0xFFE2E8F0))),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _NavBtn(icon: Icons.keyboard_arrow_up_rounded, tooltip: 'Scroll up', onTap: () => _scrollV(-_vScrollStep)),
+          const SizedBox(height: 4),
+          _NavBtn(icon: Icons.keyboard_arrow_down_rounded, tooltip: 'Scroll down', onTap: () => _scrollV(_vScrollStep)),
+        ],
+      ),
+    );
+  }
+
+  /// Bottom area: draggable/clickable horizontal scrollbar + step buttons on either side
+  Widget _buildHScrollBar() {
+    return Container(
+      height: 32,
+      decoration: const BoxDecoration(
+        color: Color(0xFFF8FAFC),
+        border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(12), bottomRight: Radius.circular(12)),
+      ),
+      child: Row(
+        children: [
+          _NavBtn(icon: Icons.chevron_left_rounded, tooltip: 'Scroll left', onTap: () => _scrollH(-_hScrollStep)),
+          Expanded(
+            child: Scrollbar(
+              controller: _hBarController,
+              thumbVisibility: true,
+              trackVisibility: true,
+              notificationPredicate: (n) => n.metrics.axis == Axis.horizontal,
+              child: SingleChildScrollView(
+                controller: _hBarController,
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(width: _tableWidth, height: 1),
+              ),
+            ),
+          ),
+          _NavBtn(icon: Icons.chevron_right_rounded, tooltip: 'Scroll right', onTap: () => _scrollH(_hScrollStep)),
         ],
       ),
     );
@@ -1915,6 +2091,31 @@ class _IconBtn extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(6),
           child: Icon(icon, size: 17, color: color),
+        ),
+      ),
+    );
+  }
+}
+
+/// Small compact button used in the table scroll nav bars.
+class _NavBtn extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onTap;
+
+  const _NavBtn({required this.icon, required this.tooltip, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(6),
+        child: SizedBox(
+          width: 28,
+          height: 28,
+          child: Center(child: Icon(icon, size: 18, color: const Color(0xFF94A3B8))),
         ),
       ),
     );
