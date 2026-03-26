@@ -341,7 +341,7 @@ class _SidebarTileState extends State<_SidebarTile> {
                 ),
               ),
               const SizedBox(width: 8),
-              Icon(widget.item.icon, color: iconColor, size: 20),
+              Icon(widget.item.icon, color: iconColor, size: 15),
               ClipRect(
                 child: AnimatedSize(
                   duration: const Duration(milliseconds: 220),
