@@ -18,11 +18,18 @@ class Product {
   final String sku;
   final String name;
   final String color;
-  final int quantity;
+  final int quantity; // actual quantity physically counted in warehouse
   final double unitPrice;
   final String barcode;
   final WarehouseCoordinate coordinate;
   final ProductStatus status;
+
+  // ── Invoice-linked fields (null for manually-added products) ────────────────
+  final int? invoiceQty; // quantity stated on invoice
+  final double? invoiceTotalPrice; // invoiceQty * unitPrice
+  final double? actualTotalPrice; // quantity (actual) * unitPrice
+  final String? sourceInvoiceId; // which invoice this came from
+  final String? sourceInvoiceNo; // display reference
 
   Product({
     required this.id,
@@ -34,9 +41,17 @@ class Product {
     required this.barcode,
     required this.coordinate,
     required this.status,
+    this.invoiceQty,
+    this.invoiceTotalPrice,
+    this.actualTotalPrice,
+    this.sourceInvoiceId,
+    this.sourceInvoiceNo,
   });
 
   double get totalPrice => quantity * unitPrice;
+
+  // convenience: discrepancy between invoice and actual
+  int? get qtyDiscrepancy => (invoiceQty != null) ? quantity - invoiceQty! : null;
 
   Product copyWith({
     String? id,
@@ -48,6 +63,11 @@ class Product {
     String? barcode,
     WarehouseCoordinate? coordinate,
     ProductStatus? status,
+    int? invoiceQty,
+    double? invoiceTotalPrice,
+    double? actualTotalPrice,
+    String? sourceInvoiceId,
+    String? sourceInvoiceNo,
   }) {
     return Product(
       id: id ?? this.id,
@@ -59,6 +79,11 @@ class Product {
       barcode: barcode ?? this.barcode,
       coordinate: coordinate ?? this.coordinate,
       status: status ?? this.status,
+      invoiceQty: invoiceQty ?? this.invoiceQty,
+      invoiceTotalPrice: invoiceTotalPrice ?? this.invoiceTotalPrice,
+      actualTotalPrice: actualTotalPrice ?? this.actualTotalPrice,
+      sourceInvoiceId: sourceInvoiceId ?? this.sourceInvoiceId,
+      sourceInvoiceNo: sourceInvoiceNo ?? this.sourceInvoiceNo,
     );
   }
 
