@@ -81,13 +81,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                   width: _collapsed ? _collapsedWidth : _expandedWidth,
                   decoration: BoxDecoration(
                     color: const Color(0xFF1E293B),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.15),
-                        blurRadius: 8,
-                        offset: const Offset(2, 0),
-                      ),
-                    ],
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 8, offset: const Offset(2, 0))],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,14 +93,21 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                           padding: const EdgeInsets.symmetric(horizontal: 14),
                           child: Row(
                             children: [
-                              Container(
-                                width: 36,
-                                height: 36,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF6366F1),
-                                  borderRadius: BorderRadius.circular(8),
+                              MouseRegion(
+                                cursor: SystemMouseCursors.click,
+                                child: GestureDetector(
+                                  onTap: () => setState(() => _collapsed = !_collapsed),
+                                  child: Tooltip(
+                                    message: _collapsed ? 'Expand sidebar' : 'Collapse sidebar',
+                                    preferBelow: false,
+                                    child: Container(
+                                      width: 36,
+                                      height: 36,
+                                      decoration: BoxDecoration(color: const Color(0xFF6366F1), borderRadius: BorderRadius.circular(8)),
+                                      child: const Icon(Icons.widgets_rounded, color: Colors.white, size: 20),
+                                    ),
+                                  ),
                                 ),
-                                child: const Icon(Icons.widgets_rounded, color: Colors.white, size: 20),
                               ),
                               ClipRect(
                                 child: AnimatedSize(
@@ -118,20 +119,10 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                                           padding: EdgeInsets.only(left: 12),
                                           child: Text(
                                             'Inventory',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w700,
-                                              letterSpacing: 0.5,
-                                            ),
+                                            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700, letterSpacing: 0.5),
                                           ),
                                         ),
                                 ),
-                              ),
-                              const Spacer(),
-                              _CollapseButton(
-                                collapsed: _collapsed,
-                                onTap: () => setState(() => _collapsed = !_collapsed),
                               ),
                             ],
                           ),
@@ -148,12 +139,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                       ...List.generate(_navItems.length, (index) {
                         final item = _navItems[index];
                         final isSelected = index == selectedIndex;
-                        return _SidebarTile(
-                          item: item,
-                          isSelected: isSelected,
-                          collapsed: _collapsed,
-                          onTap: () => context.go(item.path),
-                        );
+                        return _SidebarTile(item: item, isSelected: isSelected, collapsed: _collapsed, onTap: () => context.go(item.path));
                       }),
 
                       const Spacer(),
@@ -176,10 +162,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                                     child: Container(
                                       width: 36,
                                       height: 36,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.06),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
+                                      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(8)),
                                       child: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
                                     ),
                                   ),
@@ -188,10 +171,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                                   children: [
                                     Icon(Icons.info_outline_rounded, size: 13, color: Color(0xFF475569)),
                                     SizedBox(width: 6),
-                                    Text(
-                                      'v1.0.0 · Inventory App',
-                                      style: TextStyle(fontSize: 11, color: Color(0xFF475569)),
-                                    ),
+                                    Text('v1.0.0 · Inventory App', style: TextStyle(fontSize: 11, color: Color(0xFF475569))),
                                   ],
                                 ),
                         ),
@@ -215,20 +195,13 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                           children: [
                             Text(
                               _navItems[selectedIndex].label,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF1E293B),
-                              ),
+                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
                             ),
                           ],
                         ),
                       ),
                       Expanded(
-                        child: Container(
-                          color: const Color(0xFFF8FAFC),
-                          child: widget.child,
-                        ),
+                        child: Container(color: const Color(0xFFF8FAFC), child: widget.child),
                       ),
                     ],
                   ),
@@ -247,23 +220,17 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
 class _NoHistoryScrollBehavior extends MaterialScrollBehavior {
   @override
   Set<PointerDeviceKind> get dragDevices => {
-        PointerDeviceKind.touch,
-        PointerDeviceKind.mouse,
-        PointerDeviceKind.stylus,
-        PointerDeviceKind.invertedStylus,
-      };
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.stylus,
+    PointerDeviceKind.invertedStylus,
+  };
 
   @override
-  Widget buildOverscrollIndicator(
-    BuildContext context,
-    Widget child,
-    ScrollableDetails details,
-  ) =>
-      child; // no glow — glow on web can trigger browser nav gestures
+  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) => child; // no glow — glow on web can trigger browser nav gestures
 
   @override
-  ScrollPhysics getScrollPhysics(BuildContext context) =>
-      const ClampingScrollPhysics(); // clamp instead of bouncing — bounce can trigger browser nav
+  ScrollPhysics getScrollPhysics(BuildContext context) => const ClampingScrollPhysics(); // clamp instead of bouncing — bounce can trigger browser nav
 }
 
 // ── Animated burger / arrow toggle ────────────────────────────────────────────
@@ -296,9 +263,7 @@ class _CollapseButtonState extends State<_CollapseButton> {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: _hovered
-                  ? Colors.white.withValues(alpha: 0.12)
-                  : Colors.white.withValues(alpha: 0.06),
+              color: _hovered ? Colors.white.withValues(alpha: 0.12) : Colors.white.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(8),
             ),
             child: AnimatedSwitcher(
@@ -335,12 +300,7 @@ class _SidebarTile extends StatefulWidget {
   final bool collapsed;
   final VoidCallback onTap;
 
-  const _SidebarTile({
-    required this.item,
-    required this.isSelected,
-    required this.collapsed,
-    required this.onTap,
-  });
+  const _SidebarTile({required this.item, required this.isSelected, required this.collapsed, required this.onTap});
 
   @override
   State<_SidebarTile> createState() => _SidebarTileState();
@@ -354,8 +314,8 @@ class _SidebarTileState extends State<_SidebarTile> {
     final bg = widget.isSelected
         ? const Color(0xFF6366F1)
         : _hovered
-            ? Colors.white.withValues(alpha: 0.07)
-            : Colors.transparent;
+        ? Colors.white.withValues(alpha: 0.07)
+        : Colors.transparent;
 
     final iconColor = widget.isSelected ? Colors.white : const Color(0xFF94A3B8);
 
@@ -411,9 +371,7 @@ class _SidebarTileState extends State<_SidebarTile> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-      child: widget.collapsed
-          ? Tooltip(message: widget.item.label, preferBelow: false, child: tile)
-          : tile,
+      child: widget.collapsed ? Tooltip(message: widget.item.label, preferBelow: false, child: tile) : tile,
     );
   }
 }
