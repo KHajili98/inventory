@@ -25,6 +25,16 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
   bool _hasEdits = false;
   bool _isSubmitting = false;
 
+  // ── Editable header fields ───────────────────────────────────────────────────
+  late String _invoiceNo;
+  late final TextEditingController _invoiceNoController;
+  late final TextEditingController _supplierNameController;
+  late final TextEditingController _supplierAddressController;
+  late final TextEditingController _supplierTaxIdController;
+  late final TextEditingController _contactNumberController;
+  late final TextEditingController _invoiceDateController;
+  late final TextEditingController _contractNumberController;
+
   static const double _colCheck = 44;
   static const double _colIdx = 44;
   static const double _colProduct = 180;
@@ -44,6 +54,26 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
   void initState() {
     super.initState();
     _rows = List.from(widget.invoice.rows);
+    _invoiceNo = widget.invoice.invoiceNo;
+    _invoiceNoController = TextEditingController(text: _invoiceNo);
+    _supplierNameController = TextEditingController(text: widget.invoice.supplier);
+    _supplierAddressController = TextEditingController(text: widget.invoice.supplierAddress ?? '');
+    _supplierTaxIdController = TextEditingController(text: widget.invoice.supplierTaxId ?? '');
+    _contactNumberController = TextEditingController(text: widget.invoice.contactNumber ?? '');
+    _invoiceDateController = TextEditingController(text: widget.invoice.date);
+    _contractNumberController = TextEditingController(text: widget.invoice.contractNumber ?? '');
+  }
+
+  @override
+  void dispose() {
+    _invoiceNoController.dispose();
+    _supplierNameController.dispose();
+    _supplierAddressController.dispose();
+    _supplierTaxIdController.dispose();
+    _contactNumberController.dispose();
+    _invoiceDateController.dispose();
+    _contractNumberController.dispose();
+    super.dispose();
   }
 
   /// Called whenever any cell value changes so we can enable the submit button.
@@ -95,6 +125,7 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
         children: [
           _buildHeader(inv),
           _buildSummaryBar(inv),
+          _buildHeaderInfo(),
           _buildToolbar(),
           Expanded(child: _buildTable()),
           _buildFooter(),
@@ -126,16 +157,64 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
               children: [
                 Row(
                   children: [
-                    Text(
-                      l10n.invoiceDetail(inv.invoiceNo),
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                    Flexible(
+                      child: IntrinsicWidth(
+                        child: TextField(
+                          controller: _invoiceNoController,
+                          onChanged: (v) {
+                            _invoiceNo = v;
+                            _markEdited();
+                          },
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                          decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                            hintText: 'Invoice No.',
+                            filled: true,
+                            fillColor: const Color(0xFFF1F5F9),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     _StatusChip(status: inv.status),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text('${inv.supplier}  ·  ${inv.date}', style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+                Row(
+                  children: [
+                    Flexible(
+                      child: IntrinsicWidth(
+                        child: TextField(
+                          controller: _supplierNameController,
+                          onChanged: (_) => _markEdited(),
+                          style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                          decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                            hintText: 'Supplier Name',
+                            filled: true,
+                            fillColor: const Color(0xFFF1F5F9),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text('·', style: TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+                    const SizedBox(width: 8),
+                    Text(inv.date, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+                  ],
+                ),
               ],
             ),
           ),
@@ -146,6 +225,71 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
             style: FilledButton.styleFrom(
               backgroundColor: _isEditing ? const Color(0xFF22C55E) : const Color(0xFF6366F1),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Header info (editable) ────────────────────────────────────────────────────
+  Widget _buildHeaderInfo() {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+      child: Wrap(
+        spacing: 16,
+        runSpacing: 12,
+        children: [
+          _infoField(label: 'Supplier Address', controller: _supplierAddressController, width: 340, onChanged: (_) => _markEdited()),
+          _infoField(label: 'Tax ID', controller: _supplierTaxIdController, width: 140, onChanged: (_) => _markEdited()),
+          _infoField(label: 'Contact Number', controller: _contactNumberController, width: 180, onChanged: (_) => _markEdited()),
+          _infoField(label: 'Invoice Date', controller: _invoiceDateController, width: 140, hint: 'YYYY-MM-DD', onChanged: (_) => _markEdited()),
+          _infoField(label: 'Contract Number', controller: _contractNumberController, width: 160, onChanged: (_) => _markEdited()),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoField({
+    required String label,
+    required TextEditingController controller,
+    required double width,
+    required ValueChanged<String> onChanged,
+    String? hint,
+  }) {
+    return SizedBox(
+      width: width,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF94A3B8), letterSpacing: 0.4),
+          ),
+          const SizedBox(height: 4),
+          TextField(
+            controller: controller,
+            onChanged: onChanged,
+            style: const TextStyle(fontSize: 13, color: Color(0xFF1E293B)),
+            decoration: InputDecoration(
+              isDense: true,
+              hintText: hint,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              filled: true,
+              fillColor: const Color(0xFFF8FAFC),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
+              ),
             ),
           ),
         ],
@@ -624,7 +768,18 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
 
     setState(() => _isSubmitting = true);
 
-    final result = await InvoiceConfirmRepository.instance.confirmInvoice(invoiceId: widget.invoice.id, rows: _rows, invoice: widget.invoice);
+    final result = await InvoiceConfirmRepository.instance.confirmInvoice(
+      invoiceId: widget.invoice.id,
+      rows: _rows,
+      invoice: widget.invoice,
+      supplierName: _supplierNameController.text.trim(),
+      invoiceNumber: _invoiceNo,
+      supplierAddress: _supplierAddressController.text.trim(),
+      supplierTaxId: _supplierTaxIdController.text.trim(),
+      contactNumber: _contactNumberController.text.trim(),
+      invoiceDate: _invoiceDateController.text.trim(),
+      contractNumber: _contractNumberController.text.trim(),
+    );
 
     if (!mounted) return;
 
