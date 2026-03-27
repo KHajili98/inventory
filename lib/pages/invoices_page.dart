@@ -2,6 +2,10 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:inventory/features/invoice_ocr/cubit/invoice_ocr_cubit.dart';
+import 'package:inventory/features/invoice_ocr/cubit/invoice_ocr_state.dart';
+import 'package:inventory/features/invoice_ocr/data/models/invoice_upload_response_model.dart';
 import 'package:inventory/models/invoice_models.dart';
 import 'package:inventory/pages/invoice_detail_page.dart';
 import 'package:inventory/l10n/app_localizations.dart';
@@ -23,34 +27,48 @@ class _InvoicesPageState extends State<InvoicesPage> {
     if (result == null || result.files.isEmpty) return;
 
     final file = result.files.first;
-    _showProcessingDialog(file.name, file.bytes);
+    if (file.bytes == null) return;
+
+    _showProcessingDialog(file.name, file.bytes!);
   }
 
-  void _showProcessingDialog(String filename, Uint8List? bytes) {
+  void _showProcessingDialog(String filename, Uint8List bytes) {
+    // Reset cubit before opening dialog
+    context.read<InvoiceOcrCubit>().reset();
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => _OcrProcessingDialog(
-        filename: filename,
-        imageBytes: bytes,
-        onConfirm: (rows) {
-          Navigator.of(context, rootNavigator: true).pop(); // close dialog only
-          final newInvoice = InvoiceRecord(
-            id: DateTime.now().millisecondsSinceEpoch.toString(),
-            invoiceNo: 'NEW-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}',
-            date: DateTime.now().toIso8601String().split('T').first,
-            supplier: 'Pending OCR Review',
-            buyer: 'Aydinoglu Trend NO.1LLC',
-            totalItems: rows.fold(0, (s, r) => s + r.qty),
-            totalAmount: rows.fold(0.0, (s, r) => s + r.total),
-            status: InvoiceStatus.pending,
-            rows: rows,
-          );
-          setState(() => _invoices.insert(0, newInvoice));
-          _openDetail(newInvoice);
-        },
+      builder: (dialogCtx) => BlocProvider.value(
+        value: context.read<InvoiceOcrCubit>(),
+        child: _OcrProcessingDialog(
+          filename: filename,
+          imageBytes: bytes,
+          onConfirm: (rows, response) {
+            Navigator.of(context, rootNavigator: true).pop();
+
+            final newInvoice = InvoiceRecord(
+              id: response.data?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+              invoiceNo: response.data?.extractedInvoiceNumber ?? 'NEW-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}',
+              date: response.data?.extractedDate ?? DateTime.now().toIso8601String().split('T').first,
+              supplier: response.data?.extractedSupplierName ?? 'Unknown Supplier',
+              buyer: 'Aydinoglu Trend NO.1LLC',
+              totalItems: rows.fold(0, (s, r) => s + r.qty),
+              totalAmount: double.tryParse(response.data?.extractedTotalAmount ?? '') ?? rows.fold(0.0, (s, r) => s + r.total),
+              status: InvoiceStatus.pending,
+              rows: rows,
+            );
+            setState(() => _invoices.insert(0, newInvoice));
+            _openDetail(newInvoice);
+          },
+        ),
       ),
     );
+
+    // Kick off the upload immediately after dialog is shown
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<InvoiceOcrCubit>().uploadInvoice(fileBytes: bytes, fileName: filename);
+    });
   }
 
   void _openDetail(InvoiceRecord inv) {
@@ -140,7 +158,12 @@ class _InvoicesPageState extends State<InvoicesPage> {
       children: [
         _StatCard(label: l10n.totalInvoices, value: '${_invoices.length}', icon: Icons.receipt_long_rounded, color: const Color(0xFF6366F1)),
         const SizedBox(width: 16),
-        _StatCard(label: l10n.totalValue, value: '\$${totalAmount.toStringAsFixed(2)}', icon: Icons.payments_outlined, color: const Color(0xFF22C55E)),
+        _StatCard(
+          label: l10n.totalValue,
+          value: '\$${totalAmount.toStringAsFixed(2)}',
+          icon: Icons.payments_outlined,
+          color: const Color(0xFF22C55E),
+        ),
         const SizedBox(width: 16),
         _StatCard(label: l10n.pending, value: '$pending', icon: Icons.hourglass_empty_rounded, color: const Color(0xFFF59E0B)),
         const SizedBox(width: 16),
@@ -188,14 +211,13 @@ class _InvoicesPageState extends State<InvoicesPage> {
       ),
       child: Row(
         children: [
-          SizedBox(width: 140, child: Text(l10n.invoiceNumber, style: style)),
-          SizedBox(width: 240, child: Text(l10n.supplier, style: style)),
-          SizedBox(width: 110, child: Text(l10n.date, style: style)),
-          SizedBox(width: 90, child: Text(l10n.items, style: style)),
-          SizedBox(width: 120, child: Text(l10n.amount, style: style)),
-          SizedBox(width: 110, child: Text(l10n.status, style: style)),
-          const Spacer(),
-          Text(l10n.actions, style: style),
+          SizedBox(width: 130, child: Text(l10n.invoiceNumber, style: style)),
+          Expanded(child: Text(l10n.supplier, style: style)),
+          SizedBox(width: 100, child: Text(l10n.date, style: style)),
+          SizedBox(width: 80, child: Text(l10n.items, style: style)),
+          SizedBox(width: 110, child: Text(l10n.amount, style: style)),
+          SizedBox(width: 100, child: Text(l10n.status, style: style)),
+          SizedBox(width: 90, child: Text(l10n.actions, style: style, textAlign: TextAlign.right)),
         ],
       ),
     );
@@ -211,26 +233,28 @@ class _InvoicesPageState extends State<InvoicesPage> {
           children: [
             // Invoice number
             SizedBox(
-              width: 140,
+              width: 130,
               child: Row(
                 children: [
                   Container(
-                    width: 36,
-                    height: 36,
+                    width: 32,
+                    height: 32,
                     decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(8)),
-                    child: const Icon(Icons.receipt_rounded, size: 18, color: Color(0xFF6366F1)),
+                    child: const Icon(Icons.receipt_rounded, size: 16, color: Color(0xFF6366F1)),
                   ),
-                  const SizedBox(width: 10),
-                  Text(
-                    '#${inv.invoiceNo}',
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '#${inv.invoiceNo}',
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
             ),
             // Supplier
-            SizedBox(
-              width: 240,
+            Expanded(
               child: Text(
                 inv.supplier,
                 style: const TextStyle(fontSize: 13, color: Color(0xFF475569)),
@@ -239,7 +263,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
             ),
             // Date
             SizedBox(
-              width: 110,
+              width: 100,
               child: Text(inv.date, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
             ),
             // Items
@@ -247,41 +271,44 @@ class _InvoicesPageState extends State<InvoicesPage> {
               builder: (context) {
                 final l10n = AppLocalizations.of(context)!;
                 return SizedBox(
-                  width: 90,
+                  width: 80,
                   child: Text('${inv.totalItems} ${l10n.pcs}', style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
                 );
               },
             ),
             // Amount
             SizedBox(
-              width: 120,
+              width: 110,
               child: Text(
                 '\$${inv.totalAmount.toStringAsFixed(2)}',
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
               ),
             ),
             // Status
-            SizedBox(width: 110, child: _StatusBadge(status: inv.status)),
-            const Spacer(),
+            SizedBox(width: 100, child: _StatusBadge(status: inv.status)),
             // Actions
-            Builder(
-              builder: (context) {
-                final l10n = AppLocalizations.of(context)!;
-                return Row(
-                  children: [
-                    _ActionBtn(icon: Icons.visibility_outlined, tooltip: l10n.view, onTap: () => _openDetail(inv)),
-                    const SizedBox(width: 4),
-                    _ActionBtn(icon: Icons.download_outlined, tooltip: l10n.export, onTap: () {}),
-                    const SizedBox(width: 4),
-                    _ActionBtn(
-                      icon: Icons.delete_outline_rounded,
-                      tooltip: l10n.delete,
-                      color: const Color(0xFFEF4444),
-                      onTap: () => setState(() => _invoices.remove(inv)),
-                    ),
-                  ],
-                );
-              },
+            SizedBox(
+              width: 90,
+              child: Builder(
+                builder: (context) {
+                  final l10n = AppLocalizations.of(context)!;
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      _ActionBtn(icon: Icons.visibility_outlined, tooltip: l10n.view, onTap: () => _openDetail(inv)),
+                      const SizedBox(width: 2),
+                      _ActionBtn(icon: Icons.download_outlined, tooltip: l10n.export, onTap: () {}),
+                      const SizedBox(width: 2),
+                      _ActionBtn(
+                        icon: Icons.delete_outline_rounded,
+                        tooltip: l10n.delete,
+                        color: const Color(0xFFEF4444),
+                        onTap: () => setState(() => _invoices.remove(inv)),
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -291,57 +318,68 @@ class _InvoicesPageState extends State<InvoicesPage> {
 }
 
 // ── OCR Processing Dialog ──────────────────────────────────────────────────────
-class _OcrProcessingDialog extends StatefulWidget {
+class _OcrProcessingDialog extends StatelessWidget {
   final String filename;
-  final Uint8List? imageBytes;
-  final ValueChanged<List<InvoiceRow>> onConfirm;
+  final Uint8List imageBytes;
+  final void Function(List<InvoiceRow> rows, InvoiceUploadResponseModel response) onConfirm;
 
   const _OcrProcessingDialog({required this.filename, required this.imageBytes, required this.onConfirm});
 
-  @override
-  State<_OcrProcessingDialog> createState() => _OcrProcessingDialogState();
-}
-
-class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
-  // Simulated OCR stages
-  int _stage = 0; // 0=uploading 1=processing 2=done
-  late List<InvoiceRow> _rows;
-
-  @override
-  void initState() {
-    super.initState();
-    _runOcr();
-  }
-
-  Future<void> _runOcr() async {
-    // Stage 1: uploading
-    await Future.delayed(const Duration(milliseconds: 900));
-    if (!mounted) return;
-    setState(() => _stage = 1);
-
-    // Stage 2: OCR processing
-    await Future.delayed(const Duration(milliseconds: 1400));
-    if (!mounted) return;
-
-    // Use mock rows as OCR result (replace with real API response)
-    _rows = List.from(mockOcrRows);
-    setState(() => _stage = 2);
+  /// Maps the API response items to the existing [InvoiceRow] model used by
+  /// the detail page / table.
+  List<InvoiceRow> _mapToRows(InvoiceUploadResponseModel response) {
+    final items = response.data?.ocrResultJson?.items ?? [];
+    return items.map((item) {
+      return InvoiceRow(
+        modelCode: item.modelCode ?? '',
+        sku: [item.modelCode, item.size, item.color].where((v) => v != null && v.isNotEmpty).join('-'),
+        size: item.size ?? '',
+        color: item.color ?? '',
+        qty: item.quantity ?? 0,
+        unitPrice: item.unitPriceUsd ?? 0.0,
+        boxDimensions: '',
+        cbm: 0.0,
+        netWeight: item.weightKg ?? 0.0,
+        grossWeight: item.grossWeightKg ?? 0.0,
+        notes: item.description ?? '',
+        hasWarning: item.quantity == null || item.unitPriceUsd == null,
+      );
+    }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: SizedBox(
-        width: 480,
-        child: Padding(padding: const EdgeInsets.all(28), child: _stage < 2 ? _buildProcessing() : _buildPreview()),
-      ),
+    return BlocConsumer<InvoiceOcrCubit, InvoiceOcrState>(
+      listener: (context, state) {
+        // No side-effects needed here; UI is driven entirely by builder.
+      },
+      builder: (context, state) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: SizedBox(
+            width: 500,
+            child: Padding(
+              padding: const EdgeInsets.all(28),
+              child: switch (state) {
+                InvoiceOcrInitial() || InvoiceOcrUploading() || InvoiceOcrProcessing() => _buildProcessing(context, state),
+                InvoiceOcrSuccess(:final response) => _buildPreview(context, response),
+                InvoiceOcrFailure(:final message) => _buildError(context, message),
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildProcessing() {
+  Widget _buildProcessing(BuildContext context, InvoiceOcrState state) {
     final l10n = AppLocalizations.of(context)!;
-    final stages = [l10n.uploadingImage, l10n.runningOCR];
+    final label = switch (state) {
+      InvoiceOcrUploading() => l10n.uploadingImage,
+      InvoiceOcrProcessing() => l10n.runningOCR,
+      _ => l10n.uploadingImage,
+    };
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -358,12 +396,12 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
         ),
         const SizedBox(height: 6),
-        Text(widget.filename, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+        Text(filename, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
         const SizedBox(height: 24),
         const LinearProgressIndicator(backgroundColor: Color(0xFFE2E8F0), color: Color(0xFF6366F1)),
         const SizedBox(height: 14),
         Text(
-          stages[_stage],
+          label,
           style: const TextStyle(fontSize: 13, color: Color(0xFF6366F1), fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
@@ -371,12 +409,16 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
     );
   }
 
-  Widget _buildPreview() {
+  Widget _buildPreview(BuildContext context, InvoiceUploadResponseModel response) {
     final l10n = AppLocalizations.of(context)!;
+    final rows = _mapToRows(response);
+    final ocr = response.data?.ocrResultJson;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // ── Header ──────────────────────────────────────────────────────────
         Row(
           children: [
             Container(
@@ -398,8 +440,24 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
             ),
           ],
         ),
-        const SizedBox(height: 20),
-        // Mini preview table
+        const SizedBox(height: 16),
+
+        // ── Supplier / Invoice info chips ────────────────────────────────────
+        if (ocr != null)
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              if (ocr.supplierName != null) _InfoChip(icon: Icons.business_outlined, label: ocr.supplierName!),
+              if (ocr.invoiceNumber != null) _InfoChip(icon: Icons.tag_rounded, label: '#${ocr.invoiceNumber}'),
+              if (ocr.invoiceDate != null) _InfoChip(icon: Icons.calendar_today_outlined, label: ocr.invoiceDate!),
+              if (ocr.totalAmount != null)
+                _InfoChip(icon: Icons.attach_money_rounded, label: '${ocr.currency ?? 'USD'} ${ocr.totalAmount!.toStringAsFixed(2)}'),
+            ],
+          ),
+        const SizedBox(height: 16),
+
+        // ── Items table ──────────────────────────────────────────────────────
         Container(
           height: 220,
           decoration: BoxDecoration(
@@ -408,6 +466,7 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
           ),
           child: Column(
             children: [
+              // Table header
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: const BoxDecoration(
@@ -417,64 +476,62 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
                 ),
                 child: Row(
                   children: [
-                    SizedBox(
-                      width: 80,
-                      child: Text(
-                        l10n.model,
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 120,
-                      child: Text(
-                        l10n.sku,
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 60,
-                      child: Text(
-                        l10n.qty,
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
-                      ),
-                    ),
-                    Expanded(
-                      child: Text(
-                        l10n.totalUSD,
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
-                      ),
-                    ),
+                    _th(l10n.model, 70),
+                    _th(l10n.qty, 40),
+                    _th('Size', 60),
+                    _th('Color', 44),
+                    _th('Unit \$', 70),
+                    _th('Pcs/Ctn', 60),
+                    _th('Net kg', 56),
+                    Expanded(child: _th('Total \$', null)),
                   ],
                 ),
               ),
+              // Table rows
               Expanded(
                 child: ListView.separated(
-                  itemCount: _rows.length,
+                  itemCount: rows.length,
                   separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
                   itemBuilder: (_, i) {
-                    final r = _rows[i];
+                    final r = rows[i];
+                    final apiItem = response.data?.ocrResultJson?.items[i];
                     return Container(
                       color: r.hasWarning ? const Color(0xFFFFFBEB) : Colors.transparent,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                       child: Row(
                         children: [
                           SizedBox(
-                            width: 80,
+                            width: 70,
                             child: Text(r.modelCode, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                           ),
+                          SizedBox(width: 40, child: Text('${r.qty}', style: const TextStyle(fontSize: 12))),
                           SizedBox(
-                            width: 120,
-                            child: Text(r.sku, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                            width: 60,
+                            child: Text(r.size, style: const TextStyle(fontSize: 12, color: Color(0xFF475569))),
                           ),
-                          SizedBox(width: 60, child: Text('${r.qty}', style: const TextStyle(fontSize: 12))),
-                          Row(
-                            children: [
-                              Text('\$${r.total.toStringAsFixed(2)}', style: const TextStyle(fontSize: 12)),
-                              if (r.hasWarning) ...[
-                                const SizedBox(width: 6),
-                                const Icon(Icons.warning_amber_rounded, size: 14, color: Color(0xFFF59E0B)),
+                          SizedBox(
+                            width: 44,
+                            child: Text(r.color.isEmpty ? '–' : r.color, style: const TextStyle(fontSize: 12, color: Color(0xFF475569))),
+                          ),
+                          SizedBox(width: 70, child: Text('\$${r.unitPrice.toStringAsFixed(4)}', style: const TextStyle(fontSize: 12))),
+                          SizedBox(
+                            width: 60,
+                            child: Text('${apiItem?.piecesPerCarton ?? '–'}', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                          ),
+                          SizedBox(
+                            width: 56,
+                            child: Text(apiItem?.weightKg?.toStringAsFixed(2) ?? '–', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                          ),
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Text('\$${r.total.toStringAsFixed(3)}', style: const TextStyle(fontSize: 12)),
+                                if (r.hasWarning) ...[
+                                  const SizedBox(width: 4),
+                                  const Icon(Icons.warning_amber_rounded, size: 13, color: Color(0xFFF59E0B)),
+                                ],
                               ],
-                            ],
+                            ),
                           ),
                         ],
                       ),
@@ -486,16 +543,17 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
           ),
         ),
         const SizedBox(height: 8),
-        Row(
-          children: [
-            const Icon(Icons.warning_amber_rounded, size: 14, color: Color(0xFFF59E0B)),
-            const SizedBox(width: 4),
-            Text(
-              '${_rows.where((r) => r.hasWarning).length} ${l10n.rowsWithMissingData}',
-              style: const TextStyle(fontSize: 12, color: Color(0xFFB45309)),
-            ),
-          ],
-        ),
+        if (rows.any((r) => r.hasWarning))
+          Row(
+            children: [
+              const Icon(Icons.warning_amber_rounded, size: 14, color: Color(0xFFF59E0B)),
+              const SizedBox(width: 4),
+              Text(
+                '${rows.where((r) => r.hasWarning).length} ${l10n.rowsWithMissingData}',
+                style: const TextStyle(fontSize: 12, color: Color(0xFFB45309)),
+              ),
+            ],
+          ),
         const SizedBox(height: 20),
         Row(
           children: [
@@ -514,7 +572,7 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
             Expanded(
               flex: 2,
               child: FilledButton.icon(
-                onPressed: () => widget.onConfirm(_rows),
+                onPressed: () => onConfirm(rows, response),
                 icon: const Icon(Icons.open_in_new_rounded, size: 16),
                 label: Text(l10n.openAndEditTable),
                 style: FilledButton.styleFrom(
@@ -529,9 +587,85 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
       ],
     );
   }
+
+  Widget _buildError(BuildContext context, String message) {
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SizedBox(height: 12),
+        Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(color: const Color(0xFFFEE2E2), borderRadius: BorderRadius.circular(16)),
+          child: const Icon(Icons.error_outline_rounded, color: Color(0xFFDC2626), size: 30),
+        ),
+        const SizedBox(height: 20),
+        const Text(
+          'OCR Failed',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+        ),
+        const SizedBox(height: 24),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Color(0xFFCBD5E1)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              padding: const EdgeInsets.symmetric(vertical: 13),
+            ),
+            child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF475569))),
+          ),
+        ),
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+
+  // Helper: table header cell
+  Widget _th(String text, double? width) {
+    final cell = Text(
+      text,
+      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+    );
+    if (width == null) return cell;
+    return SizedBox(width: width, child: cell);
+  }
 }
 
 // ── Small widgets ──────────────────────────────────────────────────────────────
+
+class _InfoChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _InfoChip({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(20)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: const Color(0xFF6366F1)),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFF4F46E5)),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _StatCard extends StatelessWidget {
   final String label;

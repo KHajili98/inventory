@@ -5,11 +5,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:inventory/router/app_router.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 import 'package:inventory/cubit/locale_cubit.dart';
+import 'package:inventory/features/invoice_ocr/cubit/invoice_ocr_cubit.dart';
 
 void main() {
   runApp(
-    BlocProvider(
-      create: (context) => LocaleCubit(),
+    MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => LocaleCubit()),
+        BlocProvider(create: (_) => InvoiceOcrCubit()),
+      ],
       child: const MyApp(),
     ),
   );

@@ -1,0 +1,13 @@
+abstract class ApiConstants {
+  ApiConstants._();
+
+  static const String baseUrl = 'http://13.53.43.184:8000';
+
+  // ── Endpoints ───────────────────────────────────────────────────────────────
+  static const String uploadInvoice = '/api/invoices/upload/';
+
+  // ── Timeouts ────────────────────────────────────────────────────────────────
+  static const Duration connectTimeout = Duration(seconds: 30);
+  static const Duration receiveTimeout = Duration(minutes: 3); // OCR can take ~75 s
+  static const Duration sendTimeout = Duration(seconds: 60);
+}
