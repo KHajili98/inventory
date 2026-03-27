@@ -6,6 +6,7 @@ import 'package:inventory/features/invoice_confirm/data/repositories/invoice_con
 import 'package:inventory/features/invoice_list/cubit/invoice_list_cubit.dart';
 import 'package:inventory/models/invoice_models.dart';
 import 'package:inventory/l10n/app_localizations.dart';
+import 'package:inventory/core/utils/responsive.dart';
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html' as html;
 
@@ -139,8 +140,15 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
   // ── Header ───────────────────────────────────────────────────────────────────
   Widget _buildHeader(InvoiceRecord inv) {
     final l10n = AppLocalizations.of(context)!;
+    final isMobile = context.isMobile;
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+      padding: EdgeInsets.fromLTRB(
+        context.responsivePadding,
+        isMobile ? 16 : 20,
+        context.responsivePadding,
+        16,
+      ),
       color: Colors.white,
       child: Row(
         children: [
@@ -155,7 +163,7 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: isMobile ? 10 : 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -170,7 +178,11 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
                             _invoiceNo = v;
                             _markEdited();
                           },
-                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                          style: TextStyle(
+                            fontSize: isMobile ? 16 : 20,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF1E293B),
+                          ),
                           decoration: InputDecoration(
                             isDense: true,
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -186,7 +198,7 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: isMobile ? 8 : 12),
                     _StatusChip(status: inv.status),
                   ],
                 ),
@@ -239,20 +251,52 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
 
   // ── Header info (editable) ────────────────────────────────────────────────────
   Widget _buildHeaderInfo() {
+    final isMobile = context.isMobile;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final fullWidth = screenWidth - (context.responsivePadding * 2);
+
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-      child: Wrap(
-        spacing: 16,
-        runSpacing: 12,
-        children: [
-          _infoField(label: 'Supplier Address', controller: _supplierAddressController, width: 340, onChanged: (_) => _markEdited()),
-          _infoField(label: 'Tax ID', controller: _supplierTaxIdController, width: 140, onChanged: (_) => _markEdited()),
-          _infoField(label: 'Contact Number', controller: _contactNumberController, width: 180, onChanged: (_) => _markEdited()),
-          _infoField(label: 'Invoice Date', controller: _invoiceDateController, width: 140, hint: 'YYYY-MM-DD', onChanged: (_) => _markEdited()),
-          _infoField(label: 'Contract Number', controller: _contractNumberController, width: 160, onChanged: (_) => _markEdited()),
-        ],
+      padding: EdgeInsets.fromLTRB(
+        context.responsivePadding,
+        0,
+        context.responsivePadding,
+        16,
       ),
+      child: isMobile
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _infoField(label: 'Supplier Address', controller: _supplierAddressController, width: fullWidth, onChanged: (_) => _markEdited()),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _infoField(label: 'Tax ID', controller: _supplierTaxIdController, width: double.infinity, onChanged: (_) => _markEdited()),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _infoField(label: 'Invoice Date', controller: _invoiceDateController, width: double.infinity, hint: 'YYYY-MM-DD', onChanged: (_) => _markEdited()),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _infoField(label: 'Contact Number', controller: _contactNumberController, width: fullWidth, onChanged: (_) => _markEdited()),
+                const SizedBox(height: 12),
+                _infoField(label: 'Contract Number', controller: _contractNumberController, width: fullWidth, onChanged: (_) => _markEdited()),
+              ],
+            )
+          : Wrap(
+              spacing: 16,
+              runSpacing: 12,
+              children: [
+                _infoField(label: 'Supplier Address', controller: _supplierAddressController, width: 340, onChanged: (_) => _markEdited()),
+                _infoField(label: 'Tax ID', controller: _supplierTaxIdController, width: 140, onChanged: (_) => _markEdited()),
+                _infoField(label: 'Contact Number', controller: _contactNumberController, width: 180, onChanged: (_) => _markEdited()),
+                _infoField(label: 'Invoice Date', controller: _invoiceDateController, width: 140, hint: 'YYYY-MM-DD', onChanged: (_) => _markEdited()),
+                _infoField(label: 'Contract Number', controller: _contractNumberController, width: 160, onChanged: (_) => _markEdited()),
+              ],
+            ),
     );
   }
 
@@ -305,32 +349,68 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
   // ── Summary bar ──────────────────────────────────────────────────────────────
   Widget _buildSummaryBar(InvoiceRecord inv) {
     final l10n = AppLocalizations.of(context)!;
+    final isMobile = context.isMobile;
+
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-      child: Row(
-        children: [
-          _SummaryCard(label: l10n.totalItems, value: '$_grandQty ${l10n.pcs}', icon: Icons.inventory_2_outlined, color: const Color(0xFF6366F1)),
-          const SizedBox(width: 12),
-          _SummaryCard(
-            label: l10n.totalAmount,
-            value: '\$${_grandTotal.toStringAsFixed(2)}',
-            icon: Icons.attach_money_rounded,
-            color: const Color(0xFF22C55E),
-          ),
-          const SizedBox(width: 12),
-          _SummaryCard(label: l10n.total, value: '${_rows.length} ${l10n.rows}', icon: Icons.list_alt_rounded, color: const Color(0xFFF59E0B)),
-          if (inv.invoiceUrl != null) ...[const SizedBox(width: 12), _ImageSummaryCard(url: inv.invoiceUrl!)],
-        ],
+      padding: EdgeInsets.fromLTRB(
+        context.responsivePadding,
+        0,
+        context.responsivePadding,
+        16,
       ),
+      child: isMobile
+          ? SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  SizedBox(width: 140, child: _SummaryCard(label: l10n.totalItems, value: '$_grandQty ${l10n.pcs}', icon: Icons.inventory_2_outlined, color: const Color(0xFF6366F1))),
+                  const SizedBox(width: 10),
+                  SizedBox(
+                    width: 140,
+                    child: _SummaryCard(
+                      label: l10n.totalAmount,
+                      value: '\$${_grandTotal.toStringAsFixed(2)}',
+                      icon: Icons.attach_money_rounded,
+                      color: const Color(0xFF22C55E),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  SizedBox(width: 140, child: _SummaryCard(label: l10n.total, value: '${_rows.length} ${l10n.rows}', icon: Icons.list_alt_rounded, color: const Color(0xFFF59E0B))),
+                  if (inv.invoiceUrl != null) ...[const SizedBox(width: 10), _ImageSummaryCard(url: inv.invoiceUrl!)],
+                ],
+              ),
+            )
+          : Row(
+              children: [
+                Expanded(child: _SummaryCard(label: l10n.totalItems, value: '$_grandQty ${l10n.pcs}', icon: Icons.inventory_2_outlined, color: const Color(0xFF6366F1))),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _SummaryCard(
+                    label: l10n.totalAmount,
+                    value: '\$${_grandTotal.toStringAsFixed(2)}',
+                    icon: Icons.attach_money_rounded,
+                    color: const Color(0xFF22C55E),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(child: _SummaryCard(label: l10n.total, value: '${_rows.length} ${l10n.rows}', icon: Icons.list_alt_rounded, color: const Color(0xFFF59E0B))),
+                if (inv.invoiceUrl != null) ...[const SizedBox(width: 12), _ImageSummaryCard(url: inv.invoiceUrl!)],
+              ],
+            ),
     );
   }
 
   // ── Toolbar ──────────────────────────────────────────────────────────────────
   Widget _buildToolbar() {
     final l10n = AppLocalizations.of(context)!;
+    final isMobile = context.isMobile;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+      padding: EdgeInsets.symmetric(
+        horizontal: context.responsivePadding,
+        vertical: 10,
+      ),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(
@@ -338,40 +418,84 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
           bottom: BorderSide(color: Color(0xFFE2E8F0)),
         ),
       ),
-      child: Row(
-        children: [
-          Text(
-            l10n.ocrResultEditableTable,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
-          ),
-          const Spacer(),
-          if (_selectedRows.isNotEmpty) ...[
-            Text(
-              '${_selectedRows.length} ${l10n.selectAll.toLowerCase()}',
-              style: const TextStyle(fontSize: 13, color: Color(0xFF6366F1), fontWeight: FontWeight.w500),
+      child: isMobile
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.ocrResultEditableTable,
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    if (_selectedRows.isNotEmpty) ...[
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _deleteSelected,
+                          icon: const Icon(Icons.delete_outline_rounded, size: 16),
+                          label: Text('${l10n.delete} (${_selectedRows.length})'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFFEF4444),
+                            side: const BorderSide(color: Color(0xFFEF4444)),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    if (_isEditing)
+                      Expanded(
+                        flex: _selectedRows.isEmpty ? 1 : 0,
+                        child: FilledButton.icon(
+                          onPressed: _addRow,
+                          icon: const Icon(Icons.add_rounded, size: 16),
+                          label: Text(l10n.addRow),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFF6366F1),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            )
+          : Row(
+              children: [
+                Text(
+                  l10n.ocrResultEditableTable,
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
+                ),
+                const Spacer(),
+                if (_selectedRows.isNotEmpty) ...[
+                  Text(
+                    '${_selectedRows.length} ${l10n.selectAll.toLowerCase()}',
+                    style: const TextStyle(fontSize: 13, color: Color(0xFF6366F1), fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(width: 12),
+                  TextButton.icon(
+                    onPressed: _deleteSelected,
+                    icon: const Icon(Icons.delete_outline_rounded, size: 16),
+                    label: Text(l10n.delete),
+                    style: TextButton.styleFrom(foregroundColor: const Color(0xFFEF4444)),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                if (_isEditing)
+                  FilledButton.icon(
+                    onPressed: _addRow,
+                    icon: const Icon(Icons.add_rounded, size: 16),
+                    label: Text(l10n.addRow),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF6366F1),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    ),
+                  ),
+              ],
             ),
-            const SizedBox(width: 12),
-            TextButton.icon(
-              onPressed: _deleteSelected,
-              icon: const Icon(Icons.delete_outline_rounded, size: 16),
-              label: Text(l10n.delete),
-              style: TextButton.styleFrom(foregroundColor: const Color(0xFFEF4444)),
-            ),
-            const SizedBox(width: 8),
-          ],
-          if (_isEditing)
-            FilledButton.icon(
-              onPressed: _addRow,
-              icon: const Icon(Icons.add_rounded, size: 16),
-              label: Text(l10n.addRow),
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF6366F1),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              ),
-            ),
-        ],
-      ),
     );
   }
 
@@ -704,38 +828,87 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
   // ── Footer ───────────────────────────────────────────────────────────────────
   Widget _buildFooter() {
     final l10n = AppLocalizations.of(context)!;
+    final isMobile = context.isMobile;
+
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: Color(0xFFE2E8F0), width: 2)),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-      child: Row(
-        children: [
-          Text(
-            l10n.totals,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF475569), letterSpacing: 0.5),
-          ),
-          const Spacer(),
-          _FooterStat(label: l10n.totalQty, value: '$_grandQty ${l10n.pcs}'),
-          const SizedBox(width: 32),
-          _FooterStat(label: l10n.grandTotal, value: '\$${_grandTotal.toStringAsFixed(2)}', highlight: true),
-          const SizedBox(width: 32),
-          FilledButton.icon(
-            onPressed: _hasEdits && !_isSubmitting ? _onConfirmAndSave : null,
-            icon: _isSubmitting
-                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : const Icon(Icons.check_circle_outline_rounded, size: 16),
-            label: Text(l10n.confirmAndSave),
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFF6366F1),
-              disabledBackgroundColor: const Color(0xFFCBD5E1),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-            ),
-          ),
-        ],
+      padding: EdgeInsets.symmetric(
+        horizontal: context.responsivePadding,
+        vertical: isMobile ? 12 : 14,
       ),
+      child: isMobile
+          ? Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(l10n.totalQty, style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+                        Text('$_grandQty ${l10n.pcs}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B))),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(l10n.grandTotal, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF475569))),
+                        Text(
+                          '\$${_grandTotal.toStringAsFixed(2)}',
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF6366F1)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: _hasEdits && !_isSubmitting ? _onConfirmAndSave : null,
+                    icon: _isSubmitting
+                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Icon(Icons.check_circle_outline_rounded, size: 16),
+                    label: Text(l10n.confirmAndSave),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF6366F1),
+                      disabledBackgroundColor: const Color(0xFFCBD5E1),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : Row(
+              children: [
+                Text(
+                  l10n.totals,
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF475569), letterSpacing: 0.5),
+                ),
+                const Spacer(),
+                _FooterStat(label: l10n.totalQty, value: '$_grandQty ${l10n.pcs}'),
+                const SizedBox(width: 32),
+                _FooterStat(label: l10n.grandTotal, value: '\$${_grandTotal.toStringAsFixed(2)}', highlight: true),
+                const SizedBox(width: 32),
+                FilledButton.icon(
+                  onPressed: _hasEdits && !_isSubmitting ? _onConfirmAndSave : null,
+                  icon: _isSubmitting
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : const Icon(Icons.check_circle_outline_rounded, size: 16),
+                  label: Text(l10n.confirmAndSave),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF6366F1),
+                    disabledBackgroundColor: const Color(0xFFCBD5E1),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  ),
+                ),
+              ],
+            ),
     );
   }
 

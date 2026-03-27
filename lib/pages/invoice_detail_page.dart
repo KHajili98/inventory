@@ -5,6 +5,7 @@ import 'package:inventory/features/invoice_detail/cubit/invoice_detail_state.dar
 import 'package:inventory/features/invoice_detail/data/models/invoice_detail_model.dart';
 import 'package:inventory/features/invoice_list/cubit/invoice_list_cubit.dart';
 import 'package:inventory/l10n/app_localizations.dart';
+import 'package:inventory/core/utils/responsive.dart';
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html' as html;
 
@@ -114,7 +115,7 @@ class _InvoiceDetailContent extends StatelessWidget {
       children: [
         _buildHeader(context),
         _buildInfoCards(context),
-        _buildTableLabel(),
+        _buildTableLabel(context),
         Expanded(child: _buildTable(context)),
         _buildFooter(context),
       ],
@@ -123,65 +124,78 @@ class _InvoiceDetailContent extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isMobile = context.isMobile;
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+      padding: EdgeInsets.fromLTRB(context.responsivePadding, isMobile ? 16 : 20, context.responsivePadding, 16),
       color: Colors.white,
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          IconButton(
-            onPressed: () {
-              context.read<InvoiceListCubit>().fetchInvoices();
-              Navigator.of(context, rootNavigator: true).pop();
-            },
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-            style: IconButton.styleFrom(
-              backgroundColor: const Color(0xFFF1F5F9),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          Row(
+            children: [
+              IconButton(
+                onPressed: () {
+                  context.read<InvoiceListCubit>().fetchInvoices();
+                  Navigator.of(context, rootNavigator: true).pop();
+                },
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                style: IconButton.styleFrom(
+                  backgroundColor: const Color(0xFFF1F5F9),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       l10n.invoiceDetail(invoice.invoiceNumber ?? invoice.id.substring(0, 8)),
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                      style: TextStyle(fontSize: isMobile ? 16 : 20, fontWeight: FontWeight.w700, color: const Color(0xFF1E293B)),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    if (invoice.contractNumber != null) ...[
-                      const SizedBox(width: 10),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-                        decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(20)),
-                        child: Text(
-                          invoice.contractNumber!,
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF4F46E5)),
-                        ),
-                      ),
-                    ],
+                    const SizedBox(height: 2),
+                    Text(
+                      '${invoice.supplierName ?? '–'}  ·  ${invoice.invoiceDate ?? '–'}',
+                      style: TextStyle(fontSize: isMobile ? 12 : 13, color: const Color(0xFF64748B)),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '${invoice.supplierName ?? '–'}  ·  ${invoice.invoiceDate ?? '–'}',
-                  style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
-                ),
+              ),
+            ],
+          ),
+          if (invoice.contractNumber != null || invoice.invoiceImageUrl != null) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if (invoice.contractNumber != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(20)),
+                    child: Text(
+                      invoice.contractNumber!,
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF4F46E5)),
+                    ),
+                  ),
+                if (invoice.invoiceImageUrl != null)
+                  OutlinedButton.icon(
+                    onPressed: () => html.window.open(invoice.invoiceImageUrl!, '_blank'),
+                    icon: const Icon(Icons.image_search_rounded, size: 16),
+                    label: const Text('View Image'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF0EA5E9),
+                      side: const BorderSide(color: Color(0xFF0EA5E9)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                  ),
               ],
             ),
-          ),
-          if (invoice.invoiceImageUrl != null)
-            OutlinedButton.icon(
-              onPressed: () => html.window.open(invoice.invoiceImageUrl!, '_blank'),
-              icon: const Icon(Icons.image_search_rounded, size: 16),
-              label: const Text('View Image'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF0EA5E9),
-                side: const BorderSide(color: Color(0xFF0EA5E9)),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-            ),
+          ],
         ],
       ),
     );
@@ -189,39 +203,63 @@ class _InvoiceDetailContent extends StatelessWidget {
 
   Widget _buildInfoCards(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isMobile = context.isMobile;
+
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+      padding: EdgeInsets.fromLTRB(context.responsivePadding, 0, context.responsivePadding, 16),
       child: Wrap(
-        spacing: 12,
-        runSpacing: 10,
+        spacing: isMobile ? 8 : 12,
+        runSpacing: isMobile ? 8 : 10,
         children: [
-          _InfoCard(icon: Icons.inventory_2_outlined, color: const Color(0xFF6366F1), label: l10n.totalItems, value: '$_grandQty ${l10n.pcs}'),
+          _InfoCard(
+            icon: Icons.inventory_2_outlined,
+            color: const Color(0xFF6366F1),
+            label: l10n.totalItems,
+            value: '$_grandQty ${l10n.pcs}',
+            isMobile: isMobile,
+          ),
           _InfoCard(
             icon: Icons.attach_money_rounded,
             color: const Color(0xFF22C55E),
             label: l10n.totalAmount,
             value: '${invoice.currency ?? 'USD'} ${_grandTotal.toStringAsFixed(2)}',
+            isMobile: isMobile,
           ),
-          _InfoCard(icon: Icons.list_alt_rounded, color: const Color(0xFFF59E0B), label: l10n.total, value: '${invoice.items.length} ${l10n.rows}'),
+          _InfoCard(
+            icon: Icons.list_alt_rounded,
+            color: const Color(0xFFF59E0B),
+            label: l10n.total,
+            value: '${invoice.items.length} ${l10n.rows}',
+            isMobile: isMobile,
+          ),
           if (invoice.supplierAddress != null)
             _InfoCard(
               icon: Icons.location_on_outlined,
               color: const Color(0xFF64748B),
               label: 'Address',
               value: invoice.supplierAddress!,
-              maxWidth: 340,
+              maxWidth: isMobile ? null : 340,
+              isMobile: isMobile,
             ),
           if (invoice.contactNumber != null)
-            _InfoCard(icon: Icons.phone_outlined, color: const Color(0xFF64748B), label: 'Contact', value: invoice.contactNumber!),
+            _InfoCard(
+              icon: Icons.phone_outlined,
+              color: const Color(0xFF64748B),
+              label: 'Contact',
+              value: invoice.contactNumber!,
+              isMobile: isMobile,
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildTableLabel() {
+  Widget _buildTableLabel(BuildContext context) {
+    final isMobile = context.isMobile;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+      padding: EdgeInsets.symmetric(horizontal: context.responsivePadding, vertical: 10),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(
@@ -231,9 +269,9 @@ class _InvoiceDetailContent extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Text(
+          Text(
             'Invoice Items',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
+            style: TextStyle(fontSize: isMobile ? 12 : 13, fontWeight: FontWeight.w600, color: const Color(0xFF475569)),
           ),
           const Spacer(),
           Container(
@@ -241,7 +279,7 @@ class _InvoiceDetailContent extends StatelessWidget {
             decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(20)),
             child: Text(
               '${invoice.items.length} items',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF4F46E5)),
+              style: TextStyle(fontSize: isMobile ? 11 : 12, fontWeight: FontWeight.w600, color: const Color(0xFF4F46E5)),
             ),
           ),
         ],
@@ -351,24 +389,55 @@ class _InvoiceDetailContent extends StatelessWidget {
 
   Widget _buildFooter(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isMobile = context.isMobile;
+
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: Color(0xFFE2E8F0), width: 2)),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-      child: Row(
-        children: [
-          Text(
-            l10n.totals,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF475569), letterSpacing: 0.5),
-          ),
-          const Spacer(),
-          _FooterStat(label: l10n.totalQty, value: '$_grandQty ${l10n.pcs}'),
-          const SizedBox(width: 32),
-          _FooterStat(label: l10n.grandTotal, value: '${invoice.currency ?? 'USD'} ${_grandTotal.toStringAsFixed(2)}', highlight: true),
-        ],
-      ),
+      padding: EdgeInsets.symmetric(horizontal: context.responsivePadding, vertical: isMobile ? 12 : 14),
+      child: isMobile
+          ? Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(l10n.totalQty, style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+                    Text(
+                      '$_grandQty ${l10n.pcs}',
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      l10n.grandTotal,
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
+                    ),
+                    Text(
+                      '${invoice.currency ?? 'USD'} ${_grandTotal.toStringAsFixed(2)}',
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF6366F1)),
+                    ),
+                  ],
+                ),
+              ],
+            )
+          : Row(
+              children: [
+                Text(
+                  l10n.totals,
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF475569), letterSpacing: 0.5),
+                ),
+                const Spacer(),
+                _FooterStat(label: l10n.totalQty, value: '$_grandQty ${l10n.pcs}'),
+                const SizedBox(width: 32),
+                _FooterStat(label: l10n.grandTotal, value: '${invoice.currency ?? 'USD'} ${_grandTotal.toStringAsFixed(2)}', highlight: true),
+              ],
+            ),
     );
   }
 }
@@ -381,14 +450,17 @@ class _InfoCard extends StatelessWidget {
   final String label;
   final String value;
   final double? maxWidth;
-  const _InfoCard({required this.icon, required this.color, required this.label, required this.value, this.maxWidth});
+  final bool isMobile;
+  const _InfoCard({required this.icon, required this.color, required this.label, required this.value, this.maxWidth, this.isMobile = false});
 
   @override
   Widget build(BuildContext context) {
+    final cardWidth = isMobile ? (MediaQuery.of(context).size.width - 48) / 2 - 4 : (maxWidth ?? 220);
+
     return ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: maxWidth ?? 220),
+      constraints: BoxConstraints(maxWidth: cardWidth, minWidth: isMobile ? cardWidth : 0),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: isMobile ? 10 : 14, vertical: isMobile ? 8 : 10),
         decoration: BoxDecoration(
           color: color.withOpacity(0.07),
           borderRadius: BorderRadius.circular(10),
@@ -397,16 +469,19 @@ class _InfoCard extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: color, size: 18),
-            const SizedBox(width: 10),
+            Icon(icon, color: color, size: isMobile ? 16 : 18),
+            SizedBox(width: isMobile ? 8 : 10),
             Flexible(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                  Text(
+                    label,
+                    style: TextStyle(fontSize: isMobile ? 10 : 11, color: const Color(0xFF64748B)),
+                  ),
                   Text(
                     value,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                    style: TextStyle(fontSize: isMobile ? 12 : 13, fontWeight: FontWeight.w600, color: const Color(0xFF1E293B)),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 2,
                   ),

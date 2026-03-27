@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 import 'package:inventory/cubit/locale_cubit.dart';
+import 'package:inventory/core/utils/responsive.dart';
 
 class AppShell extends StatefulWidget {
   final Widget child;
@@ -67,6 +68,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     final selectedIndex = _selectedIndex(context);
     final l10n = AppLocalizations.of(context)!;
+    final isMobile = context.isMobile;
 
     return PopScope(
       canPop: false,
@@ -90,138 +92,160 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
           // by overriding the scroll behavior for all descendants
           behavior: _NoHistoryScrollBehavior(),
           child: Scaffold(
+            // Mobile: use drawer, Desktop: inline sidebar
+            drawer: isMobile ? _buildMobileDrawer(context, selectedIndex, l10n) : null,
+            // Mobile: use bottom navigation
+            bottomNavigationBar: isMobile ? _buildBottomNav(context, selectedIndex, l10n) : null,
             body: Row(
               children: [
-                // ── Animated sidebar ───────────────────────────────────────
-                AnimatedContainer(
-                  duration: _duration,
-                  curve: _curve,
-                  width: _collapsed ? _collapsedWidth : _expandedWidth,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
-                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 8, offset: const Offset(2, 0))],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // ── Logo row ─────────────────────────────────────────
-                      SizedBox(
-                        height: 72,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          child: Row(
-                            children: [
-                              MouseRegion(
-                                cursor: SystemMouseCursors.click,
-                                child: GestureDetector(
-                                  onTap: () => setState(() => _collapsed = !_collapsed),
-                                  child: Tooltip(
-                                    message: _collapsed ? l10n.expandSidebar : l10n.collapseSidebar,
-                                    preferBelow: false,
-                                    child: Container(
-                                      width: 36,
-                                      height: 36,
-                                      decoration: BoxDecoration(color: const Color(0xFF6366F1), borderRadius: BorderRadius.circular(8)),
-                                      child: const Icon(Icons.widgets_rounded, color: Colors.white, size: 20),
+                // ── Sidebar (desktop only) ────────────────────────────────
+                if (!isMobile)
+                  AnimatedContainer(
+                    duration: _duration,
+                    curve: _curve,
+                    width: _collapsed ? _collapsedWidth : _expandedWidth,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B),
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 8, offset: const Offset(2, 0))],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ── Logo row ─────────────────────────────────────────
+                        SizedBox(
+                          height: 72,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            child: Row(
+                              children: [
+                                MouseRegion(
+                                  cursor: SystemMouseCursors.click,
+                                  child: GestureDetector(
+                                    onTap: () => setState(() => _collapsed = !_collapsed),
+                                    child: Tooltip(
+                                      message: _collapsed ? l10n.expandSidebar : l10n.collapseSidebar,
+                                      preferBelow: false,
+                                      child: Container(
+                                        width: 36,
+                                        height: 36,
+                                        decoration: BoxDecoration(color: const Color(0xFF6366F1), borderRadius: BorderRadius.circular(8)),
+                                        child: const Icon(Icons.widgets_rounded, color: Colors.white, size: 20),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              ClipRect(
-                                child: AnimatedSize(
-                                  duration: _duration,
-                                  curve: _curve,
-                                  child: _collapsed
-                                      ? const SizedBox.shrink()
-                                      : Padding(
-                                          padding: const EdgeInsets.only(left: 12),
-                                          child: Text(
-                                            l10n.appTitle,
-                                            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700, letterSpacing: 0.5),
+                                ClipRect(
+                                  child: AnimatedSize(
+                                    duration: _duration,
+                                    curve: _curve,
+                                    child: _collapsed
+                                        ? const SizedBox.shrink()
+                                        : Padding(
+                                            padding: const EdgeInsets.only(left: 12),
+                                            child: Text(
+                                              l10n.appTitle,
+                                              style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700, letterSpacing: 0.5),
+                                            ),
                                           ),
-                                        ),
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
 
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
-                      ),
-                      const SizedBox(height: 10),
-
-                      // ── Nav items ────────────────────────────────────────
-                      ...List.generate(_navItems.length, (index) {
-                        final item = _navItems[index];
-                        final isSelected = index == selectedIndex;
-                        return _SidebarTile(
-                          item: item,
-                          isSelected: isSelected,
-                          collapsed: _collapsed,
-                          onTap: () => context.go(item.path),
-                          label: _getNavLabel(context, item.labelKey),
-                        );
-                      }),
-
-                      const Spacer(),
-
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                        child: AnimatedSwitcher(
-                          duration: _duration,
-                          child: _collapsed
-                              ? Tooltip(
-                                  message: l10n.expandSidebar,
-                                  preferBelow: false,
-                                  child: InkWell(
-                                    onTap: () => setState(() => _collapsed = false),
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Container(
-                                      width: 36,
-                                      height: 36,
-                                      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(8)),
-                                      child: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
-                                    ),
-                                  ),
-                                )
-                              : Row(
-                                  children: [
-                                    const Icon(Icons.info_outline_rounded, size: 13, color: Color(0xFF475569)),
-                                    const SizedBox(width: 6),
-                                    Text(l10n.versionInfo, style: const TextStyle(fontSize: 11, color: Color(0xFF475569))),
-                                  ],
-                                ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 10),
+
+                        // ── Nav items ────────────────────────────────────────
+                        ...List.generate(_navItems.length, (index) {
+                          final item = _navItems[index];
+                          final isSelected = index == selectedIndex;
+                          return _SidebarTile(
+                            item: item,
+                            isSelected: isSelected,
+                            collapsed: _collapsed,
+                            onTap: () => context.go(item.path),
+                            label: _getNavLabel(context, item.labelKey),
+                          );
+                        }),
+
+                        const Spacer(),
+
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                          child: AnimatedSwitcher(
+                            duration: _duration,
+                            child: _collapsed
+                                ? Tooltip(
+                                    message: l10n.expandSidebar,
+                                    preferBelow: false,
+                                    child: InkWell(
+                                      onTap: () => setState(() => _collapsed = false),
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Container(
+                                        width: 36,
+                                        height: 36,
+                                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(8)),
+                                        child: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
+                                      ),
+                                    ),
+                                  )
+                                : Row(
+                                    children: [
+                                      const Icon(Icons.info_outline_rounded, size: 13, color: Color(0xFF475569)),
+                                      const SizedBox(width: 6),
+                                      Text(l10n.versionInfo, style: const TextStyle(fontSize: 11, color: Color(0xFF475569))),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
 
                 // ── Main content ─────────────────────────────────────────
                 Expanded(
                   child: Column(
                     children: [
                       Container(
-                        height: 64,
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        height: isMobile ? 56 : 64,
+                        padding: EdgeInsets.symmetric(horizontal: context.responsivePadding),
                         decoration: const BoxDecoration(
                           color: Colors.white,
                           border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
                         ),
                         child: Row(
                           children: [
-                            Text(
-                              _getNavLabel(context, _navItems[selectedIndex].labelKey),
-                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                            // Mobile: show hamburger menu
+                            if (isMobile)
+                              IconButton(
+                                onPressed: () => Scaffold.of(context).openDrawer(),
+                                icon: const Icon(Icons.menu_rounded, size: 24),
+                                style: IconButton.styleFrom(
+                                  foregroundColor: const Color(0xFF1E293B),
+                                ),
+                              ),
+                            if (isMobile) const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _getNavLabel(context, _navItems[selectedIndex].labelKey),
+                                style: TextStyle(
+                                  fontSize: isMobile ? 18 : 20,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF1E293B),
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                            const Spacer(),
+                            const SizedBox(width: 8),
                             const _LanguageSelector(),
                           ],
                         ),
@@ -234,6 +258,136 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Mobile drawer
+  Widget _buildMobileDrawer(BuildContext context, int selectedIndex, AppLocalizations l10n) {
+    return Drawer(
+      backgroundColor: const Color(0xFF1E293B),
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6366F1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.widgets_rounded, color: Colors.white, size: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      l10n.appTitle,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
+            const SizedBox(height: 10),
+
+            // Nav items
+            ...List.generate(_navItems.length, (index) {
+              final item = _navItems[index];
+              final isSelected = index == selectedIndex;
+              return _MobileDrawerTile(
+                item: item,
+                isSelected: isSelected,
+                onTap: () {
+                  Navigator.pop(context); // Close drawer
+                  context.go(item.path);
+                },
+                label: _getNavLabel(context, item.labelKey),
+              );
+            }),
+
+            const Spacer(),
+
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline_rounded, size: 14, color: Color(0xFF475569)),
+                  const SizedBox(width: 8),
+                  Text(
+                    l10n.versionInfo,
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF475569)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Bottom navigation bar for mobile
+  Widget _buildBottomNav(BuildContext context, int selectedIndex, AppLocalizations l10n) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: SizedBox(
+          height: 60,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(_navItems.length, (index) {
+              final item = _navItems[index];
+              final isSelected = index == selectedIndex;
+              return Expanded(
+                child: InkWell(
+                  onTap: () => context.go(item.path),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        item.icon,
+                        color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF94A3B8),
+                        size: 24,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _getNavLabel(context, item.labelKey),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                          color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF64748B),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
           ),
         ),
       ),
@@ -410,6 +564,66 @@ class _SidebarTileState extends State<_SidebarTile> {
   }
 }
 
+// ── Mobile Drawer Tile ────────────────────────────────────────────────────────
+
+class _MobileDrawerTile extends StatelessWidget {
+  final _NavItem item;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final String label;
+
+  const _MobileDrawerTile({
+    required this.item,
+    required this.isSelected,
+    required this.onTap,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF6366F1) : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                item.icon,
+                color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+                size: 22,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : const Color(0xFFCBD5E1),
+                    fontSize: 15,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
+              ),
+              if (isSelected)
+                const Icon(
+                  Icons.check_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 // ── Language Selector ─────────────────────────────────────────────────────────
 
 class _LanguageSelector extends StatefulWidget {
@@ -446,6 +660,8 @@ class _LanguageSelectorState extends State<_LanguageSelector> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = context.isMobile;
+
     return BlocBuilder<LocaleCubit, Locale>(
       builder: (context, currentLocale) {
         return PopupMenuButton<Locale>(
@@ -496,7 +712,9 @@ class _LanguageSelectorState extends State<_LanguageSelector> {
             onExit: (_) => setState(() => _hovered = false),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: isMobile
+                  ? const EdgeInsets.symmetric(horizontal: 8, vertical: 6)
+                  : const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: _hovered ? const Color(0xFFF1F5F9) : Colors.transparent,
                 borderRadius: BorderRadius.circular(8),
@@ -509,23 +727,25 @@ class _LanguageSelectorState extends State<_LanguageSelector> {
                 children: [
                   Text(
                     _getFlagEmoji(currentLocale),
-                    style: const TextStyle(fontSize: 20),
+                    style: TextStyle(fontSize: isMobile ? 18 : 20),
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    _getLanguageName(currentLocale),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF475569),
+                  if (!isMobile) ...[
+                    const SizedBox(width: 8),
+                    Text(
+                      _getLanguageName(currentLocale),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF475569),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    size: 18,
-                    color: _hovered ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
-                  ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 18,
+                      color: _hovered ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                    ),
+                  ],
                 ],
               ),
             ),

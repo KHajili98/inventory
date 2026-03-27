@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:inventory/models/invoice_models.dart';
 import 'package:inventory/models/product_models.dart';
 import 'package:inventory/l10n/app_localizations.dart';
+import 'package:inventory/core/utils/responsive.dart';
 
 class InventoryProductsPage extends StatefulWidget {
   const InventoryProductsPage({super.key});
@@ -192,16 +193,16 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: context.responsiveHorizontalPadding.add(EdgeInsets.symmetric(vertical: context.responsivePadding)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildTopBar(),
-          const SizedBox(height: 20),
+          SizedBox(height: context.isMobile ? 16 : 20),
           _buildStatsRow(),
-          const SizedBox(height: 20),
+          SizedBox(height: context.isMobile ? 16 : 20),
           _buildFilterBar(),
-          const SizedBox(height: 16),
+          SizedBox(height: context.isMobile ? 12 : 16),
           Expanded(child: _buildTable()),
         ],
       ),
@@ -210,6 +211,57 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
 
   Widget _buildTopBar() {
     final l10n = AppLocalizations.of(context)!;
+    final isMobile = context.isMobile;
+
+    if (isMobile) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.inventoryProducts,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+          ),
+          const SizedBox(height: 2),
+          Text(l10n.trackStockLevels, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              if (_selectedIds.isNotEmpty) ...[
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _deleteSelected,
+                    icon: const Icon(Icons.delete_outline_rounded, size: 16),
+                    label: Text('${l10n.delete} (${_selectedIds.length})'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFEF4444),
+                      side: const BorderSide(color: Color(0xFFEF4444)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              Expanded(
+                flex: _selectedIds.isEmpty ? 1 : 0,
+                child: FilledButton.icon(
+                  onPressed: _showAddChoiceDialog,
+                  icon: const Icon(Icons.add_rounded, size: 18),
+                  label: Text(l10n.addProduct),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF6366F1),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+
     return Row(
       children: [
         Column(
@@ -227,7 +279,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
         if (_selectedIds.isNotEmpty) ...[
           Text(
             '${_selectedIds.length} ${l10n.selected}',
-            style: const TextStyle(fontSize: 13, color: Color(0xFF6366F1), fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 13, color: const Color(0xFF6366F1), fontWeight: FontWeight.w500),
           ),
           const SizedBox(width: 12),
           OutlinedButton.icon(
@@ -373,107 +425,134 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
 
   Widget _buildStatsRow() {
     final l10n = AppLocalizations.of(context)!;
+    final isMobile = context.isMobile;
+
+    final stats = [
+      _StatCard(label: l10n.totalSKUs, value: '${_allProducts.length}', icon: Icons.inventory_2_outlined, color: const Color(0xFF6366F1)),
+      _StatCard(label: l10n.totalUnits, value: '$_totalQty ${l10n.pcs}', icon: Icons.layers_outlined, color: const Color(0xFF0EA5E9)),
+      _StatCard(
+        label: l10n.totalValue,
+        value: '\$${_totalValue.toStringAsFixed(2)}',
+        icon: Icons.payments_outlined,
+        color: const Color(0xFF22C55E),
+      ),
+      _StatCard(label: l10n.inStock, value: '$_inStockCount', icon: Icons.check_circle_outline_rounded, color: const Color(0xFF22C55E)),
+      _StatCard(label: l10n.lowStock, value: '$_lowStockCount', icon: Icons.warning_amber_rounded, color: const Color(0xFFF59E0B)),
+      _StatCard(label: l10n.outOfStock, value: '$_outCount', icon: Icons.remove_circle_outline_rounded, color: const Color(0xFFEF4444)),
+    ];
+
+    if (isMobile) {
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            for (int i = 0; i < stats.length; i++) ...[
+              if (i > 0) const SizedBox(width: 12),
+              SizedBox(width: 140, child: stats[i]),
+            ],
+          ],
+        ),
+      );
+    }
+
     return Row(
       children: [
-        _StatCard(label: l10n.totalSKUs, value: '${_allProducts.length}', icon: Icons.inventory_2_outlined, color: const Color(0xFF6366F1)),
-        const SizedBox(width: 16),
-        _StatCard(label: l10n.totalUnits, value: '$_totalQty ${l10n.pcs}', icon: Icons.layers_outlined, color: const Color(0xFF0EA5E9)),
-        const SizedBox(width: 16),
-        _StatCard(
-          label: l10n.totalValue,
-          value: '\$${_totalValue.toStringAsFixed(2)}',
-          icon: Icons.payments_outlined,
-          color: const Color(0xFF22C55E),
-        ),
-        const SizedBox(width: 16),
-        _StatCard(label: l10n.inStock, value: '$_inStockCount', icon: Icons.check_circle_outline_rounded, color: const Color(0xFF22C55E)),
-        const SizedBox(width: 16),
-        _StatCard(label: l10n.lowStock, value: '$_lowStockCount', icon: Icons.warning_amber_rounded, color: const Color(0xFFF59E0B)),
-        const SizedBox(width: 16),
-        _StatCard(label: l10n.outOfStock, value: '$_outCount', icon: Icons.remove_circle_outline_rounded, color: const Color(0xFFEF4444)),
+        for (int i = 0; i < stats.length; i++) ...[
+          if (i > 0) const SizedBox(width: 16),
+          Expanded(child: stats[i]),
+        ],
       ],
     );
   }
 
   Widget _buildFilterBar() {
     final l10n = AppLocalizations.of(context)!;
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          SizedBox(
-            width: 300,
-            height: 40,
-            child: TextField(
-              onChanged: (v) {
-                _searchQuery = v;
-                _applyFilter();
-              },
-              decoration: InputDecoration(
-                hintText: l10n.searchSKUNameBarcode,
-                hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
-                prefixIcon: const Icon(Icons.search_rounded, size: 18, color: Color(0xFF94A3B8)),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
-                ),
+    final isMobile = context.isMobile;
+    final searchWidth = isMobile ? MediaQuery.of(context).size.width - (context.responsivePadding * 2) : 300.0;
+
+    return Column(
+      children: [
+        // Search field - full width on mobile
+        SizedBox(
+          width: isMobile ? double.infinity : searchWidth,
+          height: 40,
+          child: TextField(
+            onChanged: (v) {
+              _searchQuery = v;
+              _applyFilter();
+            },
+            decoration: InputDecoration(
+              hintText: l10n.searchSKUNameBarcode,
+              hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+              prefixIcon: const Icon(Icons.search_rounded, size: 18, color: Color(0xFF94A3B8)),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          _FilterChip(
-            label: l10n.all,
-            selected: _statusFilter == null,
-            onTap: () {
-              _statusFilter = null;
-              _applyFilter();
-            },
+        ),
+        const SizedBox(height: 10),
+        // Filters - horizontal scroll
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _FilterChip(
+                label: l10n.all,
+                selected: _statusFilter == null,
+                onTap: () {
+                  _statusFilter = null;
+                  _applyFilter();
+                },
+              ),
+              const SizedBox(width: 8),
+              _FilterChip(
+                label: l10n.inStock,
+                selected: _statusFilter == ProductStatus.inStock,
+                color: const Color(0xFF22C55E),
+                onTap: () {
+                  _statusFilter = ProductStatus.inStock;
+                  _applyFilter();
+                },
+              ),
+              const SizedBox(width: 8),
+              _FilterChip(
+                label: l10n.lowStock,
+                selected: _statusFilter == ProductStatus.lowStock,
+                color: const Color(0xFFF59E0B),
+                onTap: () {
+                  _statusFilter = ProductStatus.lowStock;
+                  _applyFilter();
+                },
+              ),
+              const SizedBox(width: 8),
+              _FilterChip(
+                label: l10n.outOfStock,
+                selected: _statusFilter == ProductStatus.outOfStock,
+                color: const Color(0xFFEF4444),
+                onTap: () {
+                  _statusFilter = ProductStatus.outOfStock;
+                  _applyFilter();
+                },
+              ),
+              const SizedBox(width: 16),
+              Text(l10n.nOfMProducts(_filtered.length, _allProducts.length), style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8))),
+            ],
           ),
-          const SizedBox(width: 8),
-          _FilterChip(
-            label: l10n.inStock,
-            selected: _statusFilter == ProductStatus.inStock,
-            color: const Color(0xFF22C55E),
-            onTap: () {
-              _statusFilter = ProductStatus.inStock;
-              _applyFilter();
-            },
-          ),
-          const SizedBox(width: 8),
-          _FilterChip(
-            label: l10n.lowStock,
-            selected: _statusFilter == ProductStatus.lowStock,
-            color: const Color(0xFFF59E0B),
-            onTap: () {
-              _statusFilter = ProductStatus.lowStock;
-              _applyFilter();
-            },
-          ),
-          const SizedBox(width: 8),
-          _FilterChip(
-            label: l10n.outOfStock,
-            selected: _statusFilter == ProductStatus.outOfStock,
-            color: const Color(0xFFEF4444),
-            onTap: () {
-              _statusFilter = ProductStatus.outOfStock;
-              _applyFilter();
-            },
-          ),
-          const SizedBox(width: 16),
-          Text(l10n.nOfMProducts(_filtered.length, _allProducts.length), style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8))),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

@@ -13,6 +13,7 @@ import 'package:inventory/models/invoice_models.dart';
 import 'package:inventory/pages/invoice_detail_page.dart';
 import 'package:inventory/pages/invoice_edit_page.dart';
 import 'package:inventory/l10n/app_localizations.dart';
+import 'package:inventory/core/utils/responsive.dart';
 
 class InvoicesPage extends StatefulWidget {
   const InvoicesPage({super.key});
@@ -159,14 +160,14 @@ class _InvoicesPageState extends State<InvoicesPage> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: context.responsiveHorizontalPadding.add(EdgeInsets.symmetric(vertical: context.responsivePadding)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildTopBar(),
-          const SizedBox(height: 20),
+          SizedBox(height: context.isMobile ? 16 : 20),
           _buildStatsRow(),
-          const SizedBox(height: 24),
+          SizedBox(height: context.isMobile ? 16 : 24),
           Expanded(child: _buildInvoiceList()),
         ],
       ),
@@ -175,6 +176,37 @@ class _InvoicesPageState extends State<InvoicesPage> {
 
   Widget _buildTopBar() {
     final l10n = AppLocalizations.of(context)!;
+    final isMobile = context.isMobile;
+
+    if (isMobile) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.invoices,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+          ),
+          const SizedBox(height: 2),
+          Text(l10n.manageInvoices, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: _isProcessing ? null : _pickAndProcessImage,
+              icon: const Icon(Icons.add_photo_alternate_outlined, size: 18),
+              label: Text(l10n.addInvoiceFromImage),
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF6366F1),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     return Row(
       children: [
         Column(
@@ -207,25 +239,40 @@ class _InvoicesPageState extends State<InvoicesPage> {
 
   Widget _buildStatsRow() {
     final l10n = AppLocalizations.of(context)!;
+    final isMobile = context.isMobile;
+
     return BlocBuilder<InvoiceListCubit, InvoiceListState>(
       builder: (context, state) {
         final invoices = state is InvoiceListLoaded ? _mergeInvoices(state.invoices) : _locallyAdded;
         final totalCount = state is InvoiceListLoaded ? state.totalCount : _locallyAdded.length;
         final totalAmount = invoices.fold(0.0, (s, i) => s + (i.totalAmount ?? 0.0));
+
+        final stats = [
+          _StatCard(label: l10n.totalInvoices, value: '$totalCount', icon: Icons.receipt_long_rounded, color: const Color(0xFF6366F1)),
+          _StatCard(
+            label: l10n.totalValue,
+            value: '\$${totalAmount.toStringAsFixed(2)}',
+            icon: Icons.payments_outlined,
+            color: const Color(0xFF22C55E),
+          ),
+          // _StatCard(label: l10n.pending, value: '–', icon: Icons.hourglass_empty_rounded, color: const Color(0xFFF59E0B)),
+          //    _StatCard(label: l10n.confirmed, value: '–', icon: Icons.check_circle_outline_rounded, color: const Color(0xFF0EA5E9)),
+        ];
+
+        if (isMobile) {
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (int i = 0; i < stats.length; i++) ...[if (i > 0) const SizedBox(width: 12), SizedBox(child: stats[i])],
+              ],
+            ),
+          );
+        }
+
         return Row(
           children: [
-            _StatCard(label: l10n.totalInvoices, value: '$totalCount', icon: Icons.receipt_long_rounded, color: const Color(0xFF6366F1)),
-            const SizedBox(width: 16),
-            _StatCard(
-              label: l10n.totalValue,
-              value: '\$${totalAmount.toStringAsFixed(2)}',
-              icon: Icons.payments_outlined,
-              color: const Color(0xFF22C55E),
-            ),
-            const SizedBox(width: 16),
-            _StatCard(label: l10n.pending, value: '–', icon: Icons.hourglass_empty_rounded, color: const Color(0xFFF59E0B)),
-            const SizedBox(width: 16),
-            _StatCard(label: l10n.confirmed, value: '–', icon: Icons.check_circle_outline_rounded, color: const Color(0xFF0EA5E9)),
+            for (int i = 0; i < stats.length; i++) ...[if (i > 0) const SizedBox(width: 16), Expanded(child: stats[i])],
           ],
         );
       },
@@ -307,6 +354,13 @@ class _InvoicesPageState extends State<InvoicesPage> {
 
   Widget _buildListHeader() {
     final l10n = AppLocalizations.of(context)!;
+    final isMobile = context.isMobile;
+
+    // Mobile: no header row (cards are self-describing)
+    if (isMobile) {
+      return const SizedBox.shrink();
+    }
+
     const style = TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B), letterSpacing: 0.4);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -330,7 +384,96 @@ class _InvoicesPageState extends State<InvoicesPage> {
 
   Widget _buildInvoiceRow(InvoiceListItemModel inv) {
     final record = _toRecord(inv);
+    final l10n = AppLocalizations.of(context)!;
+    final isMobile = context.isMobile;
     String createdAtStr = inv.createdAt != null ? _formatDateTime(inv.createdAt!) : '–';
+
+    // Mobile: card layout
+    if (isMobile) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        child: Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: Color(0xFFE2E8F0)),
+          ),
+          child: InkWell(
+            onTap: () => _openDetail(record),
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header row
+                  Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(10)),
+                        child: const Icon(Icons.receipt_rounded, size: 18, color: Color(0xFF6366F1)),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '#${inv.invoiceNumber ?? inv.id.substring(0, 8)}',
+                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                            ),
+                            Text(
+                              inv.supplierName ?? '–',
+                              style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                  const SizedBox(height: 12),
+                  // Details
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _MobileInfoItem(icon: Icons.calendar_today_outlined, label: l10n.invoiceDate, value: inv.invoiceDate ?? '–'),
+                      ),
+                      Expanded(
+                        child: _MobileInfoItem(icon: Icons.inventory_2_outlined, label: l10n.items, value: '${inv.totalItemsCount} ${l10n.pcs}'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _MobileInfoItem(icon: Icons.access_time_rounded, label: l10n.createdAt, value: createdAtStr),
+                      ),
+                      Expanded(
+                        child: _MobileInfoItem(
+                          icon: Icons.attach_money_rounded,
+                          label: l10n.amount,
+                          value: '\$${(inv.totalAmount ?? 0.0).toStringAsFixed(2)}',
+                          isHighlight: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Desktop: table row layout
     return InkWell(
       onTap: () => _openDetail(record),
       borderRadius: BorderRadius.circular(8),
@@ -379,14 +522,9 @@ class _InvoicesPageState extends State<InvoicesPage> {
               child: Text(createdAtStr, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
             ),
             // Items
-            Builder(
-              builder: (context) {
-                final l10n = AppLocalizations.of(context)!;
-                return SizedBox(
-                  width: 80,
-                  child: Text('${inv.totalItemsCount} ${l10n.pcs}', style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
-                );
-              },
+            SizedBox(
+              width: 80,
+              child: Text('${inv.totalItemsCount} ${l10n.pcs}', style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
             ),
             // Amount
             SizedBox(
@@ -462,11 +600,7 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
 
   /// Pick and process another image
   Future<void> _addAnotherImage() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
-      withData: true,
-    );
+    final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'], withData: true);
     if (result == null || result.files.isEmpty) return;
 
     final file = result.files.first;
@@ -538,16 +672,10 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
         ),
         const SizedBox(height: 6),
-        Text(
-          _responses.isEmpty ? widget.filename : 'Page $pageCount',
-          style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
-        ),
+        Text(_responses.isEmpty ? widget.filename : 'Page $pageCount', style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
         if (_responses.isNotEmpty) ...[
           const SizedBox(height: 4),
-          Text(
-            'Processing additional page...',
-            style: const TextStyle(fontSize: 12, color: Color(0xFF6366F1)),
-          ),
+          Text('Processing additional page...', style: const TextStyle(fontSize: 12, color: Color(0xFF6366F1))),
         ],
         const SizedBox(height: 24),
         const LinearProgressIndicator(backgroundColor: Color(0xFFE2E8F0), color: Color(0xFF6366F1)),
@@ -608,10 +736,7 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF6366F1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          decoration: BoxDecoration(color: const Color(0xFF6366F1), borderRadius: BorderRadius.circular(12)),
                           child: Text(
                             '$pageCount pages',
                             style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white),
@@ -629,10 +754,7 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
               onPressed: _addAnotherImage,
               icon: const Icon(Icons.add_circle_outline_rounded),
               tooltip: 'Add another page',
-              style: IconButton.styleFrom(
-                backgroundColor: const Color(0xFFEEF2FF),
-                foregroundColor: const Color(0xFF6366F1),
-              ),
+              style: IconButton.styleFrom(backgroundColor: const Color(0xFFEEF2FF), foregroundColor: const Color(0xFF6366F1)),
             ),
           ],
         ),
@@ -932,6 +1054,44 @@ class _StatCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ── Mobile info item ─────────────────────────────────────────────────────────
+
+class _MobileInfoItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final bool isHighlight;
+
+  const _MobileInfoItem({required this.icon, required this.label, required this.value, this.isHighlight = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 14, color: const Color(0xFF94A3B8)),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8))),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isHighlight ? FontWeight.w700 : FontWeight.w600,
+                  color: isHighlight ? const Color(0xFF6366F1) : const Color(0xFF1E293B),
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
