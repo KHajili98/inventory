@@ -58,7 +58,10 @@ class AppLocalizationsAz extends AppLocalizations {
   String get supplier => 'TƏCHİZATÇI';
 
   @override
-  String get date => 'TARİX';
+  String get invoiceDate => 'QAİMƏ TARİXİ';
+
+  @override
+  String get createdAt => 'YARADILMA TARİXİ';
 
   @override
   String get items => 'ƏŞYALAR';

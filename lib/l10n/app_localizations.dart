@@ -194,11 +194,17 @@ abstract class AppLocalizations {
   /// **'SUPPLIER'**
   String get supplier;
 
-  /// Date column header
+  /// Invoice date column header
   ///
   /// In en, this message translates to:
-  /// **'DATE'**
-  String get date;
+  /// **'INVOICE DATE'**
+  String get invoiceDate;
+
+  /// Created at column header
+  ///
+  /// In en, this message translates to:
+  /// **'CREATED AT'**
+  String get createdAt;
 
   /// Items column header
   ///

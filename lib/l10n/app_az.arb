@@ -33,7 +33,8 @@
 
   "supplier": "TƏCHİZATÇI",
 
-  "date": "TARİX",
+  "invoiceDate": "QAİMƏ TARİXİ",
+  "createdAt": "YARADILMA TARİXİ",
 
   "items": "ƏŞYALAR",
 

@@ -57,7 +57,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get supplier => 'SUPPLIER';
 
   @override
-  String get date => 'DATE';
+  String get invoiceDate => 'INVOICE DATE';
+
+  @override
+  String get createdAt => 'CREATED AT';
 
   @override
   String get items => 'ITEMS';

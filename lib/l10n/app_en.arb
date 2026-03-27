@@ -81,9 +81,13 @@
     "description": "Supplier column header"
   },
 
-  "date": "DATE",
-  "@date": {
-    "description": "Date column header"
+  "invoiceDate": "INVOICE DATE",
+  "@invoiceDate": {
+    "description": "Invoice date column header"
+  },
+  "createdAt": "CREATED AT",
+  "@createdAt": {
+    "description": "Created at column header"
   },
 
   "items": "ITEMS",

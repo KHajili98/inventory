@@ -319,14 +319,10 @@ class _InvoicesPageState extends State<InvoicesPage> {
         children: [
           SizedBox(width: 130, child: Text(l10n.invoiceNumber, style: style)),
           Expanded(child: Text(l10n.supplier, style: style)),
-          SizedBox(width: 100, child: Text(l10n.date, style: style)),
+          SizedBox(width: 100, child: Text(l10n.invoiceDate, style: style)),
+          SizedBox(width: 160, child: Text(l10n.createdAt, style: style)),
           SizedBox(width: 80, child: Text(l10n.items, style: style)),
           SizedBox(width: 110, child: Text(l10n.amount, style: style)),
-          // SizedBox(width: 100, child: Text(l10n.status, style: style)),
-          // SizedBox(
-          //   width: 90,
-          //   child: Text(l10n.actions, style: style, textAlign: TextAlign.right),
-          // ),
         ],
       ),
     );
@@ -334,6 +330,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
 
   Widget _buildInvoiceRow(InvoiceListItemModel inv) {
     final record = _toRecord(inv);
+    String createdAtStr = inv.createdAt != null ? _formatDateTime(inv.createdAt!) : '–';
     return InkWell(
       onTap: () => _openDetail(record),
       borderRadius: BorderRadius.circular(8),
@@ -376,6 +373,11 @@ class _InvoicesPageState extends State<InvoicesPage> {
               width: 100,
               child: Text(inv.invoiceDate ?? '–', style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
             ),
+            // Created At
+            SizedBox(
+              width: 160,
+              child: Text(createdAtStr, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+            ),
             // Items
             Builder(
               builder: (context) {
@@ -398,6 +400,12 @@ class _InvoicesPageState extends State<InvoicesPage> {
         ),
       ),
     );
+  }
+
+  String _formatDateTime(DateTime dt) {
+    // Format: yyyy-MM-dd | HH:mm:ss
+    return '${dt.year.toString().padLeft(4, '0')}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} | '
+        '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:${dt.second.toString().padLeft(2, '0')}';
   }
 }
 
