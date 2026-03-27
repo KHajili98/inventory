@@ -410,12 +410,20 @@ class _InvoicesPageState extends State<InvoicesPage> {
 }
 
 // ── OCR Processing Dialog ──────────────────────────────────────────────────────
-class _OcrProcessingDialog extends StatelessWidget {
+class _OcrProcessingDialog extends StatefulWidget {
   final String filename;
   final Uint8List imageBytes;
   final void Function(List<InvoiceRow> rows, InvoiceUploadResponseModel response) onConfirm;
 
   const _OcrProcessingDialog({required this.filename, required this.imageBytes, required this.onConfirm});
+
+  @override
+  State<_OcrProcessingDialog> createState() => _OcrProcessingDialogState();
+}
+
+class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
+  final List<InvoiceUploadResponseModel> _responses = [];
+  bool _isAddingMore = false;
 
   /// Maps the API response items to the existing [InvoiceRow] model used by
   /// the detail page / table.
@@ -440,11 +448,50 @@ class _OcrProcessingDialog extends StatelessWidget {
     }).toList();
   }
 
+  /// Combines all rows from multiple responses
+  List<InvoiceRow> _getAllRows() {
+    final allRows = <InvoiceRow>[];
+    for (final response in _responses) {
+      allRows.addAll(_mapToRows(response));
+    }
+    return allRows;
+  }
+
+  /// Gets the first response (for invoice metadata)
+  InvoiceUploadResponseModel get _firstResponse => _responses.first;
+
+  /// Pick and process another image
+  Future<void> _addAnotherImage() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
+      withData: true,
+    );
+    if (result == null || result.files.isEmpty) return;
+
+    final file = result.files.first;
+    if (file.bytes == null) return;
+
+    setState(() => _isAddingMore = true);
+
+    // Reset cubit and process new image
+    if (mounted) {
+      context.read<InvoiceOcrCubit>().reset();
+      await Future.delayed(const Duration(milliseconds: 100));
+      context.read<InvoiceOcrCubit>().uploadInvoice(fileBytes: file.bytes!, fileName: file.name);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<InvoiceOcrCubit, InvoiceOcrState>(
       listener: (context, state) {
-        // No side-effects needed here; UI is driven entirely by builder.
+        if (state is InvoiceOcrSuccess && _isAddingMore) {
+          setState(() {
+            _responses.add(state.response);
+            _isAddingMore = false;
+          });
+        }
       },
       builder: (context, state) {
         return Dialog(
@@ -473,6 +520,8 @@ class _OcrProcessingDialog extends StatelessWidget {
       _ => l10n.uploadingImage,
     };
 
+    final pageCount = _responses.length + 1;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -489,7 +538,17 @@ class _OcrProcessingDialog extends StatelessWidget {
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
         ),
         const SizedBox(height: 6),
-        Text(filename, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+        Text(
+          _responses.isEmpty ? widget.filename : 'Page $pageCount',
+          style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+        ),
+        if (_responses.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(
+            'Processing additional page...',
+            style: const TextStyle(fontSize: 12, color: Color(0xFF6366F1)),
+          ),
+        ],
         const SizedBox(height: 24),
         const LinearProgressIndicator(backgroundColor: Color(0xFFE2E8F0), color: Color(0xFF6366F1)),
         const SizedBox(height: 14),
@@ -504,8 +563,22 @@ class _OcrProcessingDialog extends StatelessWidget {
 
   Widget _buildPreview(BuildContext context, InvoiceUploadResponseModel response) {
     final l10n = AppLocalizations.of(context)!;
-    final rows = _mapToRows(response);
-    final ocr = response.extractedData;
+
+    // Add current response to list if not already there
+    if (!_isAddingMore && (_responses.isEmpty || _responses.last != response)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _responses.add(response);
+          });
+        }
+      });
+    }
+
+    // Get combined rows from all responses
+    final rows = _responses.isEmpty ? _mapToRows(response) : _getAllRows();
+    final ocr = _firstResponse.extractedData;
+    final pageCount = _responses.length;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -521,15 +594,45 @@ class _OcrProcessingDialog extends StatelessWidget {
               child: const Icon(Icons.check_rounded, color: Color(0xFF16A34A), size: 24),
             ),
             const SizedBox(width: 14),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.ocrComplete,
-                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
-                ),
-                Text(l10n.reviewExtractedData, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        l10n.ocrComplete,
+                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                      ),
+                      if (pageCount > 1) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF6366F1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '$pageCount pages',
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  Text(l10n.reviewExtractedData, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+                ],
+              ),
+            ),
+            // Add button for more images
+            IconButton(
+              onPressed: _addAnotherImage,
+              icon: const Icon(Icons.add_circle_outline_rounded),
+              tooltip: 'Add another page',
+              style: IconButton.styleFrom(
+                backgroundColor: const Color(0xFFEEF2FF),
+                foregroundColor: const Color(0xFF6366F1),
+              ),
             ),
           ],
         ),
@@ -544,8 +647,7 @@ class _OcrProcessingDialog extends StatelessWidget {
               if (ocr.supplierName != null) _InfoChip(icon: Icons.business_outlined, label: ocr.supplierName!),
               if (ocr.invoiceNumber != null) _InfoChip(icon: Icons.tag_rounded, label: '#${ocr.invoiceNumber}'),
               if (ocr.invoiceDate != null) _InfoChip(icon: Icons.calendar_today_outlined, label: ocr.invoiceDate!),
-              if (ocr.totalAmount != null)
-                _InfoChip(icon: Icons.attach_money_rounded, label: '${ocr.currency ?? 'USD'} ${ocr.totalAmount!.toStringAsFixed(2)}'),
+              if (pageCount > 1) _InfoChip(icon: Icons.description_outlined, label: '$pageCount pages'),
             ],
           ),
         const SizedBox(height: 16),
@@ -586,7 +688,18 @@ class _OcrProcessingDialog extends StatelessWidget {
                   separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
                   itemBuilder: (_, i) {
                     final r = rows[i];
-                    final apiItem = response.extractedData?.items[i];
+                    // Find the corresponding API item from all responses
+                    OcrItemModel? apiItem;
+                    var currentIndex = i;
+                    for (final resp in _responses) {
+                      final items = resp.extractedData?.items ?? [];
+                      if (currentIndex < items.length) {
+                        apiItem = items[currentIndex];
+                        break;
+                      }
+                      currentIndex -= items.length;
+                    }
+
                     return Container(
                       color: r.hasWarning ? const Color(0xFFFFFBEB) : Colors.transparent,
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
@@ -644,17 +757,26 @@ class _OcrProcessingDialog extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        if (rows.any((r) => r.hasWarning))
-          Row(
-            children: [
-              const Icon(Icons.warning_amber_rounded, size: 14, color: Color(0xFFF59E0B)),
-              const SizedBox(width: 4),
-              Text(
-                '${rows.where((r) => r.hasWarning).length} ${l10n.rowsWithMissingData}',
-                style: const TextStyle(fontSize: 12, color: Color(0xFFB45309)),
+        Row(
+          children: [
+            if (rows.any((r) => r.hasWarning))
+              Row(
+                children: [
+                  const Icon(Icons.warning_amber_rounded, size: 14, color: Color(0xFFF59E0B)),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${rows.where((r) => r.hasWarning).length} ${l10n.rowsWithMissingData}',
+                    style: const TextStyle(fontSize: 12, color: Color(0xFFB45309)),
+                  ),
+                ],
               ),
-            ],
-          ),
+            const Spacer(),
+            Text(
+              'Total: ${rows.length} items',
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
+            ),
+          ],
+        ),
         const SizedBox(height: 20),
         Row(
           children: [
@@ -673,7 +795,7 @@ class _OcrProcessingDialog extends StatelessWidget {
             Expanded(
               flex: 2,
               child: FilledButton.icon(
-                onPressed: () => onConfirm(rows, response),
+                onPressed: () => widget.onConfirm(rows, _firstResponse),
                 icon: const Icon(Icons.open_in_new_rounded, size: 16),
                 label: Text(l10n.openAndEditTable),
                 style: FilledButton.styleFrom(
