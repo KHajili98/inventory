@@ -1,0 +1,167 @@
+{
+  "@@locale": "az",
+
+  "appTitle": "İnventar",
+
+  "invoices": "Qaimələr",
+
+  "inventoryProducts": "İnventar Məhsulları",
+
+  "finance": "Maliyyə",
+
+  "expandSidebar": "Yan paneli genişləndir",
+
+  "collapseSidebar": "Yan paneli yığ",
+
+  "versionInfo": "v1.0.0 · İnventar Tətbiqi",
+
+  "manageInvoices": "Kommersiya qaimələrinizi idarə edin və nəzərdən keçirin",
+
+  "addInvoiceFromImage": "Şəkildən Qaimə Əlavə Et",
+
+  "totalInvoices": "Ümumi Qaimələr",
+
+  "totalValue": "Ümumi Dəyər",
+
+  "pending": "Gözləyir",
+
+  "confirmed": "Təsdiq edilib",
+
+  "cancelled": "Ləğv edilib",
+
+  "invoiceNumber": "QAİMƏ №",
+
+  "supplier": "TƏCHİZATÇI",
+
+  "date": "TARİX",
+
+  "items": "ƏŞYALAR",
+
+  "amount": "MƏBLƏĞ",
+
+  "status": "STATUS",
+
+  "actions": "ƏMƏLİYYATLAR",
+
+  "view": "Bax",
+
+  "export": "İxrac",
+
+  "delete": "Sil",
+
+  "noInvoicesYet": "Hələ qaimə yoxdur",
+
+  "uploadInvoiceToStart": "OCR çıxarılması ilə başlamaq üçün qaimə şəklini yükləyin",
+
+  "processingInvoiceImage": "Qaimə Şəkli İşlənir",
+
+  "uploadingImage": "Şəkil yüklənir…",
+
+  "runningOCR": "OCR işləyir…",
+
+  "ocrComplete": "OCR Tamamlandı!",
+
+  "reviewExtractedData": "Aşağıda çıxarılmış məlumatları nəzərdən keçirin",
+
+  "model": "Model",
+
+  "sku": "SKU",
+
+  "qty": "Say",
+
+  "totalUSD": "Cəmi (USD)",
+
+  "rowsWithMissingData": "çəki/ölçü məlumatı olmayan sətrlər",
+
+  "cancel": "Ləğv et",
+
+  "openAndEditTable": "Cədvəli Aç və Redaktə Et",
+
+  "pcs": "ədəd",
+
+  "invoiceDetail": "Qaimə №{number}",
+
+  "totalItems": "Ümumi Əşyalar",
+
+  "totalAmount": "Ümumi Məbləğ",
+
+  "skuLines": "SKU Sətirləri",
+
+  "rows": "sətir",
+
+  "warnings": "Xəbərdarlıqlar",
+
+  "edit": "Redaktə et",
+
+  "done": "Hazır",
+
+  "ocrResultEditableTable": "OCR Nəticəsi — Redaktə Edilə Bilən Cədvəl",
+
+  "addRow": "Sətir Əlavə Et",
+
+  "deleteSelected": "Seçilmiş Sətirləri Sil",
+
+  "confirmInvoice": "Qaiməni Təsdiq Et",
+
+  "size": "Ölçü",
+
+  "color": "Rəng",
+
+  "unit": "Vahid",
+
+  "total": "Cəmi",
+
+  "boxDimensions": "Qutu Ölçüləri",
+
+  "cbm": "CBM",
+
+  "netWeight": "Xalis (kq)",
+
+  "grossWeight": "Ümumi (kq)",
+
+  "notes": "Qeydlər",
+
+  "selectAll": "Hamısını seç",
+
+  "search": "Axtar",
+
+  "filterByStatus": "Statusa görə filtr",
+
+  "allStatuses": "Bütün Statuslar",
+
+  "inStock": "Stokda",
+
+  "lowStock": "Az Stokda",
+
+  "outOfStock": "Stokda Yoxdur",
+
+  "totalProducts": "Ümumi Məhsullar",
+
+  "totalQuantity": "Ümumi Say",
+
+  "lowStockItems": "Az Stoklu Məhsullar",
+
+  "outOfStockItems": "Stokda Olmayan Məhsullar",
+
+  "name": "Ad",
+
+  "actualQty": "Faktiki Say",
+
+  "invoiceQty": "Qaimədə Say",
+
+  "unitPrice": "Vahid Qiyməti",
+
+  "invoiceTotal": "Qaimə Cəmi",
+
+  "actualTotal": "Faktiki Cəmi",
+
+  "barcode": "Barkod",
+
+  "coordinate": "Koordinat",
+
+  "source": "Mənbə",
+
+  "noProducts": "Məhsul tapılmadı",
+
+  "adjustFilters": "Filtrlər və ya axtarış sorğusunu tənzimlə"
+}

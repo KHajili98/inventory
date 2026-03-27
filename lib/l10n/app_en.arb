@@ -1,0 +1,418 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Inventory",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+
+  "invoices": "Invoices",
+  "@invoices": {
+    "description": "Invoices navigation label"
+  },
+
+  "inventoryProducts": "Inventory Products",
+  "@inventoryProducts": {
+    "description": "Inventory Products navigation label"
+  },
+
+  "finance": "Finance",
+  "@finance": {
+    "description": "Finance navigation label"
+  },
+
+  "expandSidebar": "Expand sidebar",
+  "@expandSidebar": {
+    "description": "Tooltip for expanding sidebar"
+  },
+
+  "collapseSidebar": "Collapse sidebar",
+  "@collapseSidebar": {
+    "description": "Tooltip for collapsing sidebar"
+  },
+
+  "versionInfo": "v1.0.0 · Inventory App",
+  "@versionInfo": {
+    "description": "Version information text"
+  },
+
+  "manageInvoices": "Manage and review your commercial invoices",
+  "@manageInvoices": {
+    "description": "Invoices page subtitle"
+  },
+
+  "addInvoiceFromImage": "Add Invoice from Image",
+  "@addInvoiceFromImage": {
+    "description": "Button to add invoice from image"
+  },
+
+  "totalInvoices": "Total Invoices",
+  "@totalInvoices": {
+    "description": "Total invoices stat label"
+  },
+
+  "totalValue": "Total Value",
+  "@totalValue": {
+    "description": "Total value stat label"
+  },
+
+  "pending": "Pending",
+  "@pending": {
+    "description": "Pending status label"
+  },
+
+  "confirmed": "Confirmed",
+  "@confirmed": {
+    "description": "Confirmed status label"
+  },
+
+  "cancelled": "Cancelled",
+  "@cancelled": {
+    "description": "Cancelled status label"
+  },
+
+  "invoiceNumber": "INVOICE #",
+  "@invoiceNumber": {
+    "description": "Invoice number column header"
+  },
+
+  "supplier": "SUPPLIER",
+  "@supplier": {
+    "description": "Supplier column header"
+  },
+
+  "date": "DATE",
+  "@date": {
+    "description": "Date column header"
+  },
+
+  "items": "ITEMS",
+  "@items": {
+    "description": "Items column header"
+  },
+
+  "amount": "AMOUNT",
+  "@amount": {
+    "description": "Amount column header"
+  },
+
+  "status": "STATUS",
+  "@status": {
+    "description": "Status column header"
+  },
+
+  "actions": "ACTIONS",
+  "@actions": {
+    "description": "Actions column header"
+  },
+
+  "view": "View",
+  "@view": {
+    "description": "View tooltip"
+  },
+
+  "export": "Export",
+  "@export": {
+    "description": "Export tooltip/button"
+  },
+
+  "delete": "Delete",
+  "@delete": {
+    "description": "Delete tooltip"
+  },
+
+  "noInvoicesYet": "No invoices yet",
+  "@noInvoicesYet": {
+    "description": "Empty state title"
+  },
+
+  "uploadInvoiceToStart": "Upload an invoice image to get started with OCR extraction",
+  "@uploadInvoiceToStart": {
+    "description": "Empty state description"
+  },
+
+  "processingInvoiceImage": "Processing Invoice Image",
+  "@processingInvoiceImage": {
+    "description": "OCR processing dialog title"
+  },
+
+  "uploadingImage": "Uploading image…",
+  "@uploadingImage": {
+    "description": "OCR stage: uploading"
+  },
+
+  "runningOCR": "Running OCR…",
+  "@runningOCR": {
+    "description": "OCR stage: processing"
+  },
+
+  "ocrComplete": "OCR Complete!",
+  "@ocrComplete": {
+    "description": "OCR completion title"
+  },
+
+  "reviewExtractedData": "Review the extracted data below",
+  "@reviewExtractedData": {
+    "description": "OCR completion subtitle"
+  },
+
+  "model": "Model",
+  "@model": {
+    "description": "Model column header"
+  },
+
+  "sku": "SKU",
+  "@sku": {
+    "description": "SKU column header"
+  },
+
+  "qty": "Qty",
+  "@qty": {
+    "description": "Quantity column header"
+  },
+
+  "totalUSD": "Total (USD)",
+  "@totalUSD": {
+    "description": "Total in USD column header"
+  },
+
+  "rowsWithMissingData": "rows with missing weight/dimension data",
+  "@rowsWithMissingData": {
+    "description": "Warning message for missing data"
+  },
+
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button"
+  },
+
+  "openAndEditTable": "Open & Edit Table",
+  "@openAndEditTable": {
+    "description": "Button to open and edit table"
+  },
+
+  "pcs": "pcs",
+  "@pcs": {
+    "description": "Pieces unit"
+  },
+
+  "invoiceDetail": "Invoice #{number}",
+  "@invoiceDetail": {
+    "description": "Invoice detail page title",
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+
+  "totalItems": "Total Items",
+  "@totalItems": {
+    "description": "Total items label"
+  },
+
+  "totalAmount": "Total Amount",
+  "@totalAmount": {
+    "description": "Total amount label"
+  },
+
+  "skuLines": "SKU Lines",
+  "@skuLines": {
+    "description": "SKU lines label"
+  },
+
+  "rows": "rows",
+  "@rows": {
+    "description": "Rows label"
+  },
+
+  "warnings": "Warnings",
+  "@warnings": {
+    "description": "Warnings label"
+  },
+
+  "edit": "Edit",
+  "@edit": {
+    "description": "Edit button"
+  },
+
+  "done": "Done",
+  "@done": {
+    "description": "Done button"
+  },
+
+  "ocrResultEditableTable": "OCR Result — Editable Table",
+  "@ocrResultEditableTable": {
+    "description": "Table toolbar title"
+  },
+
+  "addRow": "Add Row",
+  "@addRow": {
+    "description": "Add row button"
+  },
+
+  "deleteSelected": "Delete Selected",
+  "@deleteSelected": {
+    "description": "Delete selected button"
+  },
+
+  "confirmInvoice": "Confirm Invoice",
+  "@confirmInvoice": {
+    "description": "Confirm invoice button"
+  },
+
+  "size": "Size",
+  "@size": {
+    "description": "Size column header"
+  },
+
+  "color": "Color",
+  "@color": {
+    "description": "Color column header"
+  },
+
+  "unit": "Unit",
+  "@unit": {
+    "description": "Unit column header"
+  },
+
+  "total": "Total",
+  "@total": {
+    "description": "Total column header"
+  },
+
+  "boxDimensions": "Box Dimensions",
+  "@boxDimensions": {
+    "description": "Box dimensions column header"
+  },
+
+  "cbm": "CBM",
+  "@cbm": {
+    "description": "CBM column header"
+  },
+
+  "netWeight": "Net (kg)",
+  "@netWeight": {
+    "description": "Net weight column header"
+  },
+
+  "grossWeight": "Gross (kg)",
+  "@grossWeight": {
+    "description": "Gross weight column header"
+  },
+
+  "notes": "Notes",
+  "@notes": {
+    "description": "Notes column header"
+  },
+
+  "selectAll": "Select all",
+  "@selectAll": {
+    "description": "Select all checkbox label"
+  },
+
+  "search": "Search",
+  "@search": {
+    "description": "Search placeholder"
+  },
+
+  "filterByStatus": "Filter by status",
+  "@filterByStatus": {
+    "description": "Filter by status dropdown"
+  },
+
+  "allStatuses": "All Statuses",
+  "@allStatuses": {
+    "description": "All statuses filter option"
+  },
+
+  "inStock": "In Stock",
+  "@inStock": {
+    "description": "In stock status"
+  },
+
+  "lowStock": "Low Stock",
+  "@lowStock": {
+    "description": "Low stock status"
+  },
+
+  "outOfStock": "Out of Stock",
+  "@outOfStock": {
+    "description": "Out of stock status"
+  },
+
+  "totalProducts": "Total Products",
+  "@totalProducts": {
+    "description": "Total products stat"
+  },
+
+  "totalQuantity": "Total Quantity",
+  "@totalQuantity": {
+    "description": "Total quantity stat"
+  },
+
+  "lowStockItems": "Low Stock Items",
+  "@lowStockItems": {
+    "description": "Low stock items stat"
+  },
+
+  "outOfStockItems": "Out of Stock Items",
+  "@outOfStockItems": {
+    "description": "Out of stock items stat"
+  },
+
+  "name": "Name",
+  "@name": {
+    "description": "Name column header"
+  },
+
+  "actualQty": "Actual Qty",
+  "@actualQty": {
+    "description": "Actual quantity column header"
+  },
+
+  "invoiceQty": "Invoice Qty",
+  "@invoiceQty": {
+    "description": "Invoice quantity column header"
+  },
+
+  "unitPrice": "Unit Price",
+  "@unitPrice": {
+    "description": "Unit price column header"
+  },
+
+  "invoiceTotal": "Invoice Total",
+  "@invoiceTotal": {
+    "description": "Invoice total column header"
+  },
+
+  "actualTotal": "Actual Total",
+  "@actualTotal": {
+    "description": "Actual total column header"
+  },
+
+  "barcode": "Barcode",
+  "@barcode": {
+    "description": "Barcode column header"
+  },
+
+  "coordinate": "Coordinate",
+  "@coordinate": {
+    "description": "Coordinate column header"
+  },
+
+  "source": "Source",
+  "@source": {
+    "description": "Source column header"
+  },
+
+  "noProducts": "No products found",
+  "@noProducts": {
+    "description": "No products message"
+  },
+
+  "adjustFilters": "Try adjusting your filters or search query",
+  "@adjustFilters": {
+    "description": "Adjust filters message"
+  }
+}

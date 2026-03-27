@@ -2,6 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:inventory/l10n/app_localizations.dart';
+import 'package:inventory/cubit/locale_cubit.dart';
 
 class AppShell extends StatefulWidget {
   final Widget child;
@@ -20,15 +23,29 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
   static const Curve _curve = Curves.easeInOut;
 
   static const _navItems = [
-    _NavItem(label: 'Invoices', icon: Icons.receipt_long_rounded, path: '/invoices'),
-    _NavItem(label: 'Inventory Products', icon: Icons.inventory_2_rounded, path: '/inventory-products'),
-    _NavItem(label: 'Finance', icon: Icons.account_balance_wallet_rounded, path: '/finance'),
+    _NavItem(labelKey: 'invoices', icon: Icons.receipt_long_rounded, path: '/invoices'),
+    _NavItem(labelKey: 'inventoryProducts', icon: Icons.inventory_2_rounded, path: '/inventory-products'),
+    _NavItem(labelKey: 'finance', icon: Icons.account_balance_wallet_rounded, path: '/finance'),
   ];
 
   int _selectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
     final index = _navItems.indexWhere((item) => location.startsWith(item.path));
     return index < 0 ? 0 : index;
+  }
+
+  String _getNavLabel(BuildContext context, String key) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (key) {
+      case 'invoices':
+        return l10n.invoices;
+      case 'inventoryProducts':
+        return l10n.inventoryProducts;
+      case 'finance':
+        return l10n.finance;
+      default:
+        return key;
+    }
   }
 
   /// Consumes the pointer signal so the browser never sees it
@@ -49,6 +66,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     final selectedIndex = _selectedIndex(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return PopScope(
       canPop: false,
@@ -98,7 +116,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                                 child: GestureDetector(
                                   onTap: () => setState(() => _collapsed = !_collapsed),
                                   child: Tooltip(
-                                    message: _collapsed ? 'Expand sidebar' : 'Collapse sidebar',
+                                    message: _collapsed ? l10n.expandSidebar : l10n.collapseSidebar,
                                     preferBelow: false,
                                     child: Container(
                                       width: 36,
@@ -115,11 +133,11 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                                   curve: _curve,
                                   child: _collapsed
                                       ? const SizedBox.shrink()
-                                      : const Padding(
-                                          padding: EdgeInsets.only(left: 12),
+                                      : Padding(
+                                          padding: const EdgeInsets.only(left: 12),
                                           child: Text(
-                                            'Inventory',
-                                            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700, letterSpacing: 0.5),
+                                            l10n.appTitle,
+                                            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700, letterSpacing: 0.5),
                                           ),
                                         ),
                                 ),
@@ -139,7 +157,13 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                       ...List.generate(_navItems.length, (index) {
                         final item = _navItems[index];
                         final isSelected = index == selectedIndex;
-                        return _SidebarTile(item: item, isSelected: isSelected, collapsed: _collapsed, onTap: () => context.go(item.path));
+                        return _SidebarTile(
+                          item: item,
+                          isSelected: isSelected,
+                          collapsed: _collapsed,
+                          onTap: () => context.go(item.path),
+                          label: _getNavLabel(context, item.labelKey),
+                        );
                       }),
 
                       const Spacer(),
@@ -154,7 +178,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                           duration: _duration,
                           child: _collapsed
                               ? Tooltip(
-                                  message: 'Expand sidebar',
+                                  message: l10n.expandSidebar,
                                   preferBelow: false,
                                   child: InkWell(
                                     onTap: () => setState(() => _collapsed = false),
@@ -167,11 +191,11 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                                     ),
                                   ),
                                 )
-                              : const Row(
+                              : Row(
                                   children: [
-                                    Icon(Icons.info_outline_rounded, size: 13, color: Color(0xFF475569)),
-                                    SizedBox(width: 6),
-                                    Text('v1.0.0 · Inventory App', style: TextStyle(fontSize: 11, color: Color(0xFF475569))),
+                                    const Icon(Icons.info_outline_rounded, size: 13, color: Color(0xFF475569)),
+                                    const SizedBox(width: 6),
+                                    Text(l10n.versionInfo, style: const TextStyle(fontSize: 11, color: Color(0xFF475569))),
                                   ],
                                 ),
                         ),
@@ -194,9 +218,11 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                         child: Row(
                           children: [
                             Text(
-                              _navItems[selectedIndex].label,
+                              _getNavLabel(context, _navItems[selectedIndex].labelKey),
                               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
                             ),
+                            const Spacer(),
+                            const _LanguageSelector(),
                           ],
                         ),
                       ),
@@ -249,8 +275,9 @@ class _CollapseButtonState extends State<_CollapseButton> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Tooltip(
-      message: widget.collapsed ? 'Expand sidebar' : 'Collapse sidebar',
+      message: widget.collapsed ? l10n.expandSidebar : l10n.collapseSidebar,
       preferBelow: false,
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
@@ -286,10 +313,10 @@ class _CollapseButtonState extends State<_CollapseButton> {
 // ── Data class ────────────────────────────────────────────────────────────────
 
 class _NavItem {
-  final String label;
+  final String labelKey;
   final IconData icon;
   final String path;
-  const _NavItem({required this.label, required this.icon, required this.path});
+  const _NavItem({required this.labelKey, required this.icon, required this.path});
 }
 
 // ── Sidebar tile ──────────────────────────────────────────────────────────────
@@ -299,8 +326,15 @@ class _SidebarTile extends StatefulWidget {
   final bool isSelected;
   final bool collapsed;
   final VoidCallback onTap;
+  final String label;
 
-  const _SidebarTile({required this.item, required this.isSelected, required this.collapsed, required this.onTap});
+  const _SidebarTile({
+    required this.item,
+    required this.isSelected,
+    required this.collapsed,
+    required this.onTap,
+    required this.label,
+  });
 
   @override
   State<_SidebarTile> createState() => _SidebarTileState();
@@ -351,7 +385,7 @@ class _SidebarTileState extends State<_SidebarTile> {
                       : Padding(
                           padding: const EdgeInsets.only(left: 10),
                           child: Text(
-                            widget.item.label,
+                            widget.label,
                             style: TextStyle(
                               color: widget.isSelected ? Colors.white : const Color(0xFFCBD5E1),
                               fontSize: 14,
@@ -371,7 +405,133 @@ class _SidebarTileState extends State<_SidebarTile> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-      child: widget.collapsed ? Tooltip(message: widget.item.label, preferBelow: false, child: tile) : tile,
+      child: widget.collapsed ? Tooltip(message: widget.label, preferBelow: false, child: tile) : tile,
+    );
+  }
+}
+
+// ── Language Selector ─────────────────────────────────────────────────────────
+
+class _LanguageSelector extends StatefulWidget {
+  const _LanguageSelector();
+
+  @override
+  State<_LanguageSelector> createState() => _LanguageSelectorState();
+}
+
+class _LanguageSelectorState extends State<_LanguageSelector> {
+  bool _hovered = false;
+
+  String _getLanguageName(Locale locale) {
+    switch (locale.languageCode) {
+      case 'en':
+        return 'English';
+      case 'az':
+        return 'Azərbaycan';
+      default:
+        return locale.languageCode.toUpperCase();
+    }
+  }
+
+  String _getFlagEmoji(Locale locale) {
+    switch (locale.languageCode) {
+      case 'en':
+        return '🇬🇧';
+      case 'az':
+        return '🇦🇿';
+      default:
+        return '🌍';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<LocaleCubit, Locale>(
+      builder: (context, currentLocale) {
+        return PopupMenuButton<Locale>(
+          offset: const Offset(0, 50),
+          tooltip: currentLocale.languageCode == 'en' ? 'Change Language' : 'Dili Dəyiş',
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          onSelected: (locale) {
+            context.read<LocaleCubit>().changeLanguage(locale);
+          },
+          itemBuilder: (BuildContext context) => <PopupMenuEntry<Locale>>[
+            PopupMenuItem<Locale>(
+              value: const Locale('en'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Text(_getFlagEmoji(const Locale('en')), style: const TextStyle(fontSize: 20)),
+                    const SizedBox(width: 12),
+                    const Text('English', style: TextStyle(fontSize: 14)),
+                    const Spacer(),
+                    if (currentLocale.languageCode == 'en')
+                      const Icon(Icons.check_rounded, size: 18, color: Color(0xFF6366F1)),
+                  ],
+                ),
+              ),
+            ),
+            const PopupMenuDivider(),
+            PopupMenuItem<Locale>(
+              value: const Locale('az'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Text(_getFlagEmoji(const Locale('az')), style: const TextStyle(fontSize: 20)),
+                    const SizedBox(width: 12),
+                    const Text('Azərbaycan', style: TextStyle(fontSize: 14)),
+                    const Spacer(),
+                    if (currentLocale.languageCode == 'az')
+                      const Icon(Icons.check_rounded, size: 18, color: Color(0xFF6366F1)),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            onEnter: (_) => setState(() => _hovered = true),
+            onExit: (_) => setState(() => _hovered = false),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: _hovered ? const Color(0xFFF1F5F9) : Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: _hovered ? const Color(0xFFE2E8F0) : Colors.transparent,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _getFlagEmoji(currentLocale),
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    _getLanguageName(currentLocale),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF475569),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 18,
+                    color: _hovered ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:inventory/models/invoice_models.dart';
 import 'package:inventory/pages/invoice_detail_page.dart';
+import 'package:inventory/l10n/app_localizations.dart';
 
 class InvoicesPage extends StatefulWidget {
   const InvoicesPage({super.key});
@@ -99,17 +100,18 @@ class _InvoicesPageState extends State<InvoicesPage> {
   }
 
   Widget _buildTopBar() {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
-        const Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Invoices',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+              l10n.invoices,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
             ),
-            SizedBox(height: 2),
-            Text('Manage and review your commercial invoices', style: TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+            const SizedBox(height: 2),
+            Text(l10n.manageInvoices, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
           ],
         ),
         const Spacer(),
@@ -117,7 +119,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
         FilledButton.icon(
           onPressed: _isProcessing ? null : _pickAndProcessImage,
           icon: const Icon(Icons.add_photo_alternate_outlined, size: 18),
-          label: const Text('Add Invoice from Image'),
+          label: Text(l10n.addInvoiceFromImage),
           style: FilledButton.styleFrom(
             backgroundColor: const Color(0xFF6366F1),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -130,18 +132,19 @@ class _InvoicesPageState extends State<InvoicesPage> {
   }
 
   Widget _buildStatsRow() {
+    final l10n = AppLocalizations.of(context)!;
     final totalAmount = _invoices.fold(0.0, (s, i) => s + i.totalAmount);
     final pending = _invoices.where((i) => i.status == InvoiceStatus.pending).length;
     final confirmed = _invoices.where((i) => i.status == InvoiceStatus.confirmed).length;
     return Row(
       children: [
-        _StatCard(label: 'Total Invoices', value: '${_invoices.length}', icon: Icons.receipt_long_rounded, color: const Color(0xFF6366F1)),
+        _StatCard(label: l10n.totalInvoices, value: '${_invoices.length}', icon: Icons.receipt_long_rounded, color: const Color(0xFF6366F1)),
         const SizedBox(width: 16),
-        _StatCard(label: 'Total Value', value: '\$${totalAmount.toStringAsFixed(2)}', icon: Icons.payments_outlined, color: const Color(0xFF22C55E)),
+        _StatCard(label: l10n.totalValue, value: '\$${totalAmount.toStringAsFixed(2)}', icon: Icons.payments_outlined, color: const Color(0xFF22C55E)),
         const SizedBox(width: 16),
-        _StatCard(label: 'Pending', value: '$pending', icon: Icons.hourglass_empty_rounded, color: const Color(0xFFF59E0B)),
+        _StatCard(label: l10n.pending, value: '$pending', icon: Icons.hourglass_empty_rounded, color: const Color(0xFFF59E0B)),
         const SizedBox(width: 16),
-        _StatCard(label: 'Confirmed', value: '$confirmed', icon: Icons.check_circle_outline_rounded, color: const Color(0xFF0EA5E9)),
+        _StatCard(label: l10n.confirmed, value: '$confirmed', icon: Icons.check_circle_outline_rounded, color: const Color(0xFF0EA5E9)),
       ],
     );
   }
@@ -174,6 +177,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
   }
 
   Widget _buildListHeader() {
+    final l10n = AppLocalizations.of(context)!;
     const style = TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B), letterSpacing: 0.4);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -182,16 +186,16 @@ class _InvoicesPageState extends State<InvoicesPage> {
         border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
         borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          SizedBox(width: 140, child: Text('INVOICE #', style: style)),
-          SizedBox(width: 240, child: Text('SUPPLIER', style: style)),
-          SizedBox(width: 110, child: Text('DATE', style: style)),
-          SizedBox(width: 90, child: Text('ITEMS', style: style)),
-          SizedBox(width: 120, child: Text('AMOUNT', style: style)),
-          SizedBox(width: 110, child: Text('STATUS', style: style)),
-          Spacer(),
-          Text('ACTIONS', style: style),
+          SizedBox(width: 140, child: Text(l10n.invoiceNumber, style: style)),
+          SizedBox(width: 240, child: Text(l10n.supplier, style: style)),
+          SizedBox(width: 110, child: Text(l10n.date, style: style)),
+          SizedBox(width: 90, child: Text(l10n.items, style: style)),
+          SizedBox(width: 120, child: Text(l10n.amount, style: style)),
+          SizedBox(width: 110, child: Text(l10n.status, style: style)),
+          const Spacer(),
+          Text(l10n.actions, style: style),
         ],
       ),
     );
@@ -239,9 +243,14 @@ class _InvoicesPageState extends State<InvoicesPage> {
               child: Text(inv.date, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
             ),
             // Items
-            SizedBox(
-              width: 90,
-              child: Text('${inv.totalItems} pcs', style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
+            Builder(
+              builder: (context) {
+                final l10n = AppLocalizations.of(context)!;
+                return SizedBox(
+                  width: 90,
+                  child: Text('${inv.totalItems} ${l10n.pcs}', style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
+                );
+              },
             ),
             // Amount
             SizedBox(
@@ -255,19 +264,24 @@ class _InvoicesPageState extends State<InvoicesPage> {
             SizedBox(width: 110, child: _StatusBadge(status: inv.status)),
             const Spacer(),
             // Actions
-            Row(
-              children: [
-                _ActionBtn(icon: Icons.visibility_outlined, tooltip: 'View', onTap: () => _openDetail(inv)),
-                const SizedBox(width: 4),
-                _ActionBtn(icon: Icons.download_outlined, tooltip: 'Export', onTap: () {}),
-                const SizedBox(width: 4),
-                _ActionBtn(
-                  icon: Icons.delete_outline_rounded,
-                  tooltip: 'Delete',
-                  color: const Color(0xFFEF4444),
-                  onTap: () => setState(() => _invoices.remove(inv)),
-                ),
-              ],
+            Builder(
+              builder: (context) {
+                final l10n = AppLocalizations.of(context)!;
+                return Row(
+                  children: [
+                    _ActionBtn(icon: Icons.visibility_outlined, tooltip: l10n.view, onTap: () => _openDetail(inv)),
+                    const SizedBox(width: 4),
+                    _ActionBtn(icon: Icons.download_outlined, tooltip: l10n.export, onTap: () {}),
+                    const SizedBox(width: 4),
+                    _ActionBtn(
+                      icon: Icons.delete_outline_rounded,
+                      tooltip: l10n.delete,
+                      color: const Color(0xFFEF4444),
+                      onTap: () => setState(() => _invoices.remove(inv)),
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         ),
@@ -567,10 +581,11 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final (label, bg, fg) = switch (status) {
-      InvoiceStatus.pending => ('Pending', const Color(0xFFFEF3C7), const Color(0xFFB45309)),
-      InvoiceStatus.confirmed => ('Confirmed', const Color(0xFFDCFCE7), const Color(0xFF15803D)),
-      InvoiceStatus.cancelled => ('Cancelled', const Color(0xFFFEE2E2), const Color(0xFFDC2626)),
+      InvoiceStatus.pending => (l10n.pending, const Color(0xFFFEF3C7), const Color(0xFFB45309)),
+      InvoiceStatus.confirmed => (l10n.confirmed, const Color(0xFFDCFCE7), const Color(0xFF15803D)),
+      InvoiceStatus.cancelled => (l10n.cancelled, const Color(0xFFFEE2E2), const Color(0xFFDC2626)),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -612,6 +627,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -623,17 +639,17 @@ class _EmptyState extends StatelessWidget {
             child: const Icon(Icons.receipt_long_rounded, size: 40, color: Color(0xFF6366F1)),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'No invoices yet',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+          Text(
+            l10n.noInvoicesYet,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
           ),
           const SizedBox(height: 8),
-          const Text('Upload an invoice image to get started with OCR extraction', style: TextStyle(fontSize: 14, color: Color(0xFF64748B))),
+          Text(l10n.uploadInvoiceToStart, style: const TextStyle(fontSize: 14, color: Color(0xFF64748B))),
           const SizedBox(height: 24),
           FilledButton.icon(
             onPressed: onAdd,
             icon: const Icon(Icons.add_photo_alternate_outlined),
-            label: const Text('Add Invoice from Image'),
+            label: Text(l10n.addInvoiceFromImage),
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFF6366F1),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

@@ -1,9 +1,18 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:inventory/router/app_router.dart';
+import 'package:inventory/l10n/app_localizations.dart';
+import 'package:inventory/cubit/locale_cubit.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    BlocProvider(
+      create: (context) => LocaleCubit(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 /// Custom scroll behaviour that enables mouse-drag scrolling on web/desktop
@@ -33,16 +42,31 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Inventory',
-      debugShowCheckedModeBanner: false,
-      routerConfig: appRouter,
-      scrollBehavior: const _AppScrollBehavior(),
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF6366F1)),
-        fontFamily: 'Inter',
-        useMaterial3: true,
-      ),
+    return BlocBuilder<LocaleCubit, Locale>(
+      builder: (context, locale) {
+        return MaterialApp.router(
+          title: 'Inventory',
+          debugShowCheckedModeBanner: false,
+          routerConfig: appRouter,
+          scrollBehavior: const _AppScrollBehavior(),
+          locale: locale,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('en'), // English
+            Locale('az'), // Azerbaijan
+          ],
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF6366F1)),
+            fontFamily: 'Inter',
+            useMaterial3: true,
+          ),
+        );
+      },
     );
   }
 }
