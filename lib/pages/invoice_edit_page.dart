@@ -369,7 +369,13 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
             width: _colQty,
             isInt: true,
             onChanged: (v) {
-              setState(() => _rows[index] = row.copyWith(qty: int.tryParse(v) ?? row.qty));
+              final newQty = int.tryParse(v) ?? row.qty;
+              setState(
+                () => _rows[index] = row.copyWith(
+                  qty: newQty,
+                  totalPrice: newQty * row.unitPrice, // keep total in sync
+                ),
+              );
               _markEdited();
             },
           ),
@@ -377,7 +383,13 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
             value: row.unitPrice.toStringAsFixed(4),
             width: _colUnit,
             onChanged: (v) {
-              setState(() => _rows[index] = row.copyWith(unitPrice: double.tryParse(v) ?? row.unitPrice));
+              final newPrice = double.tryParse(v) ?? row.unitPrice;
+              setState(
+                () => _rows[index] = row.copyWith(
+                  unitPrice: newPrice,
+                  totalPrice: row.qty * newPrice, // keep total in sync
+                ),
+              );
               _markEdited();
             },
           ),

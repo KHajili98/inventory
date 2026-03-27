@@ -71,7 +71,8 @@ class InvoiceRow {
     this.hasWarning = false,
   });
 
-  // Computed for backward compat with totals
+  // Always computed live so edits to qty or unitPrice are instantly reflected.
+  // totalPrice is kept in sync by the edit page via copyWith on every change.
   double get total => totalPrice > 0 ? totalPrice : qty * unitPrice;
 
   InvoiceRow copyWith({
