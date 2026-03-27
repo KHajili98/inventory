@@ -792,15 +792,17 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
                   border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
                 ),
                 child: Row(
-                  children: [
-                    _th('Product / Model', null, flex: 3),
-                    _th(l10n.qty, 46),
-                    _th('Color', 50),
-                    _th('Unit \$', 72),
-                    _th('Pcs/Ctn', 58),
-                    _th('G.Wt kg', 62),
-                    _th('Total \$', 72),
-                  ],
+                  children: context.isMobile
+                      ? [_th(l10n.productName, null, flex: 1), _th(l10n.qty, null, flex: 1)]
+                      : [
+                          _th(l10n.productName, null, flex: 1),
+                          _th(l10n.qty, null, flex: 1),
+                          _th(l10n.color, null, flex: 1),
+                          _th(l10n.unitPrice, null, flex: 1),
+                          _th(l10n.pcsPerCarton, null, flex: 1),
+                          _th(l10n.grossWeight, null, flex: 1),
+                          _th(l10n.total, null, flex: 1),
+                        ],
                 ),
               ),
               // Table rows
@@ -822,56 +824,73 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
                       currentIndex -= items.length;
                     }
 
-                    return Container(
-                      color: r.hasWarning ? const Color(0xFFFFFBEB) : Colors.transparent,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                      child: Row(
-                        children: [
-                          // Product name / model code — takes remaining space
-                          Expanded(
-                            flex: 3,
-                            child: Text(
-                              r.modelCode,
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          SizedBox(width: 46, child: Text('${r.qty}', style: const TextStyle(fontSize: 12))),
-                          SizedBox(
-                            width: 50,
-                            child: Text(
-                              r.color.isEmpty ? '–' : r.color,
-                              style: const TextStyle(fontSize: 12, color: Color(0xFF475569)),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          SizedBox(width: 72, child: Text('\$${r.unitPrice.toStringAsFixed(4)}', style: const TextStyle(fontSize: 12))),
-                          SizedBox(
-                            width: 58,
-                            child: Text('${apiItem?.piecesPerCarton ?? '–'}', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
-                          ),
-                          SizedBox(
-                            width: 62,
-                            child: Text(
-                              apiItem?.grossWeightKg?.toStringAsFixed(1) ?? '–',
-                              style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-                            ),
-                          ),
-                          SizedBox(
-                            width: 72,
+                    return context.isMobile
+                        ? Container(
+                            color: r.hasWarning ? const Color(0xFFFFFBEB) : Colors.transparent,
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                             child: Row(
                               children: [
-                                Text('\$${r.total.toStringAsFixed(2)}', style: const TextStyle(fontSize: 12)),
-                                if (r.hasWarning) ...[
-                                  const SizedBox(width: 3),
-                                  const Icon(Icons.warning_amber_rounded, size: 13, color: Color(0xFFF59E0B)),
-                                ],
+                                Expanded(
+                                  child: Text(
+                                    r.modelCode.isEmpty ? r.productName : r.modelCode,
+                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                SizedBox(width: 60, child: Text('${r.qty}', style: const TextStyle(fontSize: 13))),
                               ],
                             ),
-                          ),
-                        ],
-                      ),
-                    );
+                          )
+                        : Container(
+                            color: r.hasWarning ? const Color(0xFFFFFBEB) : Colors.transparent,
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                            child: Row(
+                              children: [
+                                // Product name / model code — takes remaining space
+                                Expanded(
+                                  flex: 3,
+                                  child: Text(
+                                    r.modelCode.isEmpty ? r.productName : r.modelCode,
+                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                SizedBox(width: 46, child: Text('${r.qty}', style: const TextStyle(fontSize: 12))),
+                                SizedBox(
+                                  width: 50,
+                                  child: Text(
+                                    r.color.isEmpty ? '–' : r.color,
+                                    style: const TextStyle(fontSize: 12, color: Color(0xFF475569)),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                SizedBox(width: 72, child: Text('\$${r.unitPrice.toStringAsFixed(4)}', style: const TextStyle(fontSize: 12))),
+                                SizedBox(
+                                  width: 58,
+                                  child: Text('${apiItem?.piecesPerCarton ?? '–'}', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                                ),
+                                SizedBox(
+                                  width: 62,
+                                  child: Text(
+                                    apiItem?.grossWeightKg?.toStringAsFixed(1) ?? '–',
+                                    style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 72,
+                                  child: Row(
+                                    children: [
+                                      Text('\$${r.total.toStringAsFixed(2)}', style: const TextStyle(fontSize: 12)),
+                                      if (r.hasWarning) ...[
+                                        const SizedBox(width: 3),
+                                        const Icon(Icons.warning_amber_rounded, size: 13, color: Color(0xFFF59E0B)),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
                   },
                 ),
               ),
@@ -1006,7 +1025,7 @@ class _InfoChip extends StatelessWidget {
           const SizedBox(width: 5),
           Text(
             label,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFF4F46E5)),
+            style: TextStyle(fontSize: context.isMobile ? 10 : 12, fontWeight: FontWeight.w500, color: Color(0xFF4F46E5)),
           ),
         ],
       ),

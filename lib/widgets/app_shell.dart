@@ -95,7 +95,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
             // Mobile: use drawer, Desktop: inline sidebar
             drawer: isMobile ? _buildMobileDrawer(context, selectedIndex, l10n) : null,
             // Mobile: use bottom navigation
-            bottomNavigationBar: isMobile ? _buildBottomNav(context, selectedIndex, l10n) : null,
+            // bottomNavigationBar: isMobile ? _buildBottomNav(context, selectedIndex, l10n) : null,
             body: Row(
               children: [
                 // ── Sidebar (desktop only) ────────────────────────────────
@@ -144,7 +144,12 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                                             padding: const EdgeInsets.only(left: 12),
                                             child: Text(
                                               l10n.appTitle,
-                                              style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700, letterSpacing: 0.5),
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w700,
+                                                letterSpacing: 0.5,
+                                              ),
                                             ),
                                           ),
                                   ),
@@ -193,7 +198,10 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                                       child: Container(
                                         width: 36,
                                         height: 36,
-                                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(8)),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withValues(alpha: 0.06),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
                                         child: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
                                       ),
                                     ),
@@ -226,22 +234,18 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                           children: [
                             // Mobile: show hamburger menu
                             if (isMobile)
-                              IconButton(
-                                onPressed: () => Scaffold.of(context).openDrawer(),
-                                icon: const Icon(Icons.menu_rounded, size: 24),
-                                style: IconButton.styleFrom(
-                                  foregroundColor: const Color(0xFF1E293B),
+                              Builder(
+                                builder: (context) => IconButton(
+                                  onPressed: () => Scaffold.of(context).openDrawer(),
+                                  icon: const Icon(Icons.menu_rounded, size: 24),
+                                  style: IconButton.styleFrom(foregroundColor: const Color(0xFF1E293B)),
                                 ),
                               ),
                             if (isMobile) const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 _getNavLabel(context, _navItems[selectedIndex].labelKey),
-                                style: TextStyle(
-                                  fontSize: isMobile ? 18 : 20,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF1E293B),
-                                ),
+                                style: TextStyle(fontSize: isMobile ? 18 : 20, fontWeight: FontWeight.w600, color: const Color(0xFF1E293B)),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -280,22 +284,14 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                   Container(
                     width: 40,
                     height: 40,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF6366F1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                    decoration: BoxDecoration(color: const Color(0xFF6366F1), borderRadius: BorderRadius.circular(10)),
                     child: const Icon(Icons.widgets_rounded, color: Colors.white, size: 22),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       l10n.appTitle,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
-                      ),
+                      style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700, letterSpacing: 0.5),
                     ),
                   ),
                 ],
@@ -327,10 +323,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                 children: [
                   const Icon(Icons.info_outline_rounded, size: 14, color: Color(0xFF475569)),
                   const SizedBox(width: 8),
-                  Text(
-                    l10n.versionInfo,
-                    style: const TextStyle(fontSize: 12, color: Color(0xFF475569)),
-                  ),
+                  Text(l10n.versionInfo, style: const TextStyle(fontSize: 12, color: Color(0xFF475569))),
                 ],
               ),
             ),
@@ -345,13 +338,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, -2))],
       ),
       child: SafeArea(
         child: SizedBox(
@@ -367,11 +354,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        item.icon,
-                        color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF94A3B8),
-                        size: 24,
-                      ),
+                      Icon(item.icon, color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF94A3B8), size: 24),
                       const SizedBox(height: 4),
                       Text(
                         _getNavLabel(context, item.labelKey),
@@ -482,13 +465,7 @@ class _SidebarTile extends StatefulWidget {
   final VoidCallback onTap;
   final String label;
 
-  const _SidebarTile({
-    required this.item,
-    required this.isSelected,
-    required this.collapsed,
-    required this.onTap,
-    required this.label,
-  });
+  const _SidebarTile({required this.item, required this.isSelected, required this.collapsed, required this.onTap, required this.label});
 
   @override
   State<_SidebarTile> createState() => _SidebarTileState();
@@ -572,12 +549,7 @@ class _MobileDrawerTile extends StatelessWidget {
   final VoidCallback onTap;
   final String label;
 
-  const _MobileDrawerTile({
-    required this.item,
-    required this.isSelected,
-    required this.onTap,
-    required this.label,
-  });
+  const _MobileDrawerTile({required this.item, required this.isSelected, required this.onTap, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -588,17 +560,10 @@ class _MobileDrawerTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF6366F1) : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-          ),
+          decoration: BoxDecoration(color: isSelected ? const Color(0xFF6366F1) : Colors.transparent, borderRadius: BorderRadius.circular(10)),
           child: Row(
             children: [
-              Icon(
-                item.icon,
-                color: isSelected ? Colors.white : const Color(0xFF94A3B8),
-                size: 22,
-              ),
+              Icon(item.icon, color: isSelected ? Colors.white : const Color(0xFF94A3B8), size: 22),
               const SizedBox(width: 14),
               Expanded(
                 child: Text(
@@ -610,12 +575,7 @@ class _MobileDrawerTile extends StatelessWidget {
                   ),
                 ),
               ),
-              if (isSelected)
-                const Icon(
-                  Icons.check_rounded,
-                  color: Colors.white,
-                  size: 18,
-                ),
+              if (isSelected) const Icon(Icons.check_rounded, color: Colors.white, size: 18),
             ],
           ),
         ),
@@ -682,8 +642,7 @@ class _LanguageSelectorState extends State<_LanguageSelector> {
                     const SizedBox(width: 12),
                     const Text('English', style: TextStyle(fontSize: 14)),
                     const Spacer(),
-                    if (currentLocale.languageCode == 'en')
-                      const Icon(Icons.check_rounded, size: 18, color: Color(0xFF6366F1)),
+                    if (currentLocale.languageCode == 'en') const Icon(Icons.check_rounded, size: 18, color: Color(0xFF6366F1)),
                   ],
                 ),
               ),
@@ -699,8 +658,7 @@ class _LanguageSelectorState extends State<_LanguageSelector> {
                     const SizedBox(width: 12),
                     const Text('Azərbaycan', style: TextStyle(fontSize: 14)),
                     const Spacer(),
-                    if (currentLocale.languageCode == 'az')
-                      const Icon(Icons.check_rounded, size: 18, color: Color(0xFF6366F1)),
+                    if (currentLocale.languageCode == 'az') const Icon(Icons.check_rounded, size: 18, color: Color(0xFF6366F1)),
                   ],
                 ),
               ),
@@ -712,39 +670,24 @@ class _LanguageSelectorState extends State<_LanguageSelector> {
             onExit: (_) => setState(() => _hovered = false),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
-              padding: isMobile
-                  ? const EdgeInsets.symmetric(horizontal: 8, vertical: 6)
-                  : const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: isMobile ? const EdgeInsets.symmetric(horizontal: 8, vertical: 6) : const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: _hovered ? const Color(0xFFF1F5F9) : Colors.transparent,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: _hovered ? const Color(0xFFE2E8F0) : Colors.transparent,
-                ),
+                border: Border.all(color: _hovered ? const Color(0xFFE2E8F0) : Colors.transparent),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    _getFlagEmoji(currentLocale),
-                    style: TextStyle(fontSize: isMobile ? 18 : 20),
-                  ),
+                  Text(_getFlagEmoji(currentLocale), style: TextStyle(fontSize: isMobile ? 18 : 20)),
                   if (!isMobile) ...[
                     const SizedBox(width: 8),
                     Text(
                       _getLanguageName(currentLocale),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF475569),
-                      ),
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF475569)),
                     ),
                     const SizedBox(width: 4),
-                    Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      size: 18,
-                      color: _hovered ? const Color(0xFF64748B) : const Color(0xFF94A3B8),
-                    ),
+                    Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: _hovered ? const Color(0xFF64748B) : const Color(0xFF94A3B8)),
                   ],
                 ],
               ),

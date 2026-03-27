@@ -143,12 +143,7 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
     final isMobile = context.isMobile;
 
     return Container(
-      padding: EdgeInsets.fromLTRB(
-        context.responsivePadding,
-        isMobile ? 16 : 20,
-        context.responsivePadding,
-        16,
-      ),
+      padding: EdgeInsets.fromLTRB(context.responsivePadding, isMobile ? 16 : 20, context.responsivePadding, 16),
       color: Colors.white,
       child: Row(
         children: [
@@ -178,11 +173,7 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
                             _invoiceNo = v;
                             _markEdited();
                           },
-                          style: TextStyle(
-                            fontSize: isMobile ? 16 : 20,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF1E293B),
-                          ),
+                          style: TextStyle(fontSize: isMobile ? 16 : 20, fontWeight: FontWeight.w700, color: const Color(0xFF1E293B)),
                           decoration: InputDecoration(
                             isDense: true,
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -257,12 +248,7 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
 
     return Container(
       color: Colors.white,
-      padding: EdgeInsets.fromLTRB(
-        context.responsivePadding,
-        0,
-        context.responsivePadding,
-        16,
-      ),
+      padding: EdgeInsets.fromLTRB(context.responsivePadding, 0, context.responsivePadding, 16),
       child: isMobile
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,11 +258,22 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
                 Row(
                   children: [
                     Expanded(
-                      child: _infoField(label: 'Tax ID', controller: _supplierTaxIdController, width: double.infinity, onChanged: (_) => _markEdited()),
+                      child: _infoField(
+                        label: 'Tax ID',
+                        controller: _supplierTaxIdController,
+                        width: double.infinity,
+                        onChanged: (_) => _markEdited(),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _infoField(label: 'Invoice Date', controller: _invoiceDateController, width: double.infinity, hint: 'YYYY-MM-DD', onChanged: (_) => _markEdited()),
+                      child: _infoField(
+                        label: 'Invoice Date',
+                        controller: _invoiceDateController,
+                        width: double.infinity,
+                        hint: 'YYYY-MM-DD',
+                        onChanged: (_) => _markEdited(),
+                      ),
                     ),
                   ],
                 ),
@@ -293,7 +290,13 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
                 _infoField(label: 'Supplier Address', controller: _supplierAddressController, width: 340, onChanged: (_) => _markEdited()),
                 _infoField(label: 'Tax ID', controller: _supplierTaxIdController, width: 140, onChanged: (_) => _markEdited()),
                 _infoField(label: 'Contact Number', controller: _contactNumberController, width: 180, onChanged: (_) => _markEdited()),
-                _infoField(label: 'Invoice Date', controller: _invoiceDateController, width: 140, hint: 'YYYY-MM-DD', onChanged: (_) => _markEdited()),
+                _infoField(
+                  label: 'Invoice Date',
+                  controller: _invoiceDateController,
+                  width: 140,
+                  hint: 'YYYY-MM-DD',
+                  onChanged: (_) => _markEdited(),
+                ),
                 _infoField(label: 'Contract Number', controller: _contractNumberController, width: 160, onChanged: (_) => _markEdited()),
               ],
             ),
@@ -353,21 +356,22 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
 
     return Container(
       color: Colors.white,
-      padding: EdgeInsets.fromLTRB(
-        context.responsivePadding,
-        0,
-        context.responsivePadding,
-        16,
-      ),
+      padding: EdgeInsets.fromLTRB(context.responsivePadding, 0, context.responsivePadding, 16),
       child: isMobile
           ? SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  SizedBox(width: 140, child: _SummaryCard(label: l10n.totalItems, value: '$_grandQty ${l10n.pcs}', icon: Icons.inventory_2_outlined, color: const Color(0xFF6366F1))),
+                  SizedBox(
+                    child: _SummaryCard(
+                      label: l10n.totalItems,
+                      value: '$_grandQty ${l10n.pcs}',
+                      icon: Icons.inventory_2_outlined,
+                      color: const Color(0xFF6366F1),
+                    ),
+                  ),
                   const SizedBox(width: 10),
                   SizedBox(
-                    width: 140,
                     child: _SummaryCard(
                       label: l10n.totalAmount,
                       value: '\$${_grandTotal.toStringAsFixed(2)}',
@@ -376,14 +380,28 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  SizedBox(width: 140, child: _SummaryCard(label: l10n.total, value: '${_rows.length} ${l10n.rows}', icon: Icons.list_alt_rounded, color: const Color(0xFFF59E0B))),
+                  SizedBox(
+                    child: _SummaryCard(
+                      label: l10n.total,
+                      value: '${_rows.length} ${l10n.rows}',
+                      icon: Icons.list_alt_rounded,
+                      color: const Color(0xFFF59E0B),
+                    ),
+                  ),
                   if (inv.invoiceUrl != null) ...[const SizedBox(width: 10), _ImageSummaryCard(url: inv.invoiceUrl!)],
                 ],
               ),
             )
           : Row(
               children: [
-                Expanded(child: _SummaryCard(label: l10n.totalItems, value: '$_grandQty ${l10n.pcs}', icon: Icons.inventory_2_outlined, color: const Color(0xFF6366F1))),
+                Expanded(
+                  child: _SummaryCard(
+                    label: l10n.totalItems,
+                    value: '$_grandQty ${l10n.pcs}',
+                    icon: Icons.inventory_2_outlined,
+                    color: const Color(0xFF6366F1),
+                  ),
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _SummaryCard(
@@ -394,7 +412,14 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Expanded(child: _SummaryCard(label: l10n.total, value: '${_rows.length} ${l10n.rows}', icon: Icons.list_alt_rounded, color: const Color(0xFFF59E0B))),
+                Expanded(
+                  child: _SummaryCard(
+                    label: l10n.total,
+                    value: '${_rows.length} ${l10n.rows}',
+                    icon: Icons.list_alt_rounded,
+                    color: const Color(0xFFF59E0B),
+                  ),
+                ),
                 if (inv.invoiceUrl != null) ...[const SizedBox(width: 12), _ImageSummaryCard(url: inv.invoiceUrl!)],
               ],
             ),
@@ -407,10 +432,7 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
     final isMobile = context.isMobile;
 
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: context.responsivePadding,
-        vertical: 10,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: context.responsivePadding, vertical: 10),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(
@@ -835,10 +857,7 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
         color: Colors.white,
         border: Border(top: BorderSide(color: Color(0xFFE2E8F0), width: 2)),
       ),
-      padding: EdgeInsets.symmetric(
-        horizontal: context.responsivePadding,
-        vertical: isMobile ? 12 : 14,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: context.responsivePadding, vertical: isMobile ? 12 : 14),
       child: isMobile
           ? Column(
               children: [
@@ -849,13 +868,19 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(l10n.totalQty, style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
-                        Text('$_grandQty ${l10n.pcs}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B))),
+                        Text(
+                          '$_grandQty ${l10n.pcs}',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                        ),
                       ],
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text(l10n.grandTotal, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF475569))),
+                        Text(
+                          l10n.grandTotal,
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
+                        ),
                         Text(
                           '\$${_grandTotal.toStringAsFixed(2)}',
                           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF6366F1)),
