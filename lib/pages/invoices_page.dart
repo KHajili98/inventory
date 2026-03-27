@@ -102,6 +102,12 @@ class _InvoicesPageState extends State<InvoicesPage> {
               status: InvoiceStatus.pending,
               rows: rows,
               invoiceUrl: newItem.invoiceImageUrl,
+              supplierAddress: response.extractedData?.supplierAddress,
+              supplierTaxId: response.extractedData?.supplierTaxId,
+              contactNumber: response.extractedData?.contactNumber,
+              contractNumber: response.extractedData?.contractNumber,
+              currency: response.extractedData?.currency ?? 'USD',
+              processingId: response.processingMetadata?.id,
             );
             _openEditPage(newRecord);
           },
@@ -117,9 +123,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
 
   void _openDetail(InvoiceRecord inv) {
     // Open read-only detail page using the UUID from the server
-    Navigator.of(context, rootNavigator: true).push(
-      MaterialPageRoute(builder: (_) => InvoiceDetailPage(invoiceId: inv.id)),
-    );
+    Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(builder: (_) => InvoiceDetailPage(invoiceId: inv.id)));
   }
 
   void _openEditPage(InvoiceRecord inv) {

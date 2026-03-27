@@ -10,6 +10,14 @@ class InvoiceRecord {
   final List<InvoiceRow> rows;
   final String? invoiceUrl;
 
+  // Extra fields from OCR result — needed for the confirm POST body
+  final String? supplierAddress;
+  final String? supplierTaxId;
+  final String? contactNumber;
+  final String? contractNumber;
+  final String? currency;
+  final String? processingId; // processing_metadata.id from OCR upload
+
   InvoiceRecord({
     required this.id,
     required this.invoiceNo,
@@ -21,6 +29,12 @@ class InvoiceRecord {
     required this.status,
     required this.rows,
     this.invoiceUrl,
+    this.supplierAddress,
+    this.supplierTaxId,
+    this.contactNumber,
+    this.contractNumber,
+    this.currency,
+    this.processingId,
   });
 }
 

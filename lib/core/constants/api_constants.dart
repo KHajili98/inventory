@@ -10,6 +10,9 @@ abstract class ApiConstants {
   /// Append `{id}/` to get a single invoice detail.
   static String invoiceDetail(String id) => '/api/invoices-list/$id/';
 
+  /// Confirm (submit) an invoice by UUID — sends the edited rows as JSON body.
+  static String invoiceConfirm(String id) => '/api/invoices-list/';
+
   // ── Timeouts ────────────────────────────────────────────────────────────────
   static const Duration connectTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(minutes: 3); // OCR can take ~75 s

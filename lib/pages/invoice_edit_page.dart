@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:inventory/core/network/api_result.dart';
+import 'package:inventory/features/invoice_confirm/data/repositories/invoice_confirm_repository.dart';
 import 'package:inventory/models/invoice_models.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 // ignore: avoid_web_libraries_in_flutter
@@ -20,6 +22,8 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
   late List<InvoiceRow> _rows;
   final Set<int> _selectedRows = {};
   bool _isEditing = false;
+  bool _hasEdits = false;
+  bool _isSubmitting = false;
 
   static const double _colCheck = 44;
   static const double _colIdx = 44;
@@ -40,6 +44,11 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
   void initState() {
     super.initState();
     _rows = List.from(widget.invoice.rows);
+  }
+
+  /// Called whenever any cell value changes so we can enable the submit button.
+  void _markEdited() {
+    if (!_hasEdits) setState(() => _hasEdits = true);
   }
 
   double get _grandTotal => _rows.fold(0.0, (s, r) => s + r.total);
@@ -63,6 +72,7 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
           totalWeightKg: 0,
         ),
       );
+      _hasEdits = true;
     });
   }
 
@@ -71,6 +81,7 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
       final indices = _selectedRows.toList()..sort((a, b) => b.compareTo(a));
       for (final i in indices) _rows.removeAt(i);
       _selectedRows.clear();
+      _hasEdits = true;
     });
   }
 
@@ -128,17 +139,6 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
               ],
             ),
           ),
-          OutlinedButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.download_rounded, size: 16),
-            label: Text(l10n.export),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF475569),
-              side: const BorderSide(color: Color(0xFFCBD5E1)),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-          ),
-          const SizedBox(width: 8),
           FilledButton.icon(
             onPressed: () => setState(() => _isEditing = !_isEditing),
             icon: Icon(_isEditing ? Icons.check_rounded : Icons.edit_rounded, size: 16),
@@ -326,39 +326,60 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
           _editableCell(
             value: row.productName,
             width: _colProduct,
-            onChanged: (v) => setState(() => _rows[index] = row.copyWith(productName: v)),
+            onChanged: (v) {
+              setState(() => _rows[index] = row.copyWith(productName: v));
+              _markEdited();
+            },
             bold: true,
           ),
           _editableCell(
             value: row.modelCode,
             width: _colModel,
-            onChanged: (v) => setState(() => _rows[index] = row.copyWith(modelCode: v)),
+            onChanged: (v) {
+              setState(() => _rows[index] = row.copyWith(modelCode: v));
+              _markEdited();
+            },
           ),
           _editableCell(
             value: row.size,
             width: _colSize,
-            onChanged: (v) => setState(() => _rows[index] = row.copyWith(size: v)),
+            onChanged: (v) {
+              setState(() => _rows[index] = row.copyWith(size: v));
+              _markEdited();
+            },
           ),
           _editableCell(
             value: row.color,
             width: _colColor,
-            onChanged: (v) => setState(() => _rows[index] = row.copyWith(color: v)),
+            onChanged: (v) {
+              setState(() => _rows[index] = row.copyWith(color: v));
+              _markEdited();
+            },
           ),
           _editableCell(
             value: row.colorCode,
             width: _colColorCode,
-            onChanged: (v) => setState(() => _rows[index] = row.copyWith(colorCode: v)),
+            onChanged: (v) {
+              setState(() => _rows[index] = row.copyWith(colorCode: v));
+              _markEdited();
+            },
           ),
           _numericCell(
             value: row.qty.toString(),
             width: _colQty,
             isInt: true,
-            onChanged: (v) => setState(() => _rows[index] = row.copyWith(qty: int.tryParse(v) ?? row.qty)),
+            onChanged: (v) {
+              setState(() => _rows[index] = row.copyWith(qty: int.tryParse(v) ?? row.qty));
+              _markEdited();
+            },
           ),
           _numericCell(
             value: row.unitPrice.toStringAsFixed(4),
             width: _colUnit,
-            onChanged: (v) => setState(() => _rows[index] = row.copyWith(unitPrice: double.tryParse(v) ?? row.unitPrice)),
+            onChanged: (v) {
+              setState(() => _rows[index] = row.copyWith(unitPrice: double.tryParse(v) ?? row.unitPrice));
+              _markEdited();
+            },
           ),
           _staticCell(
             row.total.toStringAsFixed(2),
@@ -369,24 +390,36 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
             value: row.piecesPerCarton.toString(),
             width: _colPcsCarton,
             isInt: true,
-            onChanged: (v) => setState(() => _rows[index] = row.copyWith(piecesPerCarton: int.tryParse(v) ?? row.piecesPerCarton)),
+            onChanged: (v) {
+              setState(() => _rows[index] = row.copyWith(piecesPerCarton: int.tryParse(v) ?? row.piecesPerCarton));
+              _markEdited();
+            },
           ),
           _numericCell(
             value: row.cartonCount.toString(),
             width: _colCarton,
-            onChanged: (v) => setState(() => _rows[index] = row.copyWith(cartonCount: double.tryParse(v) ?? row.cartonCount)),
+            onChanged: (v) {
+              setState(() => _rows[index] = row.copyWith(cartonCount: double.tryParse(v) ?? row.cartonCount));
+              _markEdited();
+            },
           ),
           _numericCell(
             value: row.grossWeight.toString(),
             width: _colGross,
             warning: row.hasWarning,
-            onChanged: (v) => setState(() => _rows[index] = row.copyWith(grossWeight: double.tryParse(v) ?? row.grossWeight)),
+            onChanged: (v) {
+              setState(() => _rows[index] = row.copyWith(grossWeight: double.tryParse(v) ?? row.grossWeight));
+              _markEdited();
+            },
           ),
           _numericCell(
             value: row.totalWeightKg.toString(),
             width: _colTotalWt,
             warning: row.hasWarning,
-            onChanged: (v) => setState(() => _rows[index] = row.copyWith(totalWeightKg: double.tryParse(v) ?? row.totalWeightKg)),
+            onChanged: (v) {
+              setState(() => _rows[index] = row.copyWith(totalWeightKg: double.tryParse(v) ?? row.totalWeightKg));
+              _markEdited();
+            },
           ),
         ],
       ),
@@ -528,14 +561,14 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
           _FooterStat(label: l10n.grandTotal, value: '\$${_grandTotal.toStringAsFixed(2)}', highlight: true),
           const SizedBox(width: 32),
           FilledButton.icon(
-            onPressed: () {
-              widget.onConfirmed?.call();
-              Navigator.of(context, rootNavigator: true).pop();
-            },
-            icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
+            onPressed: _hasEdits && !_isSubmitting ? _onConfirmAndSave : null,
+            icon: _isSubmitting
+                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Icon(Icons.check_circle_outline_rounded, size: 16),
             label: Text(l10n.confirmAndSave),
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFF6366F1),
+              disabledBackgroundColor: const Color(0xFFCBD5E1),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
             ),
@@ -543,6 +576,57 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
         ],
       ),
     );
+  }
+
+  Future<void> _onConfirmAndSave() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: const Text(
+          'Confirm & Save',
+          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+        ),
+        content: const Text(
+          'Are you sure you want to confirm and save this invoice? This action cannot be undone.',
+          style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('No', style: TextStyle(color: Color(0xFF64748B))),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF6366F1),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _isSubmitting = true);
+
+    final result = await InvoiceConfirmRepository.instance.confirmInvoice(invoiceId: widget.invoice.id, rows: _rows, invoice: widget.invoice);
+
+    if (!mounted) return;
+
+    setState(() => _isSubmitting = false);
+
+    switch (result) {
+      case Success():
+        widget.onConfirmed?.call();
+        Navigator.of(context, rootNavigator: true).pop();
+      case Failure(:final message):
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message), backgroundColor: const Color(0xFFEF4444), behavior: SnackBarBehavior.floating));
+    }
   }
 }
 
