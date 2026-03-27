@@ -6,6 +6,7 @@ import 'package:inventory/router/app_router.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 import 'package:inventory/cubit/locale_cubit.dart';
 import 'package:inventory/features/invoice_ocr/cubit/invoice_ocr_cubit.dart';
+import 'package:inventory/features/invoice_list/cubit/invoice_list_cubit.dart';
 
 void main() {
   runApp(
@@ -13,6 +14,7 @@ void main() {
       providers: [
         BlocProvider(create: (_) => LocaleCubit()),
         BlocProvider(create: (_) => InvoiceOcrCubit()),
+        BlocProvider(create: (_) => InvoiceListCubit()..fetchInvoices()),
       ],
       child: const MyApp(),
     ),

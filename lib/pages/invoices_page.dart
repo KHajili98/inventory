@@ -3,6 +3,9 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:inventory/features/invoice_list/cubit/invoice_list_cubit.dart';
+import 'package:inventory/features/invoice_list/cubit/invoice_list_state.dart';
+import 'package:inventory/features/invoice_list/data/models/invoice_list_response_model.dart';
 import 'package:inventory/features/invoice_ocr/cubit/invoice_ocr_cubit.dart';
 import 'package:inventory/features/invoice_ocr/cubit/invoice_ocr_state.dart';
 import 'package:inventory/features/invoice_ocr/data/models/invoice_upload_response_model.dart';
@@ -18,8 +21,34 @@ class InvoicesPage extends StatefulWidget {
 }
 
 class _InvoicesPageState extends State<InvoicesPage> {
-  final List<InvoiceRecord> _invoices = List.from(mockInvoices);
+  // Locally-added invoices (from OCR upload in this session) are stored here
+  // so they appear immediately without waiting for a re-fetch.
+  final List<InvoiceListItemModel> _locallyAdded = [];
   final bool _isProcessing = false;
+
+  // ── Helpers ─────────────────────────────────────────────────────────────────
+
+  /// Combines locally-added entries with the server list, de-duplicating by id.
+  List<InvoiceListItemModel> _mergeInvoices(List<InvoiceListItemModel> serverList) {
+    final serverIds = serverList.map((i) => i.id).toSet();
+    final extras = _locallyAdded.where((i) => !serverIds.contains(i.id)).toList();
+    return [...extras, ...serverList];
+  }
+
+  InvoiceRecord _toRecord(InvoiceListItemModel item) {
+    return InvoiceRecord(
+      id: item.id,
+      invoiceNo: item.invoiceNumber ?? item.id.substring(0, 8),
+      date: item.invoiceDate ?? '',
+      supplier: item.supplierName ?? 'Unknown Supplier',
+      buyer: 'Aydinoglu Trend NO.1LLC',
+      totalItems: item.totalItemsCount,
+      totalAmount: item.totalAmount ?? 0.0,
+      status: InvoiceStatus.pending,
+      rows: const [],
+      invoiceUrl: item.invoiceImageUrl,
+    );
+  }
 
   // ── Upload & OCR flow ───────────────────────────────────────────────────────
   Future<void> _pickAndProcessImage() async {
@@ -47,20 +76,33 @@ class _InvoicesPageState extends State<InvoicesPage> {
           onConfirm: (rows, response) {
             Navigator.of(context, rootNavigator: true).pop();
 
-            final newInvoice = InvoiceRecord(
+            final newItem = InvoiceListItemModel(
               id: response.processingMetadata?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-              invoiceNo: response.invoiceNumber ?? 'NEW-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}',
-              date: response.invoiceDate ?? DateTime.now().toIso8601String().split('T').first,
-              supplier: response.supplierName ?? 'Unknown Supplier',
+              invoiceNumber: response.invoiceNumber ?? 'NEW-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}',
+              invoiceDate: response.invoiceDate ?? DateTime.now().toIso8601String().split('T').first,
+              supplierName: response.supplierName ?? 'Unknown Supplier',
+              totalAmount: response.totalAmount ?? rows.fold<double>(0.0, (s, r) => s + r.total),
+              currency: 'USD',
+              invoiceImageUrl: response.invoiceUrl,
+              totalItemsCount: rows.fold(0, (s, r) => s + r.qty),
+              createdAt: DateTime.now(),
+            );
+
+            setState(() => _locallyAdded.insert(0, newItem));
+
+            final newRecord = InvoiceRecord(
+              id: newItem.id,
+              invoiceNo: newItem.invoiceNumber ?? newItem.id,
+              date: newItem.invoiceDate ?? '',
+              supplier: newItem.supplierName ?? 'Unknown Supplier',
               buyer: 'Aydinoglu Trend NO.1LLC',
               totalItems: rows.fold(0, (s, r) => s + r.qty),
-              totalAmount: response.totalAmount ?? rows.fold(0.0, (s, r) => s + r.total),
+              totalAmount: newItem.totalAmount ?? 0.0,
               status: InvoiceStatus.pending,
               rows: rows,
-              invoiceUrl: response.invoiceUrl,
+              invoiceUrl: newItem.invoiceImageUrl,
             );
-            setState(() => _invoices.insert(0, newInvoice));
-            _openDetail(newInvoice);
+            _openDetail(newRecord);
           },
         ),
       ),
@@ -79,19 +121,18 @@ class _InvoicesPageState extends State<InvoicesPage> {
           invoice: inv,
           onConfirmed: () {
             setState(() {
-              final idx = _invoices.indexWhere((i) => i.id == inv.id);
+              final idx = _locallyAdded.indexWhere((i) => i.id == inv.id);
               if (idx != -1) {
-                _invoices[idx] = InvoiceRecord(
+                _locallyAdded[idx] = InvoiceListItemModel(
                   id: inv.id,
-                  invoiceNo: inv.invoiceNo,
-                  date: inv.date,
-                  supplier: inv.supplier,
-                  buyer: inv.buyer,
-                  totalItems: inv.totalItems,
+                  invoiceNumber: inv.invoiceNo,
+                  invoiceDate: inv.date,
+                  supplierName: inv.supplier,
                   totalAmount: inv.totalAmount,
-                  status: InvoiceStatus.confirmed,
-                  rows: inv.rows,
-                  invoiceUrl: inv.invoiceUrl,
+                  currency: 'USD',
+                  invoiceImageUrl: inv.invoiceUrl,
+                  totalItemsCount: inv.totalItems,
+                  createdAt: _locallyAdded[idx].createdAt,
                 );
               }
             });
@@ -153,29 +194,75 @@ class _InvoicesPageState extends State<InvoicesPage> {
 
   Widget _buildStatsRow() {
     final l10n = AppLocalizations.of(context)!;
-    final totalAmount = _invoices.fold(0.0, (s, i) => s + i.totalAmount);
-    final pending = _invoices.where((i) => i.status == InvoiceStatus.pending).length;
-    final confirmed = _invoices.where((i) => i.status == InvoiceStatus.confirmed).length;
-    return Row(
-      children: [
-        _StatCard(label: l10n.totalInvoices, value: '${_invoices.length}', icon: Icons.receipt_long_rounded, color: const Color(0xFF6366F1)),
-        const SizedBox(width: 16),
-        _StatCard(
-          label: l10n.totalValue,
-          value: '\$${totalAmount.toStringAsFixed(2)}',
-          icon: Icons.payments_outlined,
-          color: const Color(0xFF22C55E),
-        ),
-        const SizedBox(width: 16),
-        _StatCard(label: l10n.pending, value: '$pending', icon: Icons.hourglass_empty_rounded, color: const Color(0xFFF59E0B)),
-        const SizedBox(width: 16),
-        _StatCard(label: l10n.confirmed, value: '$confirmed', icon: Icons.check_circle_outline_rounded, color: const Color(0xFF0EA5E9)),
-      ],
+    return BlocBuilder<InvoiceListCubit, InvoiceListState>(
+      builder: (context, state) {
+        final invoices = state is InvoiceListLoaded ? _mergeInvoices(state.invoices) : _locallyAdded;
+        final totalCount = state is InvoiceListLoaded ? state.totalCount : _locallyAdded.length;
+        final totalAmount = invoices.fold(0.0, (s, i) => s + (i.totalAmount ?? 0.0));
+        return Row(
+          children: [
+            _StatCard(label: l10n.totalInvoices, value: '$totalCount', icon: Icons.receipt_long_rounded, color: const Color(0xFF6366F1)),
+            const SizedBox(width: 16),
+            _StatCard(
+              label: l10n.totalValue,
+              value: '\$${totalAmount.toStringAsFixed(2)}',
+              icon: Icons.payments_outlined,
+              color: const Color(0xFF22C55E),
+            ),
+            const SizedBox(width: 16),
+            _StatCard(label: l10n.pending, value: '–', icon: Icons.hourglass_empty_rounded, color: const Color(0xFFF59E0B)),
+            const SizedBox(width: 16),
+            _StatCard(label: l10n.confirmed, value: '–', icon: Icons.check_circle_outline_rounded, color: const Color(0xFF0EA5E9)),
+          ],
+        );
+      },
     );
   }
 
   Widget _buildInvoiceList() {
-    if (_invoices.isEmpty) {
+    return BlocBuilder<InvoiceListCubit, InvoiceListState>(
+      builder: (context, state) {
+        return switch (state) {
+          InvoiceListInitial() || InvoiceListLoading() =>
+            _locallyAdded.isEmpty ? const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1))) : _buildLoadedList(_locallyAdded),
+          InvoiceListLoaded(:final invoices) => _buildLoadedList(_mergeInvoices(invoices)),
+          InvoiceListError(:final message) => _locallyAdded.isEmpty ? _buildErrorState(message) : _buildLoadedList(_locallyAdded),
+        };
+      },
+    );
+  }
+
+  Widget _buildErrorState(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(color: const Color(0xFFFEE2E2), borderRadius: BorderRadius.circular(16)),
+            child: const Icon(Icons.error_outline_rounded, color: Color(0xFFDC2626), size: 30),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            message,
+            style: const TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: () => context.read<InvoiceListCubit>().refresh(),
+            icon: const Icon(Icons.refresh_rounded, size: 16),
+            label: const Text('Retry'),
+            style: FilledButton.styleFrom(backgroundColor: const Color(0xFF6366F1)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadedList(List<InvoiceListItemModel> invoices) {
+    if (invoices.isEmpty) {
       return _EmptyState(onAdd: _pickAndProcessImage);
     }
 
@@ -190,10 +277,14 @@ class _InvoicesPageState extends State<InvoicesPage> {
         children: [
           _buildListHeader(),
           Expanded(
-            child: ListView.separated(
-              itemCount: _invoices.length,
-              separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
-              itemBuilder: (context, i) => _buildInvoiceRow(_invoices[i]),
+            child: RefreshIndicator(
+              color: const Color(0xFF6366F1),
+              onRefresh: () => context.read<InvoiceListCubit>().refresh(),
+              child: ListView.separated(
+                itemCount: invoices.length,
+                separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                itemBuilder: (context, i) => _buildInvoiceRow(invoices[i]),
+              ),
             ),
           ),
         ],
@@ -228,9 +319,10 @@ class _InvoicesPageState extends State<InvoicesPage> {
     );
   }
 
-  Widget _buildInvoiceRow(InvoiceRecord inv) {
+  Widget _buildInvoiceRow(InvoiceListItemModel inv) {
+    final record = _toRecord(inv);
     return InkWell(
-      onTap: () => _openDetail(inv),
+      onTap: () => _openDetail(record),
       borderRadius: BorderRadius.circular(8),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
@@ -250,7 +342,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '#${inv.invoiceNo}',
+                      '#${inv.invoiceNumber ?? inv.id.substring(0, 8)}',
                       style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -261,7 +353,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
             // Supplier
             Expanded(
               child: Text(
-                inv.supplier,
+                inv.supplierName ?? '–',
                 style: const TextStyle(fontSize: 13, color: Color(0xFF475569)),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -269,7 +361,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
             // Date
             SizedBox(
               width: 100,
-              child: Text(inv.date, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+              child: Text(inv.invoiceDate ?? '–', style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
             ),
             // Items
             Builder(
@@ -277,7 +369,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
                 final l10n = AppLocalizations.of(context)!;
                 return SizedBox(
                   width: 80,
-                  child: Text('${inv.totalItems} ${l10n.pcs}', style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
+                  child: Text('${inv.totalItemsCount} ${l10n.pcs}', style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
                 );
               },
             ),
@@ -285,37 +377,10 @@ class _InvoicesPageState extends State<InvoicesPage> {
             SizedBox(
               width: 110,
               child: Text(
-                '\$${inv.totalAmount.toStringAsFixed(2)}',
+                '\$${(inv.totalAmount ?? 0.0).toStringAsFixed(2)}',
                 style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
               ),
             ),
-            // Status
-            // SizedBox(width: 100, child: _StatusBadge(status: inv.status)),
-
-            // Actions
-            // SizedBox(
-            //   width: 90,
-            //   child: Builder(
-            //     builder: (context) {
-            //       final l10n = AppLocalizations.of(context)!;
-            //       return Row(
-            //         mainAxisAlignment: MainAxisAlignment.end,
-            //         children: [
-            //           _ActionBtn(icon: Icons.visibility_outlined, tooltip: l10n.view, onTap: () => _openDetail(inv)),
-            //           const SizedBox(width: 2),
-            //           _ActionBtn(icon: Icons.download_outlined, tooltip: l10n.export, onTap: () {}),
-            //           const SizedBox(width: 2),
-            //           _ActionBtn(
-            //             icon: Icons.delete_outline_rounded,
-            //             tooltip: l10n.delete,
-            //             color: const Color(0xFFEF4444),
-            //             onTap: () => setState(() => _invoices.remove(inv)),
-            //           ),
-            //         ],
-            //       );
-            //     },
-            //   ),
-            // ),
           ],
         ),
       ),
@@ -722,52 +787,6 @@ class _StatCard extends StatelessWidget {
               ],
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _StatusBadge extends StatelessWidget {
-  final InvoiceStatus status;
-  const _StatusBadge({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final (label, bg, fg) = switch (status) {
-      InvoiceStatus.pending => (l10n.pending, const Color(0xFFFEF3C7), const Color(0xFFB45309)),
-      InvoiceStatus.confirmed => (l10n.confirmed, const Color(0xFFDCFCE7), const Color(0xFF15803D)),
-      InvoiceStatus.cancelled => (l10n.cancelled, const Color(0xFFFEE2E2), const Color(0xFFDC2626)),
-    };
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
-      child: Text(
-        label,
-        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: fg),
-      ),
-    );
-  }
-}
-
-class _ActionBtn extends StatelessWidget {
-  final IconData icon;
-  final String tooltip;
-  final VoidCallback onTap;
-  final Color color;
-  const _ActionBtn({required this.icon, required this.tooltip, required this.onTap, this.color = const Color(0xFF64748B)});
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(6),
-        child: Padding(
-          padding: const EdgeInsets.all(6),
-          child: Icon(icon, size: 18, color: color),
         ),
       ),
     );
