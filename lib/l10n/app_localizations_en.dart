@@ -256,4 +256,231 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adjustFilters => 'Try adjusting your filters or search query';
+
+  @override
+  String get selected => 'selected';
+
+  @override
+  String get totals => 'TOTALS';
+
+  @override
+  String get totalQty => 'Total Qty';
+
+  @override
+  String get grandTotal => 'Grand Total';
+
+  @override
+  String get confirmAndSave => 'Confirm & Save';
+
+  @override
+  String get trackStockLevels => 'Track stock levels, locations and valuations';
+
+  @override
+  String get addProduct => 'Add Product';
+
+  @override
+  String get chooseHowToAddProduct => 'Choose how you want to add the product';
+
+  @override
+  String get manualEntry => 'Manual Entry';
+
+  @override
+  String get fillProductDetails => 'Fill in all product\ndetails by hand';
+
+  @override
+  String get fromInvoice => 'From Invoice';
+
+  @override
+  String get importFromInvoice => 'Import from a\nconfirmed invoice';
+
+  @override
+  String get totalSKUs => 'Total SKUs';
+
+  @override
+  String get totalUnits => 'Total Units';
+
+  @override
+  String get searchSKUNameBarcode => 'Search SKU, name, barcode, location…';
+
+  @override
+  String get noProductsMatchSearch => 'No products match your search.';
+
+  @override
+  String get all => 'All';
+
+  @override
+  String get scrollToStart => 'Scroll to start';
+
+  @override
+  String get scrollToEnd => 'Scroll to end';
+
+  @override
+  String get scrollToTop => 'Scroll to top';
+
+  @override
+  String get scrollToBottom => 'Scroll to bottom';
+
+  @override
+  String get scrollLeft => 'Scroll left';
+
+  @override
+  String get scrollRight => 'Scroll right';
+
+  @override
+  String get scrollUp => 'Scroll up';
+
+  @override
+  String get scrollDown => 'Scroll down';
+
+  @override
+  String get horizontal => 'Horizontal';
+
+  @override
+  String get vertical => 'Vertical';
+
+  @override
+  String get location => 'Location';
+
+  @override
+  String nOfMProducts(int n, int m) {
+    return '$n of $m products';
+  }
+
+  @override
+  String get selectInvoice => 'Select Invoice';
+
+  @override
+  String get chooseInvoiceToImport =>
+      'Choose an invoice to import products from';
+
+  @override
+  String get noInvoicesAvailable => 'No invoices available';
+
+  @override
+  String get addInvoicesFirst => 'Add invoices in the Invoices module first';
+
+  @override
+  String importFromInvoiceNo(String invoiceNo) {
+    return 'Import from $invoiceNo';
+  }
+
+  @override
+  String get selectProducts => 'Select Products';
+
+  @override
+  String get enterDetails => 'Enter Details';
+
+  @override
+  String nUniqueSkusFromInvoice(int n) {
+    return '$n unique SKUs from invoice';
+  }
+
+  @override
+  String get deselectAll => 'Deselect All';
+
+  @override
+  String get selectAllLabel => 'Select All';
+
+  @override
+  String get invQty => 'Inv. Qty';
+
+  @override
+  String get invTotal => 'Inv. Total';
+
+  @override
+  String fillWarehouseDetails(int count) {
+    return 'Fill in warehouse details for $count selected product(s)';
+  }
+
+  @override
+  String invoiceQtyLabel(int qty) {
+    return 'Invoice qty: $qty';
+  }
+
+  @override
+  String get actualQtyReceived => 'Actual Qty Received';
+
+  @override
+  String vsInvoice(String diff) {
+    return '$diff vs invoice';
+  }
+
+  @override
+  String get warehouseLocation => 'Warehouse Location';
+
+  @override
+  String get zone => 'Zone';
+
+  @override
+  String get row => 'Row';
+
+  @override
+  String get shelf => 'Shelf';
+
+  @override
+  String get codeLabel => 'Code';
+
+  @override
+  String get back => 'Back';
+
+  @override
+  String get nextEnterDetails => 'Next: Enter Details';
+
+  @override
+  String nOfMSelected(int n, int m) {
+    return '$n of $m selected';
+  }
+
+  @override
+  String importNProducts(int n) {
+    return 'Import $n Product(s)';
+  }
+
+  @override
+  String nProductsImported(int n, String invoiceNo) {
+    return '$n product(s) imported from invoice $invoiceNo';
+  }
+
+  @override
+  String get editProduct => 'Edit Product';
+
+  @override
+  String get addNewProduct => 'Add New Product';
+
+  @override
+  String get skuField => 'SKU';
+
+  @override
+  String get modelField => 'Model';
+
+  @override
+  String get colorField => 'Color';
+
+  @override
+  String get barcodeField => 'Barcode';
+
+  @override
+  String get quantityField => 'Quantity';
+
+  @override
+  String get unitPriceUSD => 'Unit Price (USD)';
+
+  @override
+  String get zoneLetter => 'Zone letter (A–Z)';
+
+  @override
+  String locationCode(String code) {
+    return 'Location code: $code';
+  }
+
+  @override
+  String get saveChanges => 'Save Changes';
+
+  @override
+  String get required => 'Required';
+
+  @override
+  String discrepancyTooltip(String diff) {
+    return 'Discrepancy: $diff vs invoice';
+  }
 }

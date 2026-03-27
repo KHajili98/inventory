@@ -163,5 +163,141 @@
 
   "noProducts": "Məhsul tapılmadı",
 
-  "adjustFilters": "Filtrlər və ya axtarış sorğusunu tənzimlə"
+  "adjustFilters": "Filtrlər və ya axtarış sorğusunu tənzimlə",
+
+  "selected": "seçildi",
+
+  "totals": "CƏMLƏR",
+
+  "totalQty": "Ümumi Say",
+
+  "grandTotal": "Ümumi Məbləğ",
+
+  "confirmAndSave": "Təsdiq Et və Saxla",
+
+  "trackStockLevels": "Stok səviyyələrini, yerləşmələri və qiymətləndirmələri izləyin",
+
+  "addProduct": "Məhsul Əlavə Et",
+
+  "chooseHowToAddProduct": "Məhsulu necə əlavə etmək istədiyinizi seçin",
+
+  "manualEntry": "Manual Giriş",
+
+  "fillProductDetails": "Bütün məhsul məlumatlarını\nəl ilə doldurun",
+
+  "fromInvoice": "Qaimədən",
+
+  "importFromInvoice": "Təsdiqlənmiş qaimədən\nidxal edin",
+
+  "totalSKUs": "Ümumi SKU-lar",
+
+  "totalUnits": "Ümumi Vahidlər",
+
+  "searchSKUNameBarcode": "SKU, ad, barkod, yerləşmə axtarın…",
+
+  "noProductsMatchSearch": "Axtarışa uyğun məhsul tapılmadı.",
+
+  "all": "Hamısı",
+
+  "scrollToStart": "Əvvələ get",
+
+  "scrollToEnd": "Sona get",
+
+  "scrollToTop": "Yuxarıya get",
+
+  "scrollToBottom": "Aşağıya get",
+
+  "scrollLeft": "Sola sürüşdür",
+
+  "scrollRight": "Sağa sürüşdür",
+
+  "scrollUp": "Yuxarı sürüşdür",
+
+  "scrollDown": "Aşağı sürüşdür",
+
+  "horizontal": "Üfüqi",
+
+  "vertical": "Şaquli",
+
+  "location": "Yer",
+
+  "nOfMProducts": "{n}/{m} məhsul",
+
+  "selectInvoice": "Qaimə Seçin",
+
+  "chooseInvoiceToImport": "Məhsulları idxal etmək üçün qaimə seçin",
+
+  "noInvoicesAvailable": "Qaimə mövcud deyil",
+
+  "addInvoicesFirst": "Əvvəlcə Qaimələr modulunda qaimə əlavə edin",
+
+  "importFromInvoiceNo": "{invoiceNo} qaiməsindən idxal",
+
+  "selectProducts": "Məhsulları Seçin",
+
+  "enterDetails": "Məlumatları Daxil Et",
+
+  "nUniqueSkusFromInvoice": "Qaimədən {n} unikal SKU",
+
+  "deselectAll": "Hamısını Ləğv Et",
+
+  "selectAllLabel": "Hamısını Seç",
+
+  "invQty": "Qaim. Say",
+
+  "invTotal": "Qaim. Cəmi",
+
+  "fillWarehouseDetails": "{count} seçilmiş məhsul üçün anbar məlumatlarını doldurun",
+
+  "invoiceQtyLabel": "Qaimə say: {qty}",
+
+  "actualQtyReceived": "Faktiki Qəbul Edilən Say",
+
+  "vsInvoice": "{diff} qaiməyə nisbətən",
+
+  "warehouseLocation": "Anbar Yeri",
+
+  "zone": "Zona",
+
+  "row": "Sıra",
+
+  "shelf": "Rəf",
+
+  "codeLabel": "Kod",
+
+  "back": "Geri",
+
+  "nextEnterDetails": "Növbəti: Məlumatları Daxil Et",
+
+  "nOfMSelected": "{n}/{m} seçildi",
+
+  "importNProducts": "{n} Məhsul İdxal Et",
+
+  "nProductsImported": "{n} məhsul {invoiceNo} qaiməsindən idxal edildi",
+
+  "editProduct": "Məhsulu Redaktə Et",
+
+  "addNewProduct": "Yeni Məhsul Əlavə Et",
+
+  "skuField": "SKU",
+
+  "modelField": "Model",
+
+  "colorField": "Rəng",
+
+  "barcodeField": "Barkod",
+
+  "quantityField": "Miqdar",
+
+  "unitPriceUSD": "Vahid Qiymət (USD)",
+
+  "zoneLetter": "Zona hərfi (A–Z)",
+
+  "locationCode": "Yer kodu: {code}",
+
+  "saveChanges": "Dəyişiklikləri Saxla",
+
+  "required": "Tələb olunur",
+
+  "discrepancyTooltip": "Uyğunsuzluq: {diff} qaiməyə nisbətən"
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inventory/models/invoice_models.dart';
 import 'package:inventory/models/product_models.dart';
+import 'package:inventory/l10n/app_localizations.dart';
 
 class InventoryProductsPage extends StatefulWidget {
   const InventoryProductsPage({super.key});
@@ -208,30 +209,31 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
   }
 
   Widget _buildTopBar() {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
-        const Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Inventory Products',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+              l10n.inventoryProducts,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
             ),
-            SizedBox(height: 2),
-            Text('Track stock levels, locations and valuations', style: TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+            const SizedBox(height: 2),
+            Text(l10n.trackStockLevels, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
           ],
         ),
         const Spacer(),
         if (_selectedIds.isNotEmpty) ...[
           Text(
-            '${_selectedIds.length} selected',
+            '${_selectedIds.length} ${l10n.selected}',
             style: const TextStyle(fontSize: 13, color: Color(0xFF6366F1), fontWeight: FontWeight.w500),
           ),
           const SizedBox(width: 12),
           OutlinedButton.icon(
             onPressed: _deleteSelected,
             icon: const Icon(Icons.delete_outline_rounded, size: 16),
-            label: const Text('Delete'),
+            label: Text(l10n.delete),
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFFEF4444),
               side: const BorderSide(color: Color(0xFFEF4444)),
@@ -243,7 +245,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
         FilledButton.icon(
           onPressed: _showAddChoiceDialog,
           icon: const Icon(Icons.add_rounded, size: 18),
-          label: const Text('Add Product'),
+          label: Text(l10n.addProduct),
           style: FilledButton.styleFrom(
             backgroundColor: const Color(0xFF6366F1),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -257,6 +259,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
 
   // ── Choice dialog ────────────────────────────────────────────────────────────
   void _showAddChoiceDialog() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       barrierColor: Colors.black26,
@@ -276,14 +279,14 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
                   child: const Icon(Icons.add_box_rounded, color: Color(0xFF6366F1), size: 26),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'Add Product',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                Text(
+                  l10n.addProduct,
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
                 ),
                 const SizedBox(height: 6),
-                const Text(
-                  'Choose how you want to add the product',
-                  style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                Text(
+                  l10n.chooseHowToAddProduct,
+                  style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 28),
@@ -294,8 +297,8 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
                         icon: Icons.edit_note_rounded,
                         iconColor: const Color(0xFF6366F1),
                         iconBg: const Color(0xFFEEF2FF),
-                        title: 'Manual Entry',
-                        subtitle: 'Fill in all product\ndetails by hand',
+                        title: l10n.manualEntry,
+                        subtitle: l10n.fillProductDetails,
                         onTap: () {
                           Navigator.of(context, rootNavigator: true).pop();
                           _showProductDialog();
@@ -308,8 +311,8 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
                         icon: Icons.receipt_long_rounded,
                         iconColor: const Color(0xFF0EA5E9),
                         iconBg: const Color(0xFFE0F2FE),
-                        title: 'From Invoice',
-                        subtitle: 'Import from a\nconfirmed invoice',
+                        title: l10n.fromInvoice,
+                        subtitle: l10n.importFromInvoice,
                         onTap: () {
                           Navigator.of(context, rootNavigator: true).pop();
                           _showInvoicePickerDialog();
@@ -321,7 +324,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
                 const SizedBox(height: 20),
                 TextButton(
                   onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-                  child: const Text('Cancel', style: TextStyle(color: Color(0xFF94A3B8))),
+                  child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF94A3B8))),
                 ),
               ],
             ),
@@ -354,9 +357,10 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
             _allProducts.addAll(products);
             _applyFilter();
           });
+          final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${products.length} product(s) imported from invoice ${invoice.invoiceNo}'),
+              content: Text(l10n.nProductsImported(products.length, invoice.invoiceNo)),
               backgroundColor: const Color(0xFF22C55E),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -368,24 +372,31 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
   }
 
   Widget _buildStatsRow() {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
-        _StatCard(label: 'Total SKUs', value: '${_allProducts.length}', icon: Icons.inventory_2_outlined, color: const Color(0xFF6366F1)),
+        _StatCard(label: l10n.totalSKUs, value: '${_allProducts.length}', icon: Icons.inventory_2_outlined, color: const Color(0xFF6366F1)),
         const SizedBox(width: 16),
-        _StatCard(label: 'Total Units', value: '$_totalQty pcs', icon: Icons.layers_outlined, color: const Color(0xFF0EA5E9)),
+        _StatCard(label: l10n.totalUnits, value: '$_totalQty ${l10n.pcs}', icon: Icons.layers_outlined, color: const Color(0xFF0EA5E9)),
         const SizedBox(width: 16),
-        _StatCard(label: 'Total Value', value: '\$${_totalValue.toStringAsFixed(2)}', icon: Icons.payments_outlined, color: const Color(0xFF22C55E)),
+        _StatCard(
+          label: l10n.totalValue,
+          value: '\$${_totalValue.toStringAsFixed(2)}',
+          icon: Icons.payments_outlined,
+          color: const Color(0xFF22C55E),
+        ),
         const SizedBox(width: 16),
-        _StatCard(label: 'In Stock', value: '$_inStockCount', icon: Icons.check_circle_outline_rounded, color: const Color(0xFF22C55E)),
+        _StatCard(label: l10n.inStock, value: '$_inStockCount', icon: Icons.check_circle_outline_rounded, color: const Color(0xFF22C55E)),
         const SizedBox(width: 16),
-        _StatCard(label: 'Low Stock', value: '$_lowStockCount', icon: Icons.warning_amber_rounded, color: const Color(0xFFF59E0B)),
+        _StatCard(label: l10n.lowStock, value: '$_lowStockCount', icon: Icons.warning_amber_rounded, color: const Color(0xFFF59E0B)),
         const SizedBox(width: 16),
-        _StatCard(label: 'Out of Stock', value: '$_outCount', icon: Icons.remove_circle_outline_rounded, color: const Color(0xFFEF4444)),
+        _StatCard(label: l10n.outOfStock, value: '$_outCount', icon: Icons.remove_circle_outline_rounded, color: const Color(0xFFEF4444)),
       ],
     );
   }
 
   Widget _buildFilterBar() {
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -399,7 +410,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
                 _applyFilter();
               },
               decoration: InputDecoration(
-                hintText: 'Search SKU, name, barcode, location…',
+                hintText: l10n.searchSKUNameBarcode,
                 hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
                 prefixIcon: const Icon(Icons.search_rounded, size: 18, color: Color(0xFF94A3B8)),
                 filled: true,
@@ -422,7 +433,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
           ),
           const SizedBox(width: 12),
           _FilterChip(
-            label: 'All',
+            label: l10n.all,
             selected: _statusFilter == null,
             onTap: () {
               _statusFilter = null;
@@ -431,7 +442,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
           ),
           const SizedBox(width: 8),
           _FilterChip(
-            label: 'In Stock',
+            label: l10n.inStock,
             selected: _statusFilter == ProductStatus.inStock,
             color: const Color(0xFF22C55E),
             onTap: () {
@@ -441,7 +452,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
           ),
           const SizedBox(width: 8),
           _FilterChip(
-            label: 'Low Stock',
+            label: l10n.lowStock,
             selected: _statusFilter == ProductStatus.lowStock,
             color: const Color(0xFFF59E0B),
             onTap: () {
@@ -451,7 +462,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
           ),
           const SizedBox(width: 8),
           _FilterChip(
-            label: 'Out of Stock',
+            label: l10n.outOfStock,
             selected: _statusFilter == ProductStatus.outOfStock,
             color: const Color(0xFFEF4444),
             onTap: () {
@@ -460,7 +471,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
             },
           ),
           const SizedBox(width: 16),
-          Text('${_filtered.length} of ${_allProducts.length} products', style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8))),
+          Text(l10n.nOfMProducts(_filtered.length, _allProducts.length), style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8))),
         ],
       ),
     );
@@ -499,8 +510,8 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
           // ── Scrollable body + right vertical scrollbar ────────────────────
           Expanded(
             child: _filtered.isEmpty
-                ? const Center(
-                    child: Text('No products match your search.', style: TextStyle(fontSize: 14, color: Color(0xFF94A3B8))),
+                ? Center(
+                    child: Text(AppLocalizations.of(context)!.noProductsMatchSearch, style: const TextStyle(fontSize: 14, color: Color(0xFF94A3B8))),
                   )
                 : Row(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -540,6 +551,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
 
   /// Top bar: ← scroll left  |  → scroll right  |  spacer  |  ↑ top  |  ↓ bottom
   Widget _buildHNavBar() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: const BoxDecoration(
@@ -550,7 +562,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
         children: [
           _NavBtn(
             icon: Icons.keyboard_double_arrow_left_rounded,
-            tooltip: 'Scroll to start',
+            tooltip: l10n.scrollToStart,
             onTap: () {
               if (_hScrollController.hasClients) {
                 _hScrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
@@ -558,13 +570,13 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
             },
           ),
           const SizedBox(width: 4),
-          _NavBtn(icon: Icons.chevron_left_rounded, tooltip: 'Scroll left', onTap: () => _scrollH(-_hScrollStep)),
+          _NavBtn(icon: Icons.chevron_left_rounded, tooltip: l10n.scrollLeft, onTap: () => _scrollH(-_hScrollStep)),
           const SizedBox(width: 4),
-          _NavBtn(icon: Icons.chevron_right_rounded, tooltip: 'Scroll right', onTap: () => _scrollH(_hScrollStep)),
+          _NavBtn(icon: Icons.chevron_right_rounded, tooltip: l10n.scrollRight, onTap: () => _scrollH(_hScrollStep)),
           const SizedBox(width: 4),
           _NavBtn(
             icon: Icons.keyboard_double_arrow_right_rounded,
-            tooltip: 'Scroll to end',
+            tooltip: l10n.scrollToEnd,
             onTap: () {
               if (_hScrollController.hasClients) {
                 _hScrollController.animateTo(
@@ -576,21 +588,21 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
             },
           ),
           const Spacer(),
-          const Text('Horizontal', style: TextStyle(fontSize: 11, color: Color(0xFFCBD5E1))),
+          Text(l10n.horizontal, style: const TextStyle(fontSize: 11, color: Color(0xFFCBD5E1))),
           const SizedBox(width: 12),
           const VerticalDivider(width: 1, thickness: 1, color: Color(0xFFE2E8F0)),
           const SizedBox(width: 12),
-          const Text('Vertical', style: TextStyle(fontSize: 11, color: Color(0xFFCBD5E1))),
+          Text(l10n.vertical, style: const TextStyle(fontSize: 11, color: Color(0xFFCBD5E1))),
           const SizedBox(width: 4),
           _NavBtn(
             icon: Icons.keyboard_double_arrow_up_rounded,
-            tooltip: 'Scroll to top',
+            tooltip: l10n.scrollToTop,
             onTap: () => _vScrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut),
           ),
           const SizedBox(width: 4),
           _NavBtn(
             icon: Icons.keyboard_double_arrow_down_rounded,
-            tooltip: 'Scroll to bottom',
+            tooltip: l10n.scrollToBottom,
             onTap: () => _vScrollController.animateTo(
               _vScrollController.position.maxScrollExtent,
               duration: const Duration(milliseconds: 300),
@@ -604,6 +616,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
 
   /// Right-side column with up/down step buttons
   Widget _buildVNavBar() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: 32,
       decoration: const BoxDecoration(
@@ -613,9 +626,9 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _NavBtn(icon: Icons.keyboard_arrow_up_rounded, tooltip: 'Scroll up', onTap: () => _scrollV(-_vScrollStep)),
+          _NavBtn(icon: Icons.keyboard_arrow_up_rounded, tooltip: l10n.scrollUp, onTap: () => _scrollV(-_vScrollStep)),
           const SizedBox(height: 4),
-          _NavBtn(icon: Icons.keyboard_arrow_down_rounded, tooltip: 'Scroll down', onTap: () => _scrollV(_vScrollStep)),
+          _NavBtn(icon: Icons.keyboard_arrow_down_rounded, tooltip: l10n.scrollDown, onTap: () => _scrollV(_vScrollStep)),
         ],
       ),
     );
@@ -623,6 +636,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
 
   /// Bottom area: draggable/clickable horizontal scrollbar + step buttons on either side
   Widget _buildHScrollBar() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       height: 32,
       decoration: const BoxDecoration(
@@ -632,7 +646,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
       ),
       child: Row(
         children: [
-          _NavBtn(icon: Icons.chevron_left_rounded, tooltip: 'Scroll left', onTap: () => _scrollH(-_hScrollStep)),
+          _NavBtn(icon: Icons.chevron_left_rounded, tooltip: l10n.scrollLeft, onTap: () => _scrollH(-_hScrollStep)),
           Expanded(
             child: Scrollbar(
               controller: _hBarController,
@@ -646,13 +660,14 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
               ),
             ),
           ),
-          _NavBtn(icon: Icons.chevron_right_rounded, tooltip: 'Scroll right', onTap: () => _scrollH(_hScrollStep)),
+          _NavBtn(icon: Icons.chevron_right_rounded, tooltip: l10n.scrollRight, onTap: () => _scrollH(_hScrollStep)),
         ],
       ),
     );
   }
 
   Widget _buildHeaderRow() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: const BoxDecoration(
         color: Color(0xFFF8FAFC),
@@ -677,18 +692,18 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
             ),
           ),
           _headerCell('#', _colIdx, null),
-          _headerCell('SKU', _colSku, 'sku'),
-          _headerCell('Model', _colName, null),
-          _headerCell('Color', _colColor, 'color'),
-          _headerCell('Actual Qty', _colActQty, 'qty'),
-          _headerCell('Invoice Qty', _colInvQty, null),
-          _headerCell('Unit Price', _colUnit, 'unit'),
-          _headerCell('Invoice Total', _colInvTotal, null),
-          _headerCell('Actual Total', _colActTotal, 'total'),
-          _headerCell('Barcode', _colBarcode, 'barcode'),
-          _headerCell('Location', _colCoord, 'coord'),
-          _headerCell('Source', _colSource, null),
-          _headerCell('Status', _colStatus, null),
+          _headerCell(l10n.sku, _colSku, 'sku'),
+          _headerCell(l10n.model, _colName, null),
+          _headerCell(l10n.color, _colColor, 'color'),
+          _headerCell(l10n.actualQty, _colActQty, 'qty'),
+          _headerCell(l10n.invoiceQty, _colInvQty, null),
+          _headerCell(l10n.unitPrice, _colUnit, 'unit'),
+          _headerCell(l10n.invoiceTotal, _colInvTotal, null),
+          _headerCell(l10n.actualTotal, _colActTotal, 'total'),
+          _headerCell(l10n.barcode, _colBarcode, 'barcode'),
+          _headerCell(l10n.location, _colCoord, 'coord'),
+          _headerCell(l10n.source, _colSource, null),
+          _headerCell(l10n.status, _colStatus, null),
           SizedBox(width: _colActions),
         ],
       ),
@@ -738,6 +753,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
   }
 
   Widget _buildProductRow(int index, Product product) {
+    final l10n = AppLocalizations.of(context)!;
     final isSelected = _selectedIds.contains(product.id);
     final isOdd = index.isOdd;
     final rowBg = isSelected
@@ -834,7 +850,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
                     if (hasDiscrepancy) ...[
                       const SizedBox(width: 4),
                       Tooltip(
-                        message: 'Discrepancy: ${product.qtyDiscrepancy! > 0 ? '+' : ''}${product.qtyDiscrepancy} vs invoice',
+                        message: l10n.discrepancyTooltip('${product.qtyDiscrepancy! > 0 ? '+' : ''}${product.qtyDiscrepancy}'),
                         child: Icon(
                           product.qtyDiscrepancy! > 0 ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
                           size: 13,
@@ -958,12 +974,12 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
                 children: [
                   _IconBtn(
                     icon: Icons.edit_outlined,
-                    tooltip: 'Edit',
+                    tooltip: l10n.edit,
                     onTap: () => _showProductDialog(product: product),
                   ),
                   _IconBtn(
                     icon: Icons.delete_outline_rounded,
-                    tooltip: 'Delete',
+                    tooltip: l10n.delete,
                     color: const Color(0xFFEF4444),
                     onTap: () => setState(() {
                       _allProducts.removeWhere((p) => p.id == product.id);
@@ -1038,6 +1054,7 @@ class _InvoicePickerDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: SizedBox(
@@ -1057,15 +1074,15 @@ class _InvoicePickerDialog extends StatelessWidget {
                     child: const Icon(Icons.receipt_long_rounded, color: Color(0xFF0284C7), size: 20),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Select Invoice',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                          l10n.selectInvoice,
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
                         ),
-                        Text('Choose an invoice to import products from', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                        Text(l10n.chooseInvoiceToImport, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
                       ],
                     ),
                   ),
@@ -1079,16 +1096,16 @@ class _InvoicePickerDialog extends StatelessWidget {
               const Divider(color: Color(0xFFE2E8F0)),
               const SizedBox(height: 16),
               if (invoices.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 32),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 32),
                   child: Center(
                     child: Column(
                       children: [
-                        Icon(Icons.inbox_rounded, size: 40, color: Color(0xFFCBD5E1)),
-                        SizedBox(height: 8),
-                        Text('No invoices available', style: TextStyle(fontSize: 14, color: Color(0xFF94A3B8))),
-                        SizedBox(height: 4),
-                        Text('Add invoices in the Invoices module first', style: TextStyle(fontSize: 12, color: Color(0xFFCBD5E1))),
+                        const Icon(Icons.inbox_rounded, size: 40, color: Color(0xFFCBD5E1)),
+                        const SizedBox(height: 8),
+                        Text(l10n.noInvoicesAvailable, style: const TextStyle(fontSize: 14, color: Color(0xFF94A3B8))),
+                        const SizedBox(height: 4),
+                        Text(l10n.addInvoicesFirst, style: const TextStyle(fontSize: 12, color: Color(0xFFCBD5E1))),
                       ],
                     ),
                   ),
@@ -1107,7 +1124,11 @@ class _InvoicePickerDialog extends StatelessWidget {
                           : inv.status == InvoiceStatus.pending
                           ? const Color(0xFFF59E0B)
                           : const Color(0xFFEF4444);
-                      final statusLabel = inv.status.name[0].toUpperCase() + inv.status.name.substring(1);
+                      final statusLabel = inv.status == InvoiceStatus.confirmed
+                          ? l10n.confirmed
+                          : inv.status == InvoiceStatus.pending
+                          ? l10n.pending
+                          : l10n.cancelled;
                       return InkWell(
                         onTap: () => onSelected(inv),
                         borderRadius: BorderRadius.circular(10),
@@ -1161,7 +1182,7 @@ class _InvoicePickerDialog extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
-                                    '${inv.totalItems} items',
+                                    '${inv.totalItems} ${l10n.items.toLowerCase()}',
                                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
                                   ),
                                   Text(inv.date, style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
@@ -1181,7 +1202,7 @@ class _InvoicePickerDialog extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-                  child: const Text('Cancel', style: TextStyle(color: Color(0xFF94A3B8))),
+                  child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF94A3B8))),
                 ),
               ),
             ],
@@ -1313,6 +1334,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
   }
 
   Widget _buildHeader() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 20, 16, 16),
       decoration: const BoxDecoration(
@@ -1333,7 +1355,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Import from ${widget.invoice.invoiceNo}',
+                  l10n.importFromInvoiceNo(widget.invoice.invoiceNo),
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
                 ),
                 Text(widget.invoice.supplier, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
@@ -1350,20 +1372,22 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
   }
 
   Widget _buildStepIndicator() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       color: const Color(0xFFF8FAFC),
       child: Row(
         children: [
-          _StepBubble(number: 1, label: 'Select Products', active: _step == 0, done: _step > 0),
+          _StepBubble(number: 1, label: l10n.selectProducts, active: _step == 0, done: _step > 0),
           Expanded(child: Container(height: 2, color: _step > 0 ? const Color(0xFF6366F1) : const Color(0xFFE2E8F0))),
-          _StepBubble(number: 2, label: 'Enter Details', active: _step == 1, done: false),
+          _StepBubble(number: 2, label: l10n.enterDetails, active: _step == 1, done: false),
         ],
       ),
     );
   }
 
   Widget _buildStep1() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1371,7 +1395,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
           child: Row(
             children: [
-              Text('${_mergedRows.length} unique SKUs from invoice', style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+              Text(l10n.nUniqueSkusFromInvoice(_mergedRows.length), style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
               const Spacer(),
               TextButton.icon(
                 onPressed: () => setState(() {
@@ -1381,7 +1405,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                     _selected.addAll(List.generate(_mergedRows.length, (i) => i));
                 }),
                 icon: Icon(_selected.length == _mergedRows.length ? Icons.deselect_rounded : Icons.select_all_rounded, size: 16),
-                label: Text(_selected.length == _mergedRows.length ? 'Deselect All' : 'Select All'),
+                label: Text(_selected.length == _mergedRows.length ? l10n.deselectAll : l10n.selectAllLabel),
                 style: TextButton.styleFrom(foregroundColor: const Color(0xFF6366F1)),
               ),
             ],
@@ -1390,16 +1414,16 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
         Container(
           color: const Color(0xFFF1F5F9),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-          child: const Row(
+          child: Row(
             children: [
-              SizedBox(width: 40),
-              Expanded(flex: 3, child: _TH('SKU')),
-              Expanded(flex: 2, child: _TH('Model')),
-              Expanded(flex: 2, child: _TH('Color')),
-              Expanded(flex: 1, child: _TH('Size')),
-              Expanded(flex: 2, child: _TH('Inv. Qty')),
-              Expanded(flex: 2, child: _TH('Unit Price')),
-              Expanded(flex: 2, child: _TH('Inv. Total')),
+              const SizedBox(width: 40),
+              Expanded(flex: 3, child: _TH(l10n.sku)),
+              Expanded(flex: 2, child: _TH(l10n.model)),
+              Expanded(flex: 2, child: _TH(l10n.color)),
+              Expanded(flex: 1, child: _TH(l10n.size)),
+              Expanded(flex: 2, child: _TH(l10n.invQty)),
+              Expanded(flex: 2, child: _TH(l10n.unitPrice)),
+              Expanded(flex: 2, child: _TH(l10n.invTotal)),
             ],
           ),
         ),
@@ -1459,7 +1483,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                       Expanded(
                         flex: 2,
                         child: Text(
-                          '${mr.totalQty} pcs',
+                          '${mr.totalQty} ${l10n.pcs}',
                           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
                         ),
                       ),
@@ -1486,6 +1510,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
   }
 
   Widget _buildStep2() {
+    final l10n = AppLocalizations.of(context)!;
     final selectedList = _selected.map((i) => (i, _mergedRows[i])).toList();
     return Form(
       key: _formKey,
@@ -1498,10 +1523,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
               children: [
                 const Icon(Icons.info_outline_rounded, size: 16, color: Color(0xFF94A3B8)),
                 const SizedBox(width: 8),
-                Text(
-                  'Fill in warehouse details for ${selectedList.length} selected product(s)',
-                  style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
-                ),
+                Text(l10n.fillWarehouseDetails(selectedList.length), style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
               ],
             ),
           ),
@@ -1553,7 +1575,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                               decoration: BoxDecoration(color: const Color(0xFFE0F2FE), borderRadius: BorderRadius.circular(10)),
                               child: Text(
-                                'Invoice qty: ${mr.totalQty}',
+                                l10n.invoiceQtyLabel(mr.totalQty),
                                 style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF0284C7)),
                               ),
                             ),
@@ -1572,7 +1594,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                                   flex: 3,
                                   child: _DetailField(
                                     ctrl: _barcodeCtrl[idx]!,
-                                    label: 'Barcode',
+                                    label: l10n.barcodeField,
                                     hint: 'e.g. 6901234500010',
                                     required: true,
                                     icon: Icons.qr_code_rounded,
@@ -1583,7 +1605,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                                   flex: 2,
                                   child: _DetailField(
                                     ctrl: _actualQtyCtrl[idx]!,
-                                    label: 'Actual Qty Received',
+                                    label: l10n.actualQtyReceived,
                                     hint: '${mr.totalQty}',
                                     required: true,
                                     isNumber: true,
@@ -1605,7 +1627,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                                               ),
                                               const SizedBox(width: 3),
                                               Text(
-                                                '${diff > 0 ? '+' : ''}$diff vs invoice',
+                                                l10n.vsInvoice('${diff > 0 ? '+' : ''}$diff'),
                                                 style: TextStyle(
                                                   fontSize: 11,
                                                   color: diff > 0 ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
@@ -1626,9 +1648,9 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                               children: [
                                 const Icon(Icons.location_on_rounded, size: 15, color: Color(0xFF6366F1)),
                                 const SizedBox(width: 6),
-                                const Text(
-                                  'Warehouse Location',
-                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
+                                Text(
+                                  l10n.warehouseLocation,
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
                                 ),
                               ],
                             ),
@@ -1637,15 +1659,15 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Expanded(
-                                  child: _DetailField(ctrl: _zoneCtrl[idx]!, label: 'Zone', hint: 'A', required: true),
+                                  child: _DetailField(ctrl: _zoneCtrl[idx]!, label: l10n.zone, hint: 'A', required: true),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
-                                  child: _DetailField(ctrl: _rowCtrl[idx]!, label: 'Row', hint: '1', isNumber: true, required: true),
+                                  child: _DetailField(ctrl: _rowCtrl[idx]!, label: l10n.row, hint: '1', isNumber: true, required: true),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
-                                  child: _DetailField(ctrl: _shelfCtrl[idx]!, label: 'Shelf', hint: '1', isNumber: true, required: true),
+                                  child: _DetailField(ctrl: _shelfCtrl[idx]!, label: l10n.shelf, hint: '1', isNumber: true, required: true),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
@@ -1662,9 +1684,9 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                                           return Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              const Text(
-                                                'Code',
-                                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
+                                              Text(
+                                                l10n.codeLabel,
+                                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
                                               ),
                                               const SizedBox(height: 6),
                                               Container(
@@ -1701,6 +1723,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
   }
 
   Widget _buildFooter() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
       decoration: const BoxDecoration(
@@ -1714,7 +1737,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
             OutlinedButton.icon(
               onPressed: () => setState(() => _step = 0),
               icon: const Icon(Icons.arrow_back_rounded, size: 16),
-              label: const Text('Back'),
+              label: Text(l10n.back),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Color(0xFFCBD5E1)),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -1724,16 +1747,16 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
           else
             TextButton(
               onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-              child: const Text('Cancel', style: TextStyle(color: Color(0xFF94A3B8))),
+              child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF94A3B8))),
             ),
           const Spacer(),
           if (_step == 0) ...[
-            Text('${_selected.length} of ${_mergedRows.length} selected', style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+            Text(l10n.nOfMSelected(_selected.length, _mergedRows.length), style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
             const SizedBox(width: 16),
             FilledButton.icon(
               onPressed: _selected.isEmpty ? null : _goToStep2,
               icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-              label: const Text('Next: Enter Details'),
+              label: Text(l10n.nextEnterDetails),
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFF6366F1),
                 disabledBackgroundColor: const Color(0xFFCBD5E1),
@@ -1745,7 +1768,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
             FilledButton.icon(
               onPressed: _importProducts,
               icon: const Icon(Icons.download_rounded, size: 16),
-              label: Text('Import ${_selected.length} Product(s)'),
+              label: Text(l10n.importNProducts(_selected.length)),
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFF22C55E),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -1862,7 +1885,7 @@ class _DetailField extends StatelessWidget {
         TextFormField(
           controller: ctrl,
           keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-          validator: required ? (v) => (v == null || v.trim().isEmpty) ? 'Required' : null : null,
+          validator: required ? (v) => (v == null || v.trim().isEmpty) ? AppLocalizations.of(context)!.required : null : null,
           style: const TextStyle(fontSize: 13, color: Color(0xFF1E293B)),
           decoration: InputDecoration(
             hintText: hint,
@@ -2030,10 +2053,11 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final (label, bg, fg) = switch (status) {
-      ProductStatus.inStock => ('In Stock', const Color(0xFFDCFCE7), const Color(0xFF15803D)),
-      ProductStatus.lowStock => ('Low Stock', const Color(0xFFFEF3C7), const Color(0xFFB45309)),
-      ProductStatus.outOfStock => ('Out of Stock', const Color(0xFFFEE2E2), const Color(0xFFDC2626)),
+      ProductStatus.inStock => (l10n.inStock, const Color(0xFFDCFCE7), const Color(0xFF15803D)),
+      ProductStatus.lowStock => (l10n.lowStock, const Color(0xFFFEF3C7), const Color(0xFFB45309)),
+      ProductStatus.outOfStock => (l10n.outOfStock, const Color(0xFFFEE2E2), const Color(0xFFDC2626)),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -2200,6 +2224,7 @@ class _ProductDialogState extends State<_ProductDialog> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.product != null;
+    final l10n = AppLocalizations.of(context)!;
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: SizedBox(
@@ -2222,7 +2247,7 @@ class _ProductDialogState extends State<_ProductDialog> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      isEdit ? 'Edit Product' : 'Add New Product',
+                      isEdit ? l10n.editProduct : l10n.addNewProduct,
                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
                     ),
                     const Spacer(),
@@ -2237,25 +2262,25 @@ class _ProductDialogState extends State<_ProductDialog> {
                 const SizedBox(height: 20),
                 Row(
                   children: [
-                    Expanded(child: _field(_sku, 'SKU', 'e.g. X-1-500', required: true)),
+                    Expanded(child: _field(_sku, l10n.skuField, 'e.g. X-1-500', required: true)),
                     const SizedBox(width: 16),
-                    Expanded(child: _field(_name, 'Model', 'e.g. X-1', required: true)),
+                    Expanded(child: _field(_name, l10n.modelField, 'e.g. X-1', required: true)),
                   ],
                 ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    Expanded(child: _field(_color, 'Color', 'e.g. GD Gold')),
+                    Expanded(child: _field(_color, l10n.colorField, 'e.g. GD Gold')),
                     const SizedBox(width: 16),
-                    Expanded(child: _field(_barcode, 'Barcode', 'e.g. 6901234500010', required: true)),
+                    Expanded(child: _field(_barcode, l10n.barcodeField, 'e.g. 6901234500010', required: true)),
                   ],
                 ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    Expanded(child: _field(_qty, 'Quantity', '0', isNumber: true, required: true)),
+                    Expanded(child: _field(_qty, l10n.quantityField, '0', isNumber: true, required: true)),
                     const SizedBox(width: 16),
-                    Expanded(child: _field(_price, 'Unit Price (USD)', '0.0000', isDecimal: true, required: true)),
+                    Expanded(child: _field(_price, l10n.unitPriceUSD, '0.0000', isDecimal: true, required: true)),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -2269,24 +2294,24 @@ class _ProductDialogState extends State<_ProductDialog> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.location_on_rounded, size: 16, color: Color(0xFF6366F1)),
-                          SizedBox(width: 6),
+                          const Icon(Icons.location_on_rounded, size: 16, color: Color(0xFF6366F1)),
+                          const SizedBox(width: 6),
                           Text(
-                            'Warehouse Location',
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                            l10n.warehouseLocation,
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
                           ),
                         ],
                       ),
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          Expanded(child: _field(_zone, 'Zone', 'A', required: true, hint: 'Zone letter (A–Z)')),
+                          Expanded(child: _field(_zone, l10n.zone, 'A', required: true, hint: l10n.zoneLetter)),
                           const SizedBox(width: 12),
-                          Expanded(child: _field(_row, 'Row', '1', isNumber: true, required: true)),
+                          Expanded(child: _field(_row, l10n.row, '1', isNumber: true, required: true)),
                           const SizedBox(width: 12),
-                          Expanded(child: _field(_shelf, 'Shelf', '1', isNumber: true, required: true)),
+                          Expanded(child: _field(_shelf, l10n.shelf, '1', isNumber: true, required: true)),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -2306,7 +2331,7 @@ class _ProductDialogState extends State<_ProductDialog> {
                                   const Icon(Icons.info_outline_rounded, size: 14, color: Color(0xFF94A3B8)),
                                   const SizedBox(width: 4),
                                   Text(
-                                    'Location code: $z-$r-$s',
+                                    l10n.locationCode('$z-$r-$s'),
                                     style: const TextStyle(fontSize: 12, color: Color(0xFF6366F1), fontWeight: FontWeight.w500),
                                   ),
                                 ],
@@ -2329,7 +2354,7 @@ class _ProductDialogState extends State<_ProductDialog> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                        child: const Text('Cancel', style: TextStyle(color: Color(0xFF475569))),
+                        child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF475569))),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -2338,7 +2363,7 @@ class _ProductDialogState extends State<_ProductDialog> {
                       child: FilledButton.icon(
                         onPressed: _save,
                         icon: Icon(isEdit ? Icons.save_rounded : Icons.add_rounded, size: 16),
-                        label: Text(isEdit ? 'Save Changes' : 'Add Product'),
+                        label: Text(isEdit ? l10n.saveChanges : l10n.addProduct),
                         style: FilledButton.styleFrom(
                           backgroundColor: const Color(0xFF6366F1),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -2385,7 +2410,7 @@ class _ProductDialogState extends State<_ProductDialog> {
               : isNumber
               ? TextInputType.number
               : TextInputType.text,
-          validator: required ? (v) => (v == null || v.trim().isEmpty) ? 'Required' : null : null,
+          validator: required ? (v) => (v == null || v.trim().isEmpty) ? AppLocalizations.of(context)!.required : null : null,
           style: const TextStyle(fontSize: 13, color: Color(0xFF1E293B)),
           decoration: InputDecoration(
             hintText: hint ?? placeholder,

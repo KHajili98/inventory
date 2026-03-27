@@ -340,7 +340,8 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
   }
 
   Widget _buildProcessing() {
-    final stages = ['Uploading image…', 'Running OCR…'];
+    final l10n = AppLocalizations.of(context)!;
+    final stages = [l10n.uploadingImage, l10n.runningOCR];
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -352,9 +353,9 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
           child: const Icon(Icons.document_scanner_rounded, color: Color(0xFF6366F1), size: 30),
         ),
         const SizedBox(height: 20),
-        const Text(
-          'Processing Invoice Image',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+        Text(
+          l10n.processingInvoiceImage,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
         ),
         const SizedBox(height: 6),
         Text(widget.filename, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
@@ -371,6 +372,7 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
   }
 
   Widget _buildPreview() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -384,14 +386,14 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
               child: const Icon(Icons.check_rounded, color: Color(0xFF16A34A), size: 24),
             ),
             const SizedBox(width: 14),
-            const Column(
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'OCR Complete!',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                  l10n.ocrComplete,
+                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
                 ),
-                Text('Review the extracted data below', style: TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+                Text(l10n.reviewExtractedData, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
               ],
             ),
           ],
@@ -413,33 +415,33 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
                   borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
                   border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
                     SizedBox(
                       width: 80,
                       child: Text(
-                        'Model',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                        l10n.model,
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
                       ),
                     ),
                     SizedBox(
                       width: 120,
                       child: Text(
-                        'SKU',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                        l10n.sku,
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
                       ),
                     ),
                     SizedBox(
                       width: 60,
                       child: Text(
-                        'Qty',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                        l10n.qty,
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
                       ),
                     ),
                     Expanded(
                       child: Text(
-                        'Total (USD)',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                        l10n.totalUSD,
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
                       ),
                     ),
                   ],
@@ -489,7 +491,7 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
             const Icon(Icons.warning_amber_rounded, size: 14, color: Color(0xFFF59E0B)),
             const SizedBox(width: 4),
             Text(
-              '${_rows.where((r) => r.hasWarning).length} rows with missing weight/dimension data',
+              '${_rows.where((r) => r.hasWarning).length} ${l10n.rowsWithMissingData}',
               style: const TextStyle(fontSize: 12, color: Color(0xFFB45309)),
             ),
           ],
@@ -505,7 +507,7 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   padding: const EdgeInsets.symmetric(vertical: 13),
                 ),
-                child: const Text('Cancel', style: TextStyle(color: Color(0xFF475569))),
+                child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF475569))),
               ),
             ),
             const SizedBox(width: 12),
@@ -514,7 +516,7 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
               child: FilledButton.icon(
                 onPressed: () => widget.onConfirm(_rows),
                 icon: const Icon(Icons.open_in_new_rounded, size: 16),
-                label: const Text('Open & Edit Table'),
+                label: Text(l10n.openAndEditTable),
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFF6366F1),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:inventory/models/invoice_models.dart';
+import 'package:inventory/l10n/app_localizations.dart';
 
 class InvoiceDetailPage extends StatefulWidget {
   final InvoiceRecord invoice;
@@ -92,6 +93,7 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
 
   // ── Header ──────────────────────────────────────────────────────────────────
   Widget _buildHeader(InvoiceRecord inv) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
       color: Colors.white,
@@ -113,7 +115,7 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
                 Row(
                   children: [
                     Text(
-                      'Invoice #${inv.invoiceNo}',
+                      l10n.invoiceDetail(inv.invoiceNo),
                       style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
                     ),
                     const SizedBox(width: 12),
@@ -129,7 +131,7 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
           OutlinedButton.icon(
             onPressed: () {},
             icon: const Icon(Icons.download_rounded, size: 16),
-            label: const Text('Export'),
+            label: Text(l10n.export),
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFF475569),
               side: const BorderSide(color: Color(0xFFCBD5E1)),
@@ -140,7 +142,7 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
           FilledButton.icon(
             onPressed: () => setState(() => _isEditing = !_isEditing),
             icon: Icon(_isEditing ? Icons.check_rounded : Icons.edit_rounded, size: 16),
-            label: Text(_isEditing ? 'Done' : 'Edit'),
+            label: Text(_isEditing ? l10n.done : l10n.edit),
             style: FilledButton.styleFrom(
               backgroundColor: _isEditing ? const Color(0xFF22C55E) : const Color(0xFF6366F1),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -153,25 +155,26 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
 
   // ── Summary cards ────────────────────────────────────────────────────────────
   Widget _buildSummaryBar(InvoiceRecord inv) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
       child: Row(
         children: [
-          _SummaryCard(label: 'Total Items', value: '$_grandQty pcs', icon: Icons.inventory_2_outlined, color: const Color(0xFF6366F1)),
+          _SummaryCard(label: l10n.totalItems, value: '$_grandQty ${l10n.pcs}', icon: Icons.inventory_2_outlined, color: const Color(0xFF6366F1)),
           const SizedBox(width: 12),
           _SummaryCard(
-            label: 'Total Amount',
+            label: l10n.totalAmount,
             value: '\$${_grandTotal.toStringAsFixed(2)}',
             icon: Icons.attach_money_rounded,
             color: const Color(0xFF22C55E),
           ),
           const SizedBox(width: 12),
-          _SummaryCard(label: 'SKU Lines', value: '${_rows.length} rows', icon: Icons.list_alt_rounded, color: const Color(0xFFF59E0B)),
+          _SummaryCard(label: l10n.skuLines, value: '${_rows.length} ${l10n.rows}', icon: Icons.list_alt_rounded, color: const Color(0xFFF59E0B)),
           const SizedBox(width: 12),
           _SummaryCard(
-            label: 'Warnings',
-            value: '${_rows.where((r) => r.hasWarning).length} rows',
+            label: l10n.warnings,
+            value: '${_rows.where((r) => r.hasWarning).length} ${l10n.rows}',
             icon: Icons.warning_amber_rounded,
             color: const Color(0xFFEF4444),
           ),
@@ -182,6 +185,7 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
 
   // ── Toolbar ──────────────────────────────────────────────────────────────────
   Widget _buildToolbar() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
       decoration: const BoxDecoration(
@@ -193,21 +197,21 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
       ),
       child: Row(
         children: [
-          const Text(
-            'OCR Result — Editable Table',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
+          Text(
+            l10n.ocrResultEditableTable,
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
           ),
           const Spacer(),
           if (_selectedRows.isNotEmpty) ...[
             Text(
-              '${_selectedRows.length} selected',
+              '${_selectedRows.length} ${l10n.selectAll.toLowerCase()}',
               style: const TextStyle(fontSize: 13, color: Color(0xFF6366F1), fontWeight: FontWeight.w500),
             ),
             const SizedBox(width: 12),
             TextButton.icon(
               onPressed: _deleteSelected,
               icon: const Icon(Icons.delete_outline_rounded, size: 16),
-              label: const Text('Delete'),
+              label: Text(l10n.delete),
               style: TextButton.styleFrom(foregroundColor: const Color(0xFFEF4444)),
             ),
             const SizedBox(width: 8),
@@ -216,7 +220,7 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
             FilledButton.icon(
               onPressed: _addRow,
               icon: const Icon(Icons.add_rounded, size: 16),
-              label: const Text('Add Row'),
+              label: Text(l10n.addRow),
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFF6366F1),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -239,6 +243,7 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
   }
 
   Widget _buildTableHeader() {
+    final l10n = AppLocalizations.of(context)!;
     const style = TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF475569), letterSpacing: 0.3);
     return Container(
       color: const Color(0xFFF1F5F9),
@@ -260,18 +265,18 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
             ),
           ),
           _headerCell('#', _colIdx, style),
-          _headerCell('Model', _colModel, style),
-          _headerCell('SKU', _colSku, style),
-          _headerCell('Size', _colSize, style),
-          _headerCell('Color', _colColor, style),
-          _headerCell('Qty', _colQty, style),
-          _headerCell('Unit (USD)', _colUnit, style),
-          _headerCell('Total (USD)', _colTotal, style),
-          _headerCell('Box (cm)', _colBox, style),
-          _headerCell('CBM', _colCbm, style),
-          _headerCell('Net (kg)', _colNet, style),
-          _headerCell('Gross (kg)', _colGross, style),
-          _headerCell('Notes', _colNotes, style),
+          _headerCell(l10n.model, _colModel, style),
+          _headerCell(l10n.sku, _colSku, style),
+          _headerCell(l10n.size, _colSize, style),
+          _headerCell(l10n.color, _colColor, style),
+          _headerCell(l10n.qty, _colQty, style),
+          _headerCell('${l10n.unit} (USD)', _colUnit, style),
+          _headerCell('${l10n.total} (USD)', _colTotal, style),
+          _headerCell('${l10n.boxDimensions} (cm)', _colBox, style),
+          _headerCell(l10n.cbm, _colCbm, style),
+          _headerCell(l10n.netWeight, _colNet, style),
+          _headerCell(l10n.grossWeight, _colGross, style),
+          _headerCell(l10n.notes, _colNotes, style),
         ],
       ),
     );
@@ -529,6 +534,7 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
 
   // ── Footer totals ────────────────────────────────────────────────────────────
   Widget _buildFooter() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -537,14 +543,14 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
       child: Row(
         children: [
-          const Text(
-            'TOTALS',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF475569), letterSpacing: 0.5),
+          Text(
+            l10n.totals,
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF475569), letterSpacing: 0.5),
           ),
           const Spacer(),
-          _FooterStat(label: 'Total Qty', value: '$_grandQty pcs'),
+          _FooterStat(label: l10n.totalQty, value: '$_grandQty ${l10n.pcs}'),
           const SizedBox(width: 32),
-          _FooterStat(label: 'Grand Total', value: '\$${_grandTotal.toStringAsFixed(2)}', highlight: true),
+          _FooterStat(label: l10n.grandTotal, value: '\$${_grandTotal.toStringAsFixed(2)}', highlight: true),
           const SizedBox(width: 32),
           FilledButton.icon(
             onPressed: () {
@@ -552,7 +558,7 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
               Navigator.of(context, rootNavigator: true).pop();
             },
             icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
-            label: const Text('Confirm & Save'),
+            label: Text(l10n.confirmAndSave),
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFF6366F1),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -573,10 +579,11 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final (label, bg, fg) = switch (status) {
-      InvoiceStatus.pending => ('Pending', const Color(0xFFFEF3C7), const Color(0xFFB45309)),
-      InvoiceStatus.confirmed => ('Confirmed', const Color(0xFFDCFCE7), const Color(0xFF15803D)),
-      InvoiceStatus.cancelled => ('Cancelled', const Color(0xFFFEE2E2), const Color(0xFFDC2626)),
+      InvoiceStatus.pending => (l10n.pending, const Color(0xFFFEF3C7), const Color(0xFFB45309)),
+      InvoiceStatus.confirmed => (l10n.confirmed, const Color(0xFFDCFCE7), const Color(0xFF15803D)),
+      InvoiceStatus.cancelled => (l10n.cancelled, const Color(0xFFFEE2E2), const Color(0xFFDC2626)),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

@@ -589,6 +589,414 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Try adjusting your filters or search query'**
   String get adjustFilters;
+
+  /// Selected label
+  ///
+  /// In en, this message translates to:
+  /// **'selected'**
+  String get selected;
+
+  /// Totals label
+  ///
+  /// In en, this message translates to:
+  /// **'TOTALS'**
+  String get totals;
+
+  /// Total quantity label
+  ///
+  /// In en, this message translates to:
+  /// **'Total Qty'**
+  String get totalQty;
+
+  /// Grand total label
+  ///
+  /// In en, this message translates to:
+  /// **'Grand Total'**
+  String get grandTotal;
+
+  /// Confirm and save button
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm & Save'**
+  String get confirmAndSave;
+
+  /// Inventory products subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Track stock levels, locations and valuations'**
+  String get trackStockLevels;
+
+  /// Add product button
+  ///
+  /// In en, this message translates to:
+  /// **'Add Product'**
+  String get addProduct;
+
+  /// Add product dialog subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how you want to add the product'**
+  String get chooseHowToAddProduct;
+
+  /// Manual entry option
+  ///
+  /// In en, this message translates to:
+  /// **'Manual Entry'**
+  String get manualEntry;
+
+  /// Manual entry description
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in all product\ndetails by hand'**
+  String get fillProductDetails;
+
+  /// From invoice option
+  ///
+  /// In en, this message translates to:
+  /// **'From Invoice'**
+  String get fromInvoice;
+
+  /// From invoice description
+  ///
+  /// In en, this message translates to:
+  /// **'Import from a\nconfirmed invoice'**
+  String get importFromInvoice;
+
+  /// Total SKUs stat
+  ///
+  /// In en, this message translates to:
+  /// **'Total SKUs'**
+  String get totalSKUs;
+
+  /// Total units stat
+  ///
+  /// In en, this message translates to:
+  /// **'Total Units'**
+  String get totalUnits;
+
+  /// Search placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Search SKU, name, barcode, location…'**
+  String get searchSKUNameBarcode;
+
+  /// No products found message
+  ///
+  /// In en, this message translates to:
+  /// **'No products match your search.'**
+  String get noProductsMatchSearch;
+
+  /// Filter chip: all
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
+
+  /// Nav button tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Scroll to start'**
+  String get scrollToStart;
+
+  /// Nav button tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Scroll to end'**
+  String get scrollToEnd;
+
+  /// Nav button tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Scroll to top'**
+  String get scrollToTop;
+
+  /// Nav button tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Scroll to bottom'**
+  String get scrollToBottom;
+
+  /// Nav button tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Scroll left'**
+  String get scrollLeft;
+
+  /// Nav button tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Scroll right'**
+  String get scrollRight;
+
+  /// Nav button tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Scroll up'**
+  String get scrollUp;
+
+  /// Nav button tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Scroll down'**
+  String get scrollDown;
+
+  /// Scroll direction label
+  ///
+  /// In en, this message translates to:
+  /// **'Horizontal'**
+  String get horizontal;
+
+  /// Scroll direction label
+  ///
+  /// In en, this message translates to:
+  /// **'Vertical'**
+  String get vertical;
+
+  /// Location column header
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get location;
+
+  /// Filter bar count
+  ///
+  /// In en, this message translates to:
+  /// **'{n} of {m} products'**
+  String nOfMProducts(int n, int m);
+
+  /// Invoice picker dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Select Invoice'**
+  String get selectInvoice;
+
+  /// Invoice picker dialog subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an invoice to import products from'**
+  String get chooseInvoiceToImport;
+
+  /// Empty invoices list
+  ///
+  /// In en, this message translates to:
+  /// **'No invoices available'**
+  String get noInvoicesAvailable;
+
+  /// Empty invoices hint
+  ///
+  /// In en, this message translates to:
+  /// **'Add invoices in the Invoices module first'**
+  String get addInvoicesFirst;
+
+  /// Invoice rows dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Import from {invoiceNo}'**
+  String importFromInvoiceNo(String invoiceNo);
+
+  /// Step 1 label
+  ///
+  /// In en, this message translates to:
+  /// **'Select Products'**
+  String get selectProducts;
+
+  /// Step 2 label
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Details'**
+  String get enterDetails;
+
+  /// Step 1 header
+  ///
+  /// In en, this message translates to:
+  /// **'{n} unique SKUs from invoice'**
+  String nUniqueSkusFromInvoice(int n);
+
+  /// Deselect all button
+  ///
+  /// In en, this message translates to:
+  /// **'Deselect All'**
+  String get deselectAll;
+
+  /// Select all button
+  ///
+  /// In en, this message translates to:
+  /// **'Select All'**
+  String get selectAllLabel;
+
+  /// Invoice quantity short header
+  ///
+  /// In en, this message translates to:
+  /// **'Inv. Qty'**
+  String get invQty;
+
+  /// Invoice total short header
+  ///
+  /// In en, this message translates to:
+  /// **'Inv. Total'**
+  String get invTotal;
+
+  /// Step 2 info text
+  ///
+  /// In en, this message translates to:
+  /// **'Fill in warehouse details for {count} selected product(s)'**
+  String fillWarehouseDetails(int count);
+
+  /// Invoice qty badge
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice qty: {qty}'**
+  String invoiceQtyLabel(int qty);
+
+  /// Actual qty received field label
+  ///
+  /// In en, this message translates to:
+  /// **'Actual Qty Received'**
+  String get actualQtyReceived;
+
+  /// Discrepancy label
+  ///
+  /// In en, this message translates to:
+  /// **'{diff} vs invoice'**
+  String vsInvoice(String diff);
+
+  /// Warehouse location section header
+  ///
+  /// In en, this message translates to:
+  /// **'Warehouse Location'**
+  String get warehouseLocation;
+
+  /// Zone field label
+  ///
+  /// In en, this message translates to:
+  /// **'Zone'**
+  String get zone;
+
+  /// Row field label
+  ///
+  /// In en, this message translates to:
+  /// **'Row'**
+  String get row;
+
+  /// Shelf field label
+  ///
+  /// In en, this message translates to:
+  /// **'Shelf'**
+  String get shelf;
+
+  /// Location code preview label
+  ///
+  /// In en, this message translates to:
+  /// **'Code'**
+  String get codeLabel;
+
+  /// Back button
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// Next step button
+  ///
+  /// In en, this message translates to:
+  /// **'Next: Enter Details'**
+  String get nextEnterDetails;
+
+  /// Selected count in step footer
+  ///
+  /// In en, this message translates to:
+  /// **'{n} of {m} selected'**
+  String nOfMSelected(int n, int m);
+
+  /// Import button label
+  ///
+  /// In en, this message translates to:
+  /// **'Import {n} Product(s)'**
+  String importNProducts(int n);
+
+  /// Snackbar message after import
+  ///
+  /// In en, this message translates to:
+  /// **'{n} product(s) imported from invoice {invoiceNo}'**
+  String nProductsImported(int n, String invoiceNo);
+
+  /// Edit product dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Product'**
+  String get editProduct;
+
+  /// Add product dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Add New Product'**
+  String get addNewProduct;
+
+  /// SKU field label in dialog
+  ///
+  /// In en, this message translates to:
+  /// **'SKU'**
+  String get skuField;
+
+  /// Model field label in dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get modelField;
+
+  /// Color field label in dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get colorField;
+
+  /// Barcode field label in dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode'**
+  String get barcodeField;
+
+  /// Quantity field label in dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get quantityField;
+
+  /// Unit price field label in dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Unit Price (USD)'**
+  String get unitPriceUSD;
+
+  /// Zone field hint
+  ///
+  /// In en, this message translates to:
+  /// **'Zone letter (A–Z)'**
+  String get zoneLetter;
+
+  /// Location code preview
+  ///
+  /// In en, this message translates to:
+  /// **'Location code: {code}'**
+  String locationCode(String code);
+
+  /// Save changes button
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get saveChanges;
+
+  /// Validation error message
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get required;
+
+  /// Discrepancy tooltip on actual qty cell
+  ///
+  /// In en, this message translates to:
+  /// **'Discrepancy: {diff} vs invoice'**
+  String discrepancyTooltip(String diff);
 }
 
 class _AppLocalizationsDelegate

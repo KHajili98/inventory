@@ -414,5 +414,381 @@
   "adjustFilters": "Try adjusting your filters or search query",
   "@adjustFilters": {
     "description": "Adjust filters message"
+  },
+
+  "selected": "selected",
+  "@selected": {
+    "description": "Selected label"
+  },
+
+  "totals": "TOTALS",
+  "@totals": {
+    "description": "Totals label"
+  },
+
+  "totalQty": "Total Qty",
+  "@totalQty": {
+    "description": "Total quantity label"
+  },
+
+  "grandTotal": "Grand Total",
+  "@grandTotal": {
+    "description": "Grand total label"
+  },
+
+  "confirmAndSave": "Confirm & Save",
+  "@confirmAndSave": {
+    "description": "Confirm and save button"
+  },
+
+  "trackStockLevels": "Track stock levels, locations and valuations",
+  "@trackStockLevels": {
+    "description": "Inventory products subtitle"
+  },
+
+  "addProduct": "Add Product",
+  "@addProduct": {
+    "description": "Add product button"
+  },
+
+  "chooseHowToAddProduct": "Choose how you want to add the product",
+  "@chooseHowToAddProduct": {
+    "description": "Add product dialog subtitle"
+  },
+
+  "manualEntry": "Manual Entry",
+  "@manualEntry": {
+    "description": "Manual entry option"
+  },
+
+  "fillProductDetails": "Fill in all product\ndetails by hand",
+  "@fillProductDetails": {
+    "description": "Manual entry description"
+  },
+
+  "fromInvoice": "From Invoice",
+  "@fromInvoice": {
+    "description": "From invoice option"
+  },
+
+  "importFromInvoice": "Import from a\nconfirmed invoice",
+  "@importFromInvoice": {
+    "description": "From invoice description"
+  },
+
+  "totalSKUs": "Total SKUs",
+  "@totalSKUs": {
+    "description": "Total SKUs stat"
+  },
+
+  "totalUnits": "Total Units",
+  "@totalUnits": {
+    "description": "Total units stat"
+  },
+
+  "searchSKUNameBarcode": "Search SKU, name, barcode, location…",
+  "@searchSKUNameBarcode": {
+    "description": "Search placeholder"
+  },
+
+  "noProductsMatchSearch": "No products match your search.",
+  "@noProductsMatchSearch": {
+    "description": "No products found message"
+  },
+
+  "all": "All",
+  "@all": {
+    "description": "Filter chip: all"
+  },
+
+  "scrollToStart": "Scroll to start",
+  "@scrollToStart": {
+    "description": "Nav button tooltip"
+  },
+
+  "scrollToEnd": "Scroll to end",
+  "@scrollToEnd": {
+    "description": "Nav button tooltip"
+  },
+
+  "scrollToTop": "Scroll to top",
+  "@scrollToTop": {
+    "description": "Nav button tooltip"
+  },
+
+  "scrollToBottom": "Scroll to bottom",
+  "@scrollToBottom": {
+    "description": "Nav button tooltip"
+  },
+
+  "scrollLeft": "Scroll left",
+  "@scrollLeft": {
+    "description": "Nav button tooltip"
+  },
+
+  "scrollRight": "Scroll right",
+  "@scrollRight": {
+    "description": "Nav button tooltip"
+  },
+
+  "scrollUp": "Scroll up",
+  "@scrollUp": {
+    "description": "Nav button tooltip"
+  },
+
+  "scrollDown": "Scroll down",
+  "@scrollDown": {
+    "description": "Nav button tooltip"
+  },
+
+  "horizontal": "Horizontal",
+  "@horizontal": {
+    "description": "Scroll direction label"
+  },
+
+  "vertical": "Vertical",
+  "@vertical": {
+    "description": "Scroll direction label"
+  },
+
+  "location": "Location",
+  "@location": {
+    "description": "Location column header"
+  },
+
+  "nOfMProducts": "{n} of {m} products",
+  "@nOfMProducts": {
+    "description": "Filter bar count",
+    "placeholders": {
+      "n": { "type": "int" },
+      "m": { "type": "int" }
+    }
+  },
+
+  "selectInvoice": "Select Invoice",
+  "@selectInvoice": {
+    "description": "Invoice picker dialog title"
+  },
+
+  "chooseInvoiceToImport": "Choose an invoice to import products from",
+  "@chooseInvoiceToImport": {
+    "description": "Invoice picker dialog subtitle"
+  },
+
+  "noInvoicesAvailable": "No invoices available",
+  "@noInvoicesAvailable": {
+    "description": "Empty invoices list"
+  },
+
+  "addInvoicesFirst": "Add invoices in the Invoices module first",
+  "@addInvoicesFirst": {
+    "description": "Empty invoices hint"
+  },
+
+  "importFromInvoiceNo": "Import from {invoiceNo}",
+  "@importFromInvoiceNo": {
+    "description": "Invoice rows dialog title",
+    "placeholders": {
+      "invoiceNo": { "type": "String" }
+    }
+  },
+
+  "selectProducts": "Select Products",
+  "@selectProducts": {
+    "description": "Step 1 label"
+  },
+
+  "enterDetails": "Enter Details",
+  "@enterDetails": {
+    "description": "Step 2 label"
+  },
+
+  "nUniqueSkusFromInvoice": "{n} unique SKUs from invoice",
+  "@nUniqueSkusFromInvoice": {
+    "description": "Step 1 header",
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+
+  "deselectAll": "Deselect All",
+  "@deselectAll": {
+    "description": "Deselect all button"
+  },
+
+  "selectAllLabel": "Select All",
+  "@selectAllLabel": {
+    "description": "Select all button"
+  },
+
+  "invQty": "Inv. Qty",
+  "@invQty": {
+    "description": "Invoice quantity short header"
+  },
+
+  "invTotal": "Inv. Total",
+  "@invTotal": {
+    "description": "Invoice total short header"
+  },
+
+  "fillWarehouseDetails": "Fill in warehouse details for {count} selected product(s)",
+  "@fillWarehouseDetails": {
+    "description": "Step 2 info text",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "invoiceQtyLabel": "Invoice qty: {qty}",
+  "@invoiceQtyLabel": {
+    "description": "Invoice qty badge",
+    "placeholders": {
+      "qty": { "type": "int" }
+    }
+  },
+
+  "actualQtyReceived": "Actual Qty Received",
+  "@actualQtyReceived": {
+    "description": "Actual qty received field label"
+  },
+
+  "vsInvoice": "{diff} vs invoice",
+  "@vsInvoice": {
+    "description": "Discrepancy label",
+    "placeholders": {
+      "diff": { "type": "String" }
+    }
+  },
+
+  "warehouseLocation": "Warehouse Location",
+  "@warehouseLocation": {
+    "description": "Warehouse location section header"
+  },
+
+  "zone": "Zone",
+  "@zone": {
+    "description": "Zone field label"
+  },
+
+  "row": "Row",
+  "@row": {
+    "description": "Row field label"
+  },
+
+  "shelf": "Shelf",
+  "@shelf": {
+    "description": "Shelf field label"
+  },
+
+  "codeLabel": "Code",
+  "@codeLabel": {
+    "description": "Location code preview label"
+  },
+
+  "back": "Back",
+  "@back": {
+    "description": "Back button"
+  },
+
+  "nextEnterDetails": "Next: Enter Details",
+  "@nextEnterDetails": {
+    "description": "Next step button"
+  },
+
+  "nOfMSelected": "{n} of {m} selected",
+  "@nOfMSelected": {
+    "description": "Selected count in step footer",
+    "placeholders": {
+      "n": { "type": "int" },
+      "m": { "type": "int" }
+    }
+  },
+
+  "importNProducts": "Import {n} Product(s)",
+  "@importNProducts": {
+    "description": "Import button label",
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+
+  "nProductsImported": "{n} product(s) imported from invoice {invoiceNo}",
+  "@nProductsImported": {
+    "description": "Snackbar message after import",
+    "placeholders": {
+      "n": { "type": "int" },
+      "invoiceNo": { "type": "String" }
+    }
+  },
+
+  "editProduct": "Edit Product",
+  "@editProduct": {
+    "description": "Edit product dialog title"
+  },
+
+  "addNewProduct": "Add New Product",
+  "@addNewProduct": {
+    "description": "Add product dialog title"
+  },
+
+  "skuField": "SKU",
+  "@skuField": {
+    "description": "SKU field label in dialog"
+  },
+
+  "modelField": "Model",
+  "@modelField": {
+    "description": "Model field label in dialog"
+  },
+
+  "colorField": "Color",
+  "@colorField": {
+    "description": "Color field label in dialog"
+  },
+
+  "barcodeField": "Barcode",
+  "@barcodeField": {
+    "description": "Barcode field label in dialog"
+  },
+
+  "quantityField": "Quantity",
+  "@quantityField": {
+    "description": "Quantity field label in dialog"
+  },
+
+  "unitPriceUSD": "Unit Price (USD)",
+  "@unitPriceUSD": {
+    "description": "Unit price field label in dialog"
+  },
+
+  "zoneLetter": "Zone letter (A–Z)",
+  "@zoneLetter": {
+    "description": "Zone field hint"
+  },
+
+  "locationCode": "Location code: {code}",
+  "@locationCode": {
+    "description": "Location code preview",
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
+
+  "saveChanges": "Save Changes",
+  "@saveChanges": {
+    "description": "Save changes button"
+  },
+
+  "required": "Required",
+  "@required": {
+    "description": "Validation error message"
+  },
+
+  "discrepancyTooltip": "Discrepancy: {diff} vs invoice",
+  "@discrepancyTooltip": {
+    "description": "Discrepancy tooltip on actual qty cell",
+    "placeholders": {
+      "diff": { "type": "String" }
+    }
   }
 }

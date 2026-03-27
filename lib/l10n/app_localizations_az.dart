@@ -259,4 +259,233 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get adjustFilters => 'Filtrlər və ya axtarış sorğusunu tənzimlə';
+
+  @override
+  String get selected => 'seçildi';
+
+  @override
+  String get totals => 'CƏMLƏR';
+
+  @override
+  String get totalQty => 'Ümumi Say';
+
+  @override
+  String get grandTotal => 'Ümumi Məbləğ';
+
+  @override
+  String get confirmAndSave => 'Təsdiq Et və Saxla';
+
+  @override
+  String get trackStockLevels =>
+      'Stok səviyyələrini, yerləşmələri və qiymətləndirmələri izləyin';
+
+  @override
+  String get addProduct => 'Məhsul Əlavə Et';
+
+  @override
+  String get chooseHowToAddProduct =>
+      'Məhsulu necə əlavə etmək istədiyinizi seçin';
+
+  @override
+  String get manualEntry => 'Manual Giriş';
+
+  @override
+  String get fillProductDetails =>
+      'Bütün məhsul məlumatlarını\nəl ilə doldurun';
+
+  @override
+  String get fromInvoice => 'Qaimədən';
+
+  @override
+  String get importFromInvoice => 'Təsdiqlənmiş qaimədən\nidxal edin';
+
+  @override
+  String get totalSKUs => 'Ümumi SKU-lar';
+
+  @override
+  String get totalUnits => 'Ümumi Vahidlər';
+
+  @override
+  String get searchSKUNameBarcode => 'SKU, ad, barkod, yerləşmə axtarın…';
+
+  @override
+  String get noProductsMatchSearch => 'Axtarışa uyğun məhsul tapılmadı.';
+
+  @override
+  String get all => 'Hamısı';
+
+  @override
+  String get scrollToStart => 'Əvvələ get';
+
+  @override
+  String get scrollToEnd => 'Sona get';
+
+  @override
+  String get scrollToTop => 'Yuxarıya get';
+
+  @override
+  String get scrollToBottom => 'Aşağıya get';
+
+  @override
+  String get scrollLeft => 'Sola sürüşdür';
+
+  @override
+  String get scrollRight => 'Sağa sürüşdür';
+
+  @override
+  String get scrollUp => 'Yuxarı sürüşdür';
+
+  @override
+  String get scrollDown => 'Aşağı sürüşdür';
+
+  @override
+  String get horizontal => 'Üfüqi';
+
+  @override
+  String get vertical => 'Şaquli';
+
+  @override
+  String get location => 'Yer';
+
+  @override
+  String nOfMProducts(int n, int m) {
+    return '$n/$m məhsul';
+  }
+
+  @override
+  String get selectInvoice => 'Qaimə Seçin';
+
+  @override
+  String get chooseInvoiceToImport => 'Məhsulları idxal etmək üçün qaimə seçin';
+
+  @override
+  String get noInvoicesAvailable => 'Qaimə mövcud deyil';
+
+  @override
+  String get addInvoicesFirst => 'Əvvəlcə Qaimələr modulunda qaimə əlavə edin';
+
+  @override
+  String importFromInvoiceNo(String invoiceNo) {
+    return '$invoiceNo qaiməsindən idxal';
+  }
+
+  @override
+  String get selectProducts => 'Məhsulları Seçin';
+
+  @override
+  String get enterDetails => 'Məlumatları Daxil Et';
+
+  @override
+  String nUniqueSkusFromInvoice(int n) {
+    return 'Qaimədən $n unikal SKU';
+  }
+
+  @override
+  String get deselectAll => 'Hamısını Ləğv Et';
+
+  @override
+  String get selectAllLabel => 'Hamısını Seç';
+
+  @override
+  String get invQty => 'Qaim. Say';
+
+  @override
+  String get invTotal => 'Qaim. Cəmi';
+
+  @override
+  String fillWarehouseDetails(int count) {
+    return '$count seçilmiş məhsul üçün anbar məlumatlarını doldurun';
+  }
+
+  @override
+  String invoiceQtyLabel(int qty) {
+    return 'Qaimə say: $qty';
+  }
+
+  @override
+  String get actualQtyReceived => 'Faktiki Qəbul Edilən Say';
+
+  @override
+  String vsInvoice(String diff) {
+    return '$diff qaiməyə nisbətən';
+  }
+
+  @override
+  String get warehouseLocation => 'Anbar Yeri';
+
+  @override
+  String get zone => 'Zona';
+
+  @override
+  String get row => 'Sıra';
+
+  @override
+  String get shelf => 'Rəf';
+
+  @override
+  String get codeLabel => 'Kod';
+
+  @override
+  String get back => 'Geri';
+
+  @override
+  String get nextEnterDetails => 'Növbəti: Məlumatları Daxil Et';
+
+  @override
+  String nOfMSelected(int n, int m) {
+    return '$n/$m seçildi';
+  }
+
+  @override
+  String importNProducts(int n) {
+    return '$n Məhsul İdxal Et';
+  }
+
+  @override
+  String nProductsImported(int n, String invoiceNo) {
+    return '$n məhsul $invoiceNo qaiməsindən idxal edildi';
+  }
+
+  @override
+  String get editProduct => 'Məhsulu Redaktə Et';
+
+  @override
+  String get addNewProduct => 'Yeni Məhsul Əlavə Et';
+
+  @override
+  String get skuField => 'SKU';
+
+  @override
+  String get modelField => 'Model';
+
+  @override
+  String get colorField => 'Rəng';
+
+  @override
+  String get barcodeField => 'Barkod';
+
+  @override
+  String get quantityField => 'Miqdar';
+
+  @override
+  String get unitPriceUSD => 'Vahid Qiymət (USD)';
+
+  @override
+  String get zoneLetter => 'Zona hərfi (A–Z)';
+
+  @override
+  String locationCode(String code) {
+    return 'Yer kodu: $code';
+  }
+
+  @override
+  String get saveChanges => 'Dəyişiklikləri Saxla';
+
+  @override
+  String get required => 'Tələb olunur';
+
+  @override
+  String discrepancyTooltip(String diff) {
+    return 'Uyğunsuzluq: $diff qaiməyə nisbətən';
+  }
 }
