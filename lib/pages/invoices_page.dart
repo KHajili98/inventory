@@ -216,11 +216,11 @@ class _InvoicesPageState extends State<InvoicesPage> {
           SizedBox(width: 100, child: Text(l10n.date, style: style)),
           SizedBox(width: 80, child: Text(l10n.items, style: style)),
           SizedBox(width: 110, child: Text(l10n.amount, style: style)),
-          SizedBox(width: 100, child: Text(l10n.status, style: style)),
-          SizedBox(
-            width: 90,
-            child: Text(l10n.actions, style: style, textAlign: TextAlign.right),
-          ),
+          // SizedBox(width: 100, child: Text(l10n.status, style: style)),
+          // SizedBox(
+          //   width: 90,
+          //   child: Text(l10n.actions, style: style, textAlign: TextAlign.right),
+          // ),
         ],
       ),
     );
@@ -288,31 +288,32 @@ class _InvoicesPageState extends State<InvoicesPage> {
               ),
             ),
             // Status
-            SizedBox(width: 100, child: _StatusBadge(status: inv.status)),
+            // SizedBox(width: 100, child: _StatusBadge(status: inv.status)),
+
             // Actions
-            SizedBox(
-              width: 90,
-              child: Builder(
-                builder: (context) {
-                  final l10n = AppLocalizations.of(context)!;
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      _ActionBtn(icon: Icons.visibility_outlined, tooltip: l10n.view, onTap: () => _openDetail(inv)),
-                      const SizedBox(width: 2),
-                      _ActionBtn(icon: Icons.download_outlined, tooltip: l10n.export, onTap: () {}),
-                      const SizedBox(width: 2),
-                      _ActionBtn(
-                        icon: Icons.delete_outline_rounded,
-                        tooltip: l10n.delete,
-                        color: const Color(0xFFEF4444),
-                        onTap: () => setState(() => _invoices.remove(inv)),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
+            // SizedBox(
+            //   width: 90,
+            //   child: Builder(
+            //     builder: (context) {
+            //       final l10n = AppLocalizations.of(context)!;
+            //       return Row(
+            //         mainAxisAlignment: MainAxisAlignment.end,
+            //         children: [
+            //           _ActionBtn(icon: Icons.visibility_outlined, tooltip: l10n.view, onTap: () => _openDetail(inv)),
+            //           const SizedBox(width: 2),
+            //           _ActionBtn(icon: Icons.download_outlined, tooltip: l10n.export, onTap: () {}),
+            //           const SizedBox(width: 2),
+            //           _ActionBtn(
+            //             icon: Icons.delete_outline_rounded,
+            //             tooltip: l10n.delete,
+            //             color: const Color(0xFFEF4444),
+            //             onTap: () => setState(() => _invoices.remove(inv)),
+            //           ),
+            //         ],
+            //       );
+            //     },
+            //   ),
+            // ),
           ],
         ),
       ),

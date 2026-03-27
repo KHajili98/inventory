@@ -171,14 +171,14 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
             color: const Color(0xFF22C55E),
           ),
           const SizedBox(width: 12),
-          _SummaryCard(label: l10n.skuLines, value: '${_rows.length} ${l10n.rows}', icon: Icons.list_alt_rounded, color: const Color(0xFFF59E0B)),
-          const SizedBox(width: 12),
-          _SummaryCard(
-            label: l10n.warnings,
-            value: '${_rows.where((r) => r.hasWarning).length} ${l10n.rows}',
-            icon: Icons.warning_amber_rounded,
-            color: const Color(0xFFEF4444),
-          ),
+          _SummaryCard(label: l10n.total, value: '${_rows.length} ${l10n.rows}', icon: Icons.list_alt_rounded, color: const Color(0xFFF59E0B)),
+          // const SizedBox(width: 12),
+          // _SummaryCard(
+          //   label: l10n.warnings,
+          //   value: '${_rows.where((r) => r.hasWarning).length} ${l10n.rows}',
+          //   icon: Icons.warning_amber_rounded,
+          //   color: const Color(0xFFEF4444),
+          // ),
         ],
       ),
     );
