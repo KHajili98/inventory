@@ -11,6 +11,7 @@ import 'package:inventory/features/invoice_ocr/cubit/invoice_ocr_state.dart';
 import 'package:inventory/features/invoice_ocr/data/models/invoice_upload_response_model.dart';
 import 'package:inventory/models/invoice_models.dart';
 import 'package:inventory/pages/invoice_detail_page.dart';
+import 'package:inventory/pages/invoice_edit_page.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 
 class InvoicesPage extends StatefulWidget {
@@ -102,7 +103,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
               rows: rows,
               invoiceUrl: newItem.invoiceImageUrl,
             );
-            _openDetail(newRecord);
+            _openEditPage(newRecord);
           },
         ),
       ),
@@ -115,9 +116,17 @@ class _InvoicesPageState extends State<InvoicesPage> {
   }
 
   void _openDetail(InvoiceRecord inv) {
+    // Open read-only detail page using the UUID from the server
+    Navigator.of(context, rootNavigator: true).push(
+      MaterialPageRoute(builder: (_) => InvoiceDetailPage(invoiceId: inv.id)),
+    );
+  }
+
+  void _openEditPage(InvoiceRecord inv) {
+    // Open editable page after OCR — allows the user to review and confirm
     Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
-        builder: (_) => InvoiceDetailPage(
+        builder: (_) => InvoiceEditPage(
           invoice: inv,
           onConfirmed: () {
             setState(() {

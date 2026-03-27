@@ -7,6 +7,9 @@ abstract class ApiConstants {
   static const String uploadInvoice = '/api/invoices/upload/';
   static const String invoicesList = '/api/invoices-list/';
 
+  /// Append `{id}/` to get a single invoice detail.
+  static String invoiceDetail(String id) => '/api/invoices-list/$id/';
+
   // ── Timeouts ────────────────────────────────────────────────────────────────
   static const Duration connectTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(minutes: 3); // OCR can take ~75 s
