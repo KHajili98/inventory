@@ -57,6 +57,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
               totalAmount: response.totalAmount ?? rows.fold(0.0, (s, r) => s + r.total),
               status: InvoiceStatus.pending,
               rows: rows,
+              invoiceUrl: response.invoiceUrl,
             );
             setState(() => _invoices.insert(0, newInvoice));
             _openDetail(newInvoice);
@@ -90,6 +91,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
                   totalAmount: inv.totalAmount,
                   status: InvoiceStatus.confirmed,
                   rows: inv.rows,
+                  invoiceUrl: inv.invoiceUrl,
                 );
               }
             });

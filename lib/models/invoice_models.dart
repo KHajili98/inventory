@@ -8,6 +8,7 @@ class InvoiceRecord {
   final double totalAmount;
   final InvoiceStatus status;
   final List<InvoiceRow> rows;
+  final String? invoiceUrl;
 
   InvoiceRecord({
     required this.id,
@@ -19,6 +20,7 @@ class InvoiceRecord {
     required this.totalAmount,
     required this.status,
     required this.rows,
+    this.invoiceUrl,
   });
 }
 

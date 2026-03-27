@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:inventory/models/invoice_models.dart';
 import 'package:inventory/l10n/app_localizations.dart';
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
 
 class InvoiceDetailPage extends StatefulWidget {
   final InvoiceRecord invoice;
@@ -172,6 +174,7 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
           ),
           const SizedBox(width: 12),
           _SummaryCard(label: l10n.total, value: '${_rows.length} ${l10n.rows}', icon: Icons.list_alt_rounded, color: const Color(0xFFF59E0B)),
+          if (inv.invoiceUrl != null) ...[const SizedBox(width: 12), _ImageSummaryCard(url: inv.invoiceUrl!)],
           // const SizedBox(width: 12),
           // _SummaryCard(
           //   label: l10n.warnings,
@@ -650,6 +653,51 @@ class _FooterStat extends StatelessWidget {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: highlight ? const Color(0xFF6366F1) : const Color(0xFF1E293B)),
         ),
       ],
+    );
+  }
+}
+
+class _ImageSummaryCard extends StatelessWidget {
+  final String url;
+  const _ImageSummaryCard({required this.url});
+
+  @override
+  Widget build(BuildContext context) {
+    const color = Color(0xFF0EA5E9);
+    return Tooltip(
+      message: 'View original invoice image',
+      child: InkWell(
+        onTap: () {
+          html.window.open(url, '_blank');
+        },
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.07),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: color.withOpacity(0.18)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.image_search_rounded, color: color, size: 20),
+              const SizedBox(width: 10),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Invoice Image', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                  Text(
+                    'View original',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 6),
+              const Icon(Icons.open_in_new_rounded, color: color, size: 14),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
