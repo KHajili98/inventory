@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:inventory/features/invoice_detail/cubit/invoice_detail_cubit.dart';
 import 'package:inventory/features/invoice_detail/cubit/invoice_detail_state.dart';
 import 'package:inventory/features/invoice_detail/data/models/invoice_detail_model.dart';
+import 'package:inventory/features/invoice_list/cubit/invoice_list_cubit.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html' as html;
@@ -128,7 +129,10 @@ class _InvoiceDetailContent extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+            onPressed: () {
+              context.read<InvoiceListCubit>().fetchInvoices();
+              Navigator.of(context, rootNavigator: true).pop();
+            },
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
             style: IconButton.styleFrom(
               backgroundColor: const Color(0xFFF1F5F9),

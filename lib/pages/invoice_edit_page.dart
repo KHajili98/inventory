@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:inventory/core/network/api_result.dart';
 import 'package:inventory/features/invoice_confirm/data/repositories/invoice_confirm_repository.dart';
+import 'package:inventory/features/invoice_list/cubit/invoice_list_cubit.dart';
 import 'package:inventory/models/invoice_models.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 // ignore: avoid_web_libraries_in_flutter
@@ -143,7 +145,10 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
       child: Row(
         children: [
           IconButton(
-            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+            onPressed: () {
+              Navigator.of(context, rootNavigator: true).pop();
+              context.read<InvoiceListCubit>().fetchInvoices();
+            },
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
             style: IconButton.styleFrom(
               backgroundColor: const Color(0xFFF1F5F9),
@@ -749,11 +754,16 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
+            onPressed: () {
+              Navigator.of(ctx).pop(false);
+              context.read<InvoiceListCubit>().fetchInvoices();
+            },
             child: const Text('No', style: TextStyle(color: Color(0xFF64748B))),
           ),
           FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
+            onPressed: () {
+              Navigator.of(ctx).pop(true);
+            },
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFF6366F1),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -789,6 +799,7 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
       case Success():
         widget.onConfirmed?.call();
         Navigator.of(context, rootNavigator: true).pop();
+        context.read<InvoiceListCubit>().fetchInvoices();
       case Failure(:final message):
         ScaffoldMessenger.of(
           context,
