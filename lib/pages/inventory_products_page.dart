@@ -1247,10 +1247,17 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
   List<_MergedRow> _mergeRows(List<InvoiceRow> rows) {
     final map = <String, _MergedRow>{};
     for (final r in rows) {
-      if (map.containsKey(r.sku)) {
-        map[r.sku] = map[r.sku]!.copyWithAddedQty(r.qty);
+      if (map.containsKey(r.productName)) {
+        map[r.productName] = map[r.productName]!.copyWithAddedQty(r.qty);
       } else {
-        map[r.sku] = _MergedRow(sku: r.sku, modelCode: r.modelCode, color: r.color, size: r.size, totalQty: r.qty, unitPrice: r.unitPrice);
+        map[r.productName] = _MergedRow(
+          sku: r.productName,
+          modelCode: r.modelCode,
+          color: r.color,
+          size: r.size,
+          totalQty: r.qty,
+          unitPrice: r.unitPrice,
+        );
       }
     }
     return map.values.toList();

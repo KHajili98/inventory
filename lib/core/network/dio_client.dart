@@ -45,15 +45,7 @@ class DioClient {
     );
 
     dio.interceptors.addAll([
-      PrettyDioLogger(
-        requestHeader: true,
-        requestBody: true,
-        responseHeader: false,
-        responseBody: true,
-        error: true,
-        compact: true,
-        maxWidth: 120,
-      ),
+      PrettyDioLogger(requestHeader: true, requestBody: true, responseHeader: false, responseBody: true, error: true, compact: true, maxWidth: 120),
       InterceptorsWrapper(
         onRequest: (options, handler) {
           // On web, browser will send an OPTIONS preflight — no action needed here.

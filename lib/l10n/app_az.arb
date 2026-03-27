@@ -121,6 +121,16 @@
 
   "notes": "Qeydlər",
 
+  "productName": "Məhsul Adı",
+
+  "colorCode": "Rəng Kodu",
+
+  "pcsPerCarton": "Əd/Karton",
+
+  "cartons": "Karton",
+
+  "totalWeightKg": "Cəmi Çəki (kq)",
+
   "selectAll": "Hamısını seç",
 
   "search": "Axtar",

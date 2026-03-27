@@ -192,6 +192,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notes => 'Notes';
 
   @override
+  String get productName => 'Product Name';
+
+  @override
+  String get colorCode => 'Color Code';
+
+  @override
+  String get pcsPerCarton => 'Pcs/Carton';
+
+  @override
+  String get cartons => 'Cartons';
+
+  @override
+  String get totalWeightKg => 'Total Wt (kg)';
+
+  @override
   String get selectAll => 'Select all';
 
   @override

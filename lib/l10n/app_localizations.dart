@@ -458,6 +458,36 @@ abstract class AppLocalizations {
   /// **'Notes'**
   String get notes;
 
+  /// Product name column header
+  ///
+  /// In en, this message translates to:
+  /// **'Product Name'**
+  String get productName;
+
+  /// Color code column header
+  ///
+  /// In en, this message translates to:
+  /// **'Color Code'**
+  String get colorCode;
+
+  /// Pieces per carton column header
+  ///
+  /// In en, this message translates to:
+  /// **'Pcs/Carton'**
+  String get pcsPerCarton;
+
+  /// Carton count column header
+  ///
+  /// In en, this message translates to:
+  /// **'Cartons'**
+  String get cartons;
+
+  /// Total weight in kg column header
+  ///
+  /// In en, this message translates to:
+  /// **'Total Wt (kg)'**
+  String get totalWeightKg;
+
   /// Select all checkbox label
   ///
   /// In en, this message translates to:

@@ -48,13 +48,13 @@ class _InvoicesPageState extends State<InvoicesPage> {
             Navigator.of(context, rootNavigator: true).pop();
 
             final newInvoice = InvoiceRecord(
-              id: response.data?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-              invoiceNo: response.data?.extractedInvoiceNumber ?? 'NEW-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}',
-              date: response.data?.extractedDate ?? DateTime.now().toIso8601String().split('T').first,
-              supplier: response.data?.extractedSupplierName ?? 'Unknown Supplier',
+              id: response.processingMetadata?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+              invoiceNo: response.invoiceNumber ?? 'NEW-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}',
+              date: response.invoiceDate ?? DateTime.now().toIso8601String().split('T').first,
+              supplier: response.supplierName ?? 'Unknown Supplier',
               buyer: 'Aydinoglu Trend NO.1LLC',
               totalItems: rows.fold(0, (s, r) => s + r.qty),
-              totalAmount: double.tryParse(response.data?.extractedTotalAmount ?? '') ?? rows.fold(0.0, (s, r) => s + r.total),
+              totalAmount: response.totalAmount ?? rows.fold(0.0, (s, r) => s + r.total),
               status: InvoiceStatus.pending,
               rows: rows,
             );
@@ -217,7 +217,10 @@ class _InvoicesPageState extends State<InvoicesPage> {
           SizedBox(width: 80, child: Text(l10n.items, style: style)),
           SizedBox(width: 110, child: Text(l10n.amount, style: style)),
           SizedBox(width: 100, child: Text(l10n.status, style: style)),
-          SizedBox(width: 90, child: Text(l10n.actions, style: style, textAlign: TextAlign.right)),
+          SizedBox(
+            width: 90,
+            child: Text(l10n.actions, style: style, textAlign: TextAlign.right),
+          ),
         ],
       ),
     );
@@ -328,20 +331,21 @@ class _OcrProcessingDialog extends StatelessWidget {
   /// Maps the API response items to the existing [InvoiceRow] model used by
   /// the detail page / table.
   List<InvoiceRow> _mapToRows(InvoiceUploadResponseModel response) {
-    final items = response.data?.ocrResultJson?.items ?? [];
+    final items = response.extractedData?.items ?? [];
     return items.map((item) {
       return InvoiceRow(
         modelCode: item.modelCode ?? '',
-        sku: [item.modelCode, item.size, item.color].where((v) => v != null && v.isNotEmpty).join('-'),
+        productName: item.productName ?? '',
         size: item.size ?? '',
         color: item.color ?? '',
+        colorCode: item.colorCode ?? '',
         qty: item.quantity ?? 0,
         unitPrice: item.unitPriceUsd ?? 0.0,
-        boxDimensions: '',
-        cbm: 0.0,
-        netWeight: item.weightKg ?? 0.0,
+        totalPrice: item.totalPrice ?? 0.0,
+        piecesPerCarton: item.piecesPerCarton ?? 0,
+        cartonCount: item.cartonCount ?? 0.0,
         grossWeight: item.grossWeightKg ?? 0.0,
-        notes: item.description ?? '',
+        totalWeightKg: item.totalWeightKg ?? 0.0,
         hasWarning: item.quantity == null || item.unitPriceUsd == null,
       );
     }).toList();
@@ -412,7 +416,7 @@ class _OcrProcessingDialog extends StatelessWidget {
   Widget _buildPreview(BuildContext context, InvoiceUploadResponseModel response) {
     final l10n = AppLocalizations.of(context)!;
     final rows = _mapToRows(response);
-    final ocr = response.data?.ocrResultJson;
+    final ocr = response.extractedData;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -476,14 +480,13 @@ class _OcrProcessingDialog extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    _th(l10n.model, 70),
-                    _th(l10n.qty, 40),
-                    _th('Size', 60),
-                    _th('Color', 44),
-                    _th('Unit \$', 70),
-                    _th('Pcs/Ctn', 60),
-                    _th('Net kg', 56),
-                    Expanded(child: _th('Total \$', null)),
+                    _th('Product / Model', null, flex: 3),
+                    _th(l10n.qty, 46),
+                    _th('Color', 50),
+                    _th('Unit \$', 72),
+                    _th('Pcs/Ctn', 58),
+                    _th('G.Wt kg', 62),
+                    _th('Total \$', 72),
                   ],
                 ),
               ),
@@ -494,40 +497,49 @@ class _OcrProcessingDialog extends StatelessWidget {
                   separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
                   itemBuilder: (_, i) {
                     final r = rows[i];
-                    final apiItem = response.data?.ocrResultJson?.items[i];
+                    final apiItem = response.extractedData?.items[i];
                     return Container(
                       color: r.hasWarning ? const Color(0xFFFFFBEB) : Colors.transparent,
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                       child: Row(
                         children: [
-                          SizedBox(
-                            width: 70,
-                            child: Text(r.modelCode, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                          // Product name / model code — takes remaining space
+                          Expanded(
+                            flex: 3,
+                            child: Text(
+                              r.modelCode,
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                          SizedBox(width: 40, child: Text('${r.qty}', style: const TextStyle(fontSize: 12))),
+                          SizedBox(width: 46, child: Text('${r.qty}', style: const TextStyle(fontSize: 12))),
                           SizedBox(
-                            width: 60,
-                            child: Text(r.size, style: const TextStyle(fontSize: 12, color: Color(0xFF475569))),
+                            width: 50,
+                            child: Text(
+                              r.color.isEmpty ? '–' : r.color,
+                              style: const TextStyle(fontSize: 12, color: Color(0xFF475569)),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
+                          SizedBox(width: 72, child: Text('\$${r.unitPrice.toStringAsFixed(4)}', style: const TextStyle(fontSize: 12))),
                           SizedBox(
-                            width: 44,
-                            child: Text(r.color.isEmpty ? '–' : r.color, style: const TextStyle(fontSize: 12, color: Color(0xFF475569))),
-                          ),
-                          SizedBox(width: 70, child: Text('\$${r.unitPrice.toStringAsFixed(4)}', style: const TextStyle(fontSize: 12))),
-                          SizedBox(
-                            width: 60,
+                            width: 58,
                             child: Text('${apiItem?.piecesPerCarton ?? '–'}', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
                           ),
                           SizedBox(
-                            width: 56,
-                            child: Text(apiItem?.weightKg?.toStringAsFixed(2) ?? '–', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                            width: 62,
+                            child: Text(
+                              apiItem?.grossWeightKg?.toStringAsFixed(1) ?? '–',
+                              style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                            ),
                           ),
-                          Expanded(
+                          SizedBox(
+                            width: 72,
                             child: Row(
                               children: [
-                                Text('\$${r.total.toStringAsFixed(3)}', style: const TextStyle(fontSize: 12)),
+                                Text('\$${r.total.toStringAsFixed(2)}', style: const TextStyle(fontSize: 12)),
                                 if (r.hasWarning) ...[
-                                  const SizedBox(width: 4),
+                                  const SizedBox(width: 3),
                                   const Icon(Icons.warning_amber_rounded, size: 13, color: Color(0xFFF59E0B)),
                                 ],
                               ],
@@ -630,11 +642,13 @@ class _OcrProcessingDialog extends StatelessWidget {
   }
 
   // Helper: table header cell
-  Widget _th(String text, double? width) {
+  Widget _th(String text, double? width, {int? flex}) {
     final cell = Text(
       text,
       style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+      overflow: TextOverflow.ellipsis,
     );
+    if (flex != null) return Expanded(flex: flex, child: cell);
     if (width == null) return cell;
     return SizedBox(width: width, child: cell);
   }

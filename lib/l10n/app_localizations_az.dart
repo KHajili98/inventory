@@ -195,6 +195,21 @@ class AppLocalizationsAz extends AppLocalizations {
   String get notes => 'Qeydlər';
 
   @override
+  String get productName => 'Məhsul Adı';
+
+  @override
+  String get colorCode => 'Rəng Kodu';
+
+  @override
+  String get pcsPerCarton => 'Əd/Karton';
+
+  @override
+  String get cartons => 'Karton';
+
+  @override
+  String get totalWeightKg => 'Cəmi Çəki (kq)';
+
+  @override
   String get selectAll => 'Hamısını seç';
 
   @override

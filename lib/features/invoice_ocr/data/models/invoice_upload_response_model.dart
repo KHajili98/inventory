@@ -12,7 +12,7 @@ class OcrItemModel {
   final double? totalPrice;
   final int? piecesPerCarton;
   final double? cartonCount;
-  final double? weightKg;
+  final double? weightKg; // present in v1 response (weight_kg)
   final double? grossWeightKg;
   final double? totalWeightKg;
 
@@ -68,7 +68,7 @@ class OcrItemModel {
   };
 }
 
-// ── OCR Result ────────────────────────────────────────────────────────────────
+// ── Extracted Data (was ocr_result_json, now extracted_data) ──────────────────
 
 class OcrResultModel {
   final String? supplierName;
@@ -122,92 +122,110 @@ class OcrResultModel {
   };
 }
 
-// ── Invoice Upload Response Data ───────────────────────────────────────────────
+// ── Processing Metadata ───────────────────────────────────────────────────────
 
-class InvoiceUploadDataModel {
+class ProcessingMetadataModel {
   final String id;
+  final String? status;
+  final String? ocrModel;
+  final int? processingDurationMs;
+  final String? processingStartedAt;
+  final String? processingCompletedAt;
   final String? originalFilename;
   final int? fileSizeBytes;
   final String? fileType;
-  final String? s3Bucket;
-  final String? s3Key;
-  final String? s3Region;
-  final String? publicUrl;
-  final String? status;
-  final String? ocrModelUsed;
-  final OcrResultModel? ocrResultJson;
-  final String? ocrErrorMessage;
-  final String? processingStartedAt;
-  final String? processingCompletedAt;
-  final int? processingDurationMs;
-  final String? createdAt;
-  final String? updatedAt;
-  final String? extractedInvoiceNumber;
-  final String? extractedSupplierName;
-  final String? extractedTotalAmount;
-  final String? extractedDate;
 
-  const InvoiceUploadDataModel({
+  const ProcessingMetadataModel({
     required this.id,
+    this.status,
+    this.ocrModel,
+    this.processingDurationMs,
+    this.processingStartedAt,
+    this.processingCompletedAt,
     this.originalFilename,
     this.fileSizeBytes,
     this.fileType,
-    this.s3Bucket,
-    this.s3Key,
-    this.s3Region,
-    this.publicUrl,
-    this.status,
-    this.ocrModelUsed,
-    this.ocrResultJson,
-    this.ocrErrorMessage,
-    this.processingStartedAt,
-    this.processingCompletedAt,
-    this.processingDurationMs,
-    this.createdAt,
-    this.updatedAt,
-    this.extractedInvoiceNumber,
-    this.extractedSupplierName,
-    this.extractedTotalAmount,
-    this.extractedDate,
   });
 
-  factory InvoiceUploadDataModel.fromJson(Map<String, dynamic> json) => InvoiceUploadDataModel(
-    id: json['id'] as String,
+  factory ProcessingMetadataModel.fromJson(Map<String, dynamic> json) => ProcessingMetadataModel(
+    id: json['id'] as String? ?? '',
+    status: json['status'] as String?,
+    ocrModel: json['ocr_model'] as String?,
+    processingDurationMs: (json['processing_duration_ms'] as num?)?.toInt(),
+    processingStartedAt: json['processing_started_at'] as String?,
+    processingCompletedAt: json['processing_completed_at'] as String?,
     originalFilename: json['original_filename'] as String?,
     fileSizeBytes: (json['file_size_bytes'] as num?)?.toInt(),
     fileType: json['file_type'] as String?,
-    s3Bucket: json['s3_bucket'] as String?,
-    s3Key: json['s3_key'] as String?,
-    s3Region: json['s3_region'] as String?,
-    publicUrl: json['public_url'] as String?,
-    status: json['status'] as String?,
-    ocrModelUsed: json['ocr_model_used'] as String?,
-    ocrResultJson: json['ocr_result_json'] != null ? OcrResultModel.fromJson(json['ocr_result_json'] as Map<String, dynamic>) : null,
-    ocrErrorMessage: json['ocr_error_message'] as String?,
-    processingStartedAt: json['processing_started_at'] as String?,
-    processingCompletedAt: json['processing_completed_at'] as String?,
-    processingDurationMs: (json['processing_duration_ms'] as num?)?.toInt(),
-    createdAt: json['created_at'] as String?,
-    updatedAt: json['updated_at'] as String?,
-    extractedInvoiceNumber: json['extracted_invoice_number'] as String?,
-    extractedSupplierName: json['extracted_supplier_name'] as String?,
-    extractedTotalAmount: json['extracted_total_amount'] as String?,
-    extractedDate: json['extracted_date'] as String?,
   );
 }
 
-// ── Top-level API Response ─────────────────────────────────────────────────────
+// ── Top-level API Response ────────────────────────────────────────────────────
+//
+// New shape (v2):
+// {
+//   "success": true,
+//   "message": "...",
+//   "extracted_data": { ...OcrResultModel... },
+//   "invoice_url": "https://...",
+//   "processing_metadata": { ...ProcessingMetadataModel... }
+// }
+//
+// Legacy shape (v1) had a "data" key with nested "ocr_result_json".
+// Both shapes are handled transparently via [InvoiceUploadResponseModel.fromJson].
 
 class InvoiceUploadResponseModel {
   final bool success;
   final String message;
-  final InvoiceUploadDataModel? data;
+  final OcrResultModel? extractedData;
+  final String? invoiceUrl;
+  final ProcessingMetadataModel? processingMetadata;
 
-  const InvoiceUploadResponseModel({required this.success, required this.message, this.data});
+  const InvoiceUploadResponseModel({required this.success, required this.message, this.extractedData, this.invoiceUrl, this.processingMetadata});
 
-  factory InvoiceUploadResponseModel.fromJson(Map<String, dynamic> json) => InvoiceUploadResponseModel(
-    success: json['success'] as bool? ?? false,
-    message: json['message'] as String? ?? '',
-    data: json['data'] != null ? InvoiceUploadDataModel.fromJson(json['data'] as Map<String, dynamic>) : null,
-  );
+  factory InvoiceUploadResponseModel.fromJson(Map<String, dynamic> json) {
+    final success = json['success'] as bool? ?? false;
+    final message = json['message'] as String? ?? '';
+
+    // ── v2 shape ─────────────────────────────────────────────────────────────
+    if (json.containsKey('extracted_data')) {
+      return InvoiceUploadResponseModel(
+        success: success,
+        message: message,
+        extractedData: json['extracted_data'] != null ? OcrResultModel.fromJson(json['extracted_data'] as Map<String, dynamic>) : null,
+        invoiceUrl: json['invoice_url'] as String?,
+        processingMetadata: json['processing_metadata'] != null
+            ? ProcessingMetadataModel.fromJson(json['processing_metadata'] as Map<String, dynamic>)
+            : null,
+      );
+    }
+
+    // ── v1 legacy shape (data.ocr_result_json) ────────────────────────────────
+    final dataMap = json['data'] as Map<String, dynamic>?;
+    return InvoiceUploadResponseModel(
+      success: success,
+      message: message,
+      extractedData: dataMap?['ocr_result_json'] != null ? OcrResultModel.fromJson(dataMap!['ocr_result_json'] as Map<String, dynamic>) : null,
+      invoiceUrl: dataMap?['public_url'] as String?,
+      processingMetadata: dataMap != null
+          ? ProcessingMetadataModel.fromJson({
+              'id': dataMap['id'],
+              'status': dataMap['status'],
+              'ocr_model': dataMap['ocr_model_used'],
+              'processing_duration_ms': dataMap['processing_duration_ms'],
+              'processing_started_at': dataMap['processing_started_at'],
+              'processing_completed_at': dataMap['processing_completed_at'],
+              'original_filename': dataMap['original_filename'],
+              'file_size_bytes': dataMap['file_size_bytes'],
+              'file_type': dataMap['file_type'],
+            })
+          : null,
+    );
+  }
+
+  // Convenience getters so the rest of the app doesn't care about the version.
+  String? get invoiceNumber => extractedData?.invoiceNumber;
+  String? get supplierName => extractedData?.supplierName;
+  double? get totalAmount => extractedData?.totalAmount;
+  String? get invoiceDate => extractedData?.invoiceDate;
 }

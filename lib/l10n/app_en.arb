@@ -306,6 +306,31 @@
     "description": "Notes column header"
   },
 
+  "productName": "Product Name",
+  "@productName": {
+    "description": "Product name column header"
+  },
+
+  "colorCode": "Color Code",
+  "@colorCode": {
+    "description": "Color code column header"
+  },
+
+  "pcsPerCarton": "Pcs/Carton",
+  "@pcsPerCarton": {
+    "description": "Pieces per carton column header"
+  },
+
+  "cartons": "Cartons",
+  "@cartons": {
+    "description": "Carton count column header"
+  },
+
+  "totalWeightKg": "Total Wt (kg)",
+  "@totalWeightKg": {
+    "description": "Total weight in kg column header"
+  },
+
   "selectAll": "Select all",
   "@selectAll": {
     "description": "Select all checkbox label"

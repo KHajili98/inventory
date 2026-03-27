@@ -17,21 +17,21 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
   final Set<int> _selectedRows = {};
   bool _isEditing = false;
 
-  // Column widths
-  static const double _colCheck = 48;
-  static const double _colIdx = 48;
-  static const double _colModel = 100;
-  static const double _colSku = 130;
-  static const double _colSize = 80;
-  static const double _colColor = 80;
-  static const double _colQty = 70;
-  static const double _colUnit = 100;
-  static const double _colTotal = 100;
-  static const double _colBox = 120;
-  static const double _colCbm = 80;
-  static const double _colNet = 90;
-  static const double _colGross = 90;
-  static const double _colNotes = 160;
+  // Column widths — mirroring OcrItemModel fields exactly
+  static const double _colCheck = 44;
+  static const double _colIdx = 44;
+  static const double _colProduct = 180; // product_name
+  static const double _colModel = 100; // model_code
+  static const double _colSize = 70;
+  static const double _colColor = 70;
+  static const double _colColorCode = 80;
+  static const double _colQty = 64;
+  static const double _colUnit = 96;
+  static const double _colTotal = 96;
+  static const double _colPcsCarton = 82;
+  static const double _colCarton = 80;
+  static const double _colGross = 86;
+  static const double _colTotalWt = 96;
 
   @override
   void initState() {
@@ -47,16 +47,17 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
       _rows.add(
         InvoiceRow(
           modelCode: '',
-          sku: '',
+          productName: '',
           size: '',
           color: '',
+          colorCode: '',
           qty: 0,
           unitPrice: 0,
-          boxDimensions: '',
-          cbm: 0,
-          netWeight: 0,
+          totalPrice: 0,
+          piecesPerCarton: 0,
+          cartonCount: 0,
           grossWeight: 0,
-          notes: '',
+          totalWeightKg: 0,
         ),
       );
     });
@@ -265,18 +266,18 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
             ),
           ),
           _headerCell('#', _colIdx, style),
+          _headerCell(l10n.productName, _colProduct, style),
           _headerCell(l10n.model, _colModel, style),
-          _headerCell(l10n.sku, _colSku, style),
           _headerCell(l10n.size, _colSize, style),
           _headerCell(l10n.color, _colColor, style),
+          _headerCell(l10n.colorCode, _colColorCode, style),
           _headerCell(l10n.qty, _colQty, style),
           _headerCell('${l10n.unit} (USD)', _colUnit, style),
           _headerCell('${l10n.total} (USD)', _colTotal, style),
-          _headerCell('${l10n.boxDimensions} (cm)', _colBox, style),
-          _headerCell(l10n.cbm, _colCbm, style),
-          _headerCell(l10n.netWeight, _colNet, style),
+          _headerCell(l10n.pcsPerCarton, _colPcsCarton, style),
+          _headerCell(l10n.cartons, _colCarton, style),
           _headerCell(l10n.grossWeight, _colGross, style),
-          _headerCell(l10n.notes, _colNotes, style),
+          _headerCell(l10n.totalWeightKg, _colTotalWt, style),
         ],
       ),
     );
@@ -333,15 +334,15 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
           _staticCell('${index + 1}', _colIdx, style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
           // Editable cells
           _editableCell(
-            value: row.modelCode,
-            width: _colModel,
-            onChanged: (v) => setState(() => _rows[index] = row.copyWith(modelCode: v)),
+            value: row.productName,
+            width: _colProduct,
+            onChanged: (v) => setState(() => _rows[index] = row.copyWith(productName: v)),
             bold: true,
           ),
           _editableCell(
-            value: row.sku,
-            width: _colSku,
-            onChanged: (v) => setState(() => _rows[index] = row.copyWith(sku: v)),
+            value: row.modelCode,
+            width: _colModel,
+            onChanged: (v) => setState(() => _rows[index] = row.copyWith(modelCode: v)),
           ),
           _editableCell(
             value: row.size,
@@ -352,6 +353,11 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
             value: row.color,
             width: _colColor,
             onChanged: (v) => setState(() => _rows[index] = row.copyWith(color: v)),
+          ),
+          _editableCell(
+            value: row.colorCode,
+            width: _colColorCode,
+            onChanged: (v) => setState(() => _rows[index] = row.copyWith(colorCode: v)),
           ),
           _numericCell(
             value: row.qty.toString(),
@@ -370,21 +376,16 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
             _colTotal,
             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
           ),
-          _editableCell(
-            value: row.boxDimensions,
-            width: _colBox,
-            onChanged: (v) => setState(() => _rows[index] = row.copyWith(boxDimensions: v)),
+          _numericCell(
+            value: row.piecesPerCarton.toString(),
+            width: _colPcsCarton,
+            isInt: true,
+            onChanged: (v) => setState(() => _rows[index] = row.copyWith(piecesPerCarton: int.tryParse(v) ?? row.piecesPerCarton)),
           ),
           _numericCell(
-            value: row.cbm.toString(),
-            width: _colCbm,
-            onChanged: (v) => setState(() => _rows[index] = row.copyWith(cbm: double.tryParse(v) ?? row.cbm)),
-          ),
-          _numericCell(
-            value: row.netWeight.toString(),
-            width: _colNet,
-            onChanged: (v) => setState(() => _rows[index] = row.copyWith(netWeight: double.tryParse(v) ?? row.netWeight)),
-            warning: row.hasWarning,
+            value: row.cartonCount.toString(),
+            width: _colCarton,
+            onChanged: (v) => setState(() => _rows[index] = row.copyWith(cartonCount: double.tryParse(v) ?? row.cartonCount)),
           ),
           _numericCell(
             value: row.grossWeight.toString(),
@@ -392,10 +393,10 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
             onChanged: (v) => setState(() => _rows[index] = row.copyWith(grossWeight: double.tryParse(v) ?? row.grossWeight)),
             warning: row.hasWarning,
           ),
-          _editableCell(
-            value: row.notes,
-            width: _colNotes,
-            onChanged: (v) => setState(() => _rows[index] = row.copyWith(notes: v)),
+          _numericCell(
+            value: row.totalWeightKg.toString(),
+            width: _colTotalWt,
+            onChanged: (v) => setState(() => _rows[index] = row.copyWith(totalWeightKg: double.tryParse(v) ?? row.totalWeightKg)),
             warning: row.hasWarning,
           ),
         ],
