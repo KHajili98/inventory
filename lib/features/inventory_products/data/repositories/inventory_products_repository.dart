@@ -51,6 +51,24 @@ class InventoryProductsRepository {
     }
   }
 
+  /// Deletes an inventory product via DELETE /api/inventory-products/{id}/
+  Future<ApiResult<void>> deleteProduct(String id) async {
+    try {
+      final response = await _dio.delete<void>('${ApiConstants.inventoryProducts}$id/');
+
+      // 204 No Content is the expected success response
+      if (response.statusCode == 204 || response.statusCode == 200) {
+        return const Success(null);
+      }
+
+      return Failure('Unexpected status: ${response.statusCode}', statusCode: response.statusCode);
+    } on DioException catch (e) {
+      return Failure(_parseDioError(e), statusCode: e.response?.statusCode);
+    } catch (e) {
+      return Failure(e.toString());
+    }
+  }
+
   String _parseDioError(DioException e) {
     switch (e.type) {
       case DioExceptionType.connectionTimeout:

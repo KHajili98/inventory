@@ -86,4 +86,16 @@ class InventoryProductsCubit extends Cubit<InventoryProductsState> {
 
     return result;
   }
+
+  /// Deletes a product by [id] via DELETE /api/inventory-products/{id}/
+  /// On success the list is refreshed. Returns the [ApiResult] for callers.
+  Future<ApiResult<void>> deleteProduct(String id) async {
+    final result = await _repository.deleteProduct(id);
+
+    if (result is Success) {
+      await refresh();
+    }
+
+    return result;
+  }
 }

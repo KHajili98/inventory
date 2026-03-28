@@ -1117,12 +1117,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                     icon: Icons.delete_outline_rounded,
                     tooltip: l10n.delete,
                     color: const Color(0xFFEF4444),
-                    onTap: () {
-                      setState(() {
-                        _filtered.removeWhere((p) => p.id == product.id);
-                        _selectedIds.remove(product.id);
-                      });
-                    },
+                    onTap: () => _confirmDeleteProduct(product),
                   ),
                 ],
               ),
@@ -1295,6 +1290,115 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
         },
       ),
     );
+  }
+
+  // ── Delete confirmation dialog ───────────────────────────────────────────────
+  Future<void> _confirmDeleteProduct(InventoryProductItemModel product) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierColor: Colors.black26,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(color: const Color(0xFFFEF2F2), borderRadius: BorderRadius.circular(10)),
+              child: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444), size: 18),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'Delete Product',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Are you sure you want to delete this product? This action cannot be undone.',
+              style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.inventory_2_outlined, size: 16, color: Color(0xFF94A3B8)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      product.productGeneratedName ?? product.productName ?? '—',
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel', style: TextStyle(color: Color(0xFF94A3B8))),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            icon: const Icon(Icons.delete_outline_rounded, size: 16),
+            label: const Text('Delete'),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final cubit = context.read<InventoryProductsCubit>();
+    final result = await cubit.deleteProduct(product.id);
+
+    if (!mounted) return;
+
+    switch (result) {
+      case Success():
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${product.productGeneratedName ?? product.productName ?? 'Product'} deleted successfully.'),
+            backgroundColor: const Color(0xFF22C55E),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+      case Failure(:final message):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline_rounded, color: Colors.white, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text('Delete failed: $message', style: const TextStyle(color: Colors.white)),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+    }
   }
 }
 
