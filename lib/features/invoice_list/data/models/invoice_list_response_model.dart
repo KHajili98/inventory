@@ -24,7 +24,7 @@ class InvoiceListItemModel {
   final String? invoiceDate;
   final double? totalAmount;
   final String? currency;
-  final String? invoiceImageUrl;
+  final List<String> invoiceImageUrls;
   final List<String> invoiceProcessing;
   final int totalItemsCount;
   final DateTime? createdAt;
@@ -36,11 +36,14 @@ class InvoiceListItemModel {
     this.invoiceDate,
     this.totalAmount,
     this.currency,
-    this.invoiceImageUrl,
+    this.invoiceImageUrls = const [],
     this.invoiceProcessing = const [],
     required this.totalItemsCount,
     this.createdAt,
   });
+
+  /// Convenience getter — returns the first image URL or null.
+  String? get invoiceImageUrl => invoiceImageUrls.isNotEmpty ? invoiceImageUrls.first : null;
 
   factory InvoiceListItemModel.fromJson(Map<String, dynamic> json) => InvoiceListItemModel(
     id: json['id'] as String,
@@ -49,7 +52,7 @@ class InvoiceListItemModel {
     invoiceDate: json['invoice_date'] as String?,
     totalAmount: (json['total_amount'] as String?) != null ? double.tryParse(json['total_amount'] as String) : null,
     currency: json['currency'] as String?,
-    invoiceImageUrl: json['invoice_image_url'] as String?,
+    invoiceImageUrls: (json['invoice_image_url'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
     invoiceProcessing: (json['invoice_processing'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
     totalItemsCount: (json['total_items_count'] as num?)?.toInt() ?? 0,
     createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'] as String) : null,
@@ -62,7 +65,7 @@ class InvoiceListItemModel {
     'invoice_date': invoiceDate,
     'total_amount': totalAmount?.toString(),
     'currency': currency,
-    'invoice_image_url': invoiceImageUrl,
+    'invoice_image_url': invoiceImageUrls,
     'invoice_processing': invoiceProcessing,
     'total_items_count': totalItemsCount,
     'created_at': createdAt?.toIso8601String(),

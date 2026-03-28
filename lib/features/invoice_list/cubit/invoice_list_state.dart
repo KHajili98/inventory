@@ -19,8 +19,19 @@ final class InvoiceListLoaded extends InvoiceListState {
   final List<InvoiceListItemModel> invoices;
   final int totalCount;
   final bool hasMore;
+  final int currentPage;
+  final bool isLoadingMore;
 
-  const InvoiceListLoaded({required this.invoices, required this.totalCount, this.hasMore = false});
+  const InvoiceListLoaded({required this.invoices, required this.totalCount, this.hasMore = false, this.currentPage = 1, this.isLoadingMore = false});
+
+  InvoiceListLoaded copyWith({List<InvoiceListItemModel>? invoices, int? totalCount, bool? hasMore, int? currentPage, bool? isLoadingMore}) =>
+      InvoiceListLoaded(
+        invoices: invoices ?? this.invoices,
+        totalCount: totalCount ?? this.totalCount,
+        hasMore: hasMore ?? this.hasMore,
+        currentPage: currentPage ?? this.currentPage,
+        isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      );
 }
 
 /// An error occurred while loading.

@@ -15,13 +15,43 @@ class InvoiceListCubit extends Cubit<InvoiceListState> {
   Future<void> fetchInvoices() async {
     emit(const InvoiceListLoading());
 
-    final result = await _repository.fetchInvoices();
+    final result = await _repository.fetchInvoices(page: 1);
 
     switch (result) {
       case Success(:final data):
-        emit(InvoiceListLoaded(invoices: data.results, totalCount: data.count, hasMore: data.next != null));
+        emit(InvoiceListLoaded(invoices: data.results, totalCount: data.count, hasMore: data.next != null, currentPage: 1));
       case Failure(:final message):
         emit(InvoiceListError(message));
+    }
+  }
+
+  /// Load the next page and append results to the existing list.
+  Future<void> loadMoreInvoices() async {
+    final current = state;
+    if (current is! InvoiceListLoaded || !current.hasMore || current.isLoadingMore) return;
+
+    emit(current.copyWith(isLoadingMore: true));
+
+    final nextPage = current.currentPage + 1;
+    final result = await _repository.fetchInvoices(page: nextPage);
+
+    switch (result) {
+      case Success(:final data):
+        emit(
+          current.copyWith(
+            invoices: [...current.invoices, ...data.results],
+            totalCount: data.count,
+            hasMore: data.next != null,
+            currentPage: nextPage,
+            isLoadingMore: false,
+          ),
+        );
+      case Failure(:final message):
+        // Revert loading flag and surface error via a temporary state
+        emit(current.copyWith(isLoadingMore: false));
+        emit(InvoiceListError(message));
+        // Re-emit the loaded state so the list is still visible
+        emit(current.copyWith(isLoadingMore: false));
     }
   }
 
@@ -32,7 +62,7 @@ class InvoiceListCubit extends Cubit<InvoiceListState> {
   void prependInvoice(InvoiceListItemModel invoice) {
     final current = state;
     if (current is InvoiceListLoaded) {
-      emit(InvoiceListLoaded(invoices: [invoice, ...current.invoices], totalCount: current.totalCount + 1, hasMore: current.hasMore));
+      emit(current.copyWith(invoices: [invoice, ...current.invoices], totalCount: current.totalCount + 1));
     }
   }
 }

@@ -85,7 +85,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
               supplierName: response.supplierName ?? 'Unknown Supplier',
               totalAmount: response.totalAmount ?? rows.fold<double>(0.0, (s, r) => s + r.total),
               currency: 'USD',
-              invoiceImageUrl: response.invoiceUrl,
+              invoiceImageUrls: response.invoiceUrl != null ? [response.invoiceUrl!] : [],
               totalItemsCount: rows.fold(0, (s, r) => s + r.qty),
               createdAt: DateTime.now(),
             );
@@ -144,7 +144,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
                   supplierName: inv.supplier,
                   totalAmount: inv.totalAmount,
                   currency: 'USD',
-                  invoiceImageUrl: inv.invoiceUrl,
+                  invoiceImageUrls: inv.invoiceUrl != null ? [inv.invoiceUrl!] : [],
                   totalItemsCount: inv.totalItems,
                   createdAt: _locallyAdded[idx].createdAt,
                 );
@@ -284,9 +284,16 @@ class _InvoicesPageState extends State<InvoicesPage> {
       builder: (context, state) {
         return switch (state) {
           InvoiceListInitial() || InvoiceListLoading() =>
-            _locallyAdded.isEmpty ? const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1))) : _buildLoadedList(_locallyAdded),
-          InvoiceListLoaded(:final invoices) => _buildLoadedList(_mergeInvoices(invoices)),
-          InvoiceListError(:final message) => _locallyAdded.isEmpty ? _buildErrorState(message) : _buildLoadedList(_locallyAdded),
+            _locallyAdded.isEmpty
+                ? const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1)))
+                : _buildLoadedList(_locallyAdded, hasMore: false, isLoadingMore: false),
+          InvoiceListLoaded(:final invoices, :final hasMore, :final isLoadingMore) => _buildLoadedList(
+            _mergeInvoices(invoices),
+            hasMore: hasMore,
+            isLoadingMore: isLoadingMore,
+          ),
+          InvoiceListError(:final message) =>
+            _locallyAdded.isEmpty ? _buildErrorState(message) : _buildLoadedList(_locallyAdded, hasMore: false, isLoadingMore: false),
         };
       },
     );
@@ -321,7 +328,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
     );
   }
 
-  Widget _buildLoadedList(List<InvoiceListItemModel> invoices) {
+  Widget _buildLoadedList(List<InvoiceListItemModel> invoices, {required bool hasMore, required bool isLoadingMore}) {
     if (invoices.isEmpty) {
       return _EmptyState(onAdd: _pickAndProcessImage);
     }
@@ -341,13 +348,47 @@ class _InvoicesPageState extends State<InvoicesPage> {
               color: const Color(0xFF6366F1),
               onRefresh: () => context.read<InvoiceListCubit>().refresh(),
               child: ListView.separated(
-                itemCount: invoices.length,
+                itemCount: invoices.length + (hasMore || isLoadingMore ? 1 : 0),
                 separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                itemBuilder: (context, i) => _buildInvoiceRow(invoices[i]),
+                itemBuilder: (context, i) {
+                  if (i == invoices.length) {
+                    return _buildPaginationFooter(isLoadingMore);
+                  }
+                  return _buildInvoiceRow(invoices[i]);
+                },
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPaginationFooter(bool isLoadingMore) {
+    if (isLoadingMore) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16),
+        child: Center(child: CircularProgressIndicator(color: Color(0xFF6366F1), strokeWidth: 2.5)),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+      child: Center(
+        child: TextButton.icon(
+          onPressed: () => context.read<InvoiceListCubit>().loadMoreInvoices(),
+          icon: const Icon(Icons.expand_more_rounded, size: 18, color: Color(0xFF6366F1)),
+          label: const Text(
+            'Load more',
+            style: TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.w600),
+          ),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+              side: const BorderSide(color: Color(0xFFE0E7FF)),
+            ),
+          ),
+        ),
       ),
     );
   }

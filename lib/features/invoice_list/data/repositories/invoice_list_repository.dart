@@ -12,9 +12,12 @@ class InvoiceListRepository {
   final Dio _dio = DioClient.instance;
 
   /// Fetches the paginated list of invoices.
-  Future<ApiResult<InvoiceListResponseModel>> fetchInvoices({int page = 1}) async {
+  Future<ApiResult<InvoiceListResponseModel>> fetchInvoices({int page = 1, int pageSize = 10, String ordering = '-created_at'}) async {
     try {
-      final response = await _dio.get<Map<String, dynamic>>(ApiConstants.invoicesList, queryParameters: page > 1 ? {'page': page} : null);
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiConstants.invoicesList,
+        queryParameters: {'page': page, 'page_size': pageSize, 'ordering': ordering},
+      );
 
       if (response.statusCode == 200) {
         final model = InvoiceListResponseModel.fromJson(response.data as Map<String, dynamic>);
