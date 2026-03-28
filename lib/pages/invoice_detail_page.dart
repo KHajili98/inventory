@@ -108,6 +108,13 @@ class _InvoiceDetailContent extends StatelessWidget {
   int get _grandQty => invoice.items.fold(0, (s, r) => s + (r.quantity ?? 0));
   double get _grandTotal => invoice.items.fold(0.0, (s, r) => s + (r.totalPrice ?? 0.0));
 
+  void _showImageDialog(BuildContext context, List<String> urls, int initialIndex) {
+    showDialog(
+      context: context,
+      builder: (_) => _ImageViewerDialog(urls: urls, initialIndex: initialIndex),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -166,7 +173,7 @@ class _InvoiceDetailContent extends StatelessWidget {
               ),
             ],
           ),
-          if (invoice.contractNumber != null || invoice.invoiceImageUrl != null) ...[
+          if (invoice.contractNumber != null || invoice.invoiceImageUrls.isNotEmpty) ...[
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
@@ -181,11 +188,11 @@ class _InvoiceDetailContent extends StatelessWidget {
                       style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF4F46E5)),
                     ),
                   ),
-                if (invoice.invoiceImageUrl != null)
-                  OutlinedButton.icon(
-                    onPressed: () => html.window.open(invoice.invoiceImageUrl!, '_blank'),
+                ...invoice.invoiceImageUrls.asMap().entries.map(
+                  (e) => OutlinedButton.icon(
+                    onPressed: () => _showImageDialog(context, invoice.invoiceImageUrls, e.key),
                     icon: const Icon(Icons.image_search_rounded, size: 16),
-                    label: const Text('View Image'),
+                    label: Text(invoice.invoiceImageUrls.length > 1 ? 'Image ${e.key + 1}' : 'View Image'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF0EA5E9),
                       side: const BorderSide(color: Color(0xFF0EA5E9)),
@@ -193,6 +200,7 @@ class _InvoiceDetailContent extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                   ),
+                ),
               ],
             ),
           ],
@@ -512,6 +520,180 @@ class _FooterStat extends StatelessWidget {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: highlight ? const Color(0xFF6366F1) : const Color(0xFF1E293B)),
         ),
       ],
+    );
+  }
+}
+
+// ── Image Viewer Dialog ────────────────────────────────────────────────────────
+
+class _ImageViewerDialog extends StatefulWidget {
+  final List<String> urls;
+  final int initialIndex;
+  const _ImageViewerDialog({required this.urls, required this.initialIndex});
+
+  @override
+  State<_ImageViewerDialog> createState() => _ImageViewerDialogState();
+}
+
+class _ImageViewerDialogState extends State<_ImageViewerDialog> {
+  late int _current;
+
+  @override
+  void initState() {
+    super.initState();
+    _current = widget.initialIndex;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final total = widget.urls.length;
+    final url = widget.urls[_current];
+    final isSingle = total == 1;
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(20),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 860, maxHeight: 700),
+        child: Container(
+          decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(16)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // ── Title bar ──
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 8, 0),
+                child: Row(
+                  children: [
+                    const Icon(Icons.image_rounded, color: Color(0xFF94A3B8), size: 18),
+                    const SizedBox(width: 8),
+                    Text(
+                      isSingle ? 'Invoice Image' : 'Image ${_current + 1} of $total',
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
+                    ),
+                    const Spacer(),
+                    // Open in new tab
+                    IconButton(
+                      tooltip: 'Open in new tab',
+                      onPressed: () {
+                        // ignore: avoid_web_libraries_in_flutter
+                        html.window.open(url, '_blank');
+                      },
+                      icon: const Icon(Icons.open_in_new_rounded, size: 18, color: Color(0xFF94A3B8)),
+                    ),
+                    IconButton(
+                      tooltip: 'Close',
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close_rounded, size: 18, color: Color(0xFF94A3B8)),
+                    ),
+                  ],
+                ),
+              ),
+              // ── Image thumbnails tab row (only when multiple) ──
+              if (!isSingle) ...[
+                const SizedBox(height: 12),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: List.generate(total, (i) {
+                      final active = i == _current;
+                      return GestureDetector(
+                        onTap: () => setState(() => _current = i),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          margin: const EdgeInsets.only(right: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: active ? const Color(0xFF6366F1) : const Color(0xFF334155),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: active ? const Color(0xFF6366F1) : Colors.transparent),
+                          ),
+                          child: Text(
+                            'Image ${i + 1}',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: active ? Colors.white : const Color(0xFF94A3B8)),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 12),
+              // ── Main image ──
+              Flexible(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    ClipRRect(
+                      borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(16), bottomRight: Radius.circular(16)),
+                      child: Image.network(
+                        url,
+                        fit: BoxFit.contain,
+                        loadingBuilder: (_, child, progress) {
+                          if (progress == null) return child;
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(40),
+                              child: CircularProgressIndicator(color: Color(0xFF6366F1), strokeWidth: 2.5),
+                            ),
+                          );
+                        },
+                        errorBuilder: (_, __, ___) => const Padding(
+                          padding: EdgeInsets.all(40),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.broken_image_rounded, color: Color(0xFF475569), size: 48),
+                              SizedBox(height: 8),
+                              Text('Failed to load image', style: TextStyle(color: Color(0xFF64748B), fontSize: 13)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Prev / Next arrows
+                    if (!isSingle) ...[
+                      Positioned(
+                        left: 8,
+                        child: _NavArrow(icon: Icons.chevron_left_rounded, enabled: _current > 0, onTap: () => setState(() => _current--)),
+                      ),
+                      Positioned(
+                        right: 8,
+                        child: _NavArrow(icon: Icons.chevron_right_rounded, enabled: _current < total - 1, onTap: () => setState(() => _current++)),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavArrow extends StatelessWidget {
+  final IconData icon;
+  final bool enabled;
+  final VoidCallback onTap;
+  const _NavArrow({required this.icon, required this.enabled, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedOpacity(
+      opacity: enabled ? 1.0 : 0.2,
+      duration: const Duration(milliseconds: 150),
+      child: GestureDetector(
+        onTap: enabled ? onTap : null,
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(color: const Color(0xFF334155), borderRadius: BorderRadius.circular(50)),
+          child: Icon(icon, color: Colors.white, size: 22),
+        ),
+      ),
     );
   }
 }

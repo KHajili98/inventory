@@ -66,8 +66,11 @@ class InvoiceDetailModel {
   final String? contractNumber;
   final double? totalAmount;
   final String? currency;
-  final String? invoiceImageUrl;
+  final List<String> invoiceImageUrls;
   final List<String> invoiceProcessing;
+
+  /// Convenience getter — first image URL or null.
+  String? get invoiceImageUrl => invoiceImageUrls.isNotEmpty ? invoiceImageUrls.first : null;
   final List<InvoiceDetailItemModel> items;
   final int totalItemsCount;
   final int? totalQuantity;
@@ -85,7 +88,7 @@ class InvoiceDetailModel {
     this.contractNumber,
     this.totalAmount,
     this.currency,
-    this.invoiceImageUrl,
+    this.invoiceImageUrls = const [],
     this.invoiceProcessing = const [],
     this.items = const [],
     required this.totalItemsCount,
@@ -105,7 +108,7 @@ class InvoiceDetailModel {
     contractNumber: json['contract_number'] as String?,
     totalAmount: (json['total_amount'] as num?)?.toDouble(),
     currency: json['currency'] as String?,
-    invoiceImageUrl: json['invoice_image_url'] as String?,
+    invoiceImageUrls: (json['invoice_image_url'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
     invoiceProcessing: (json['invoice_processing'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
     items: (json['items'] as List<dynamic>?)?.map((e) => InvoiceDetailItemModel.fromJson(e as Map<String, dynamic>)).toList() ?? [],
     totalItemsCount: (json['total_items_count'] as num?)?.toInt() ?? 0,
