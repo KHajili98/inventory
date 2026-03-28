@@ -17,6 +17,8 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin {
   bool _collapsed = false;
+  // Track which nav items have their submenu expanded (by index)
+  final Set<int> _expandedItems = {};
 
   static const double _expandedWidth = 240;
   static const double _collapsedWidth = 68;
@@ -26,12 +28,20 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
   static const _navItems = [
     _NavItem(labelKey: 'invoices', icon: Icons.receipt_long_rounded, path: '/invoices'),
     _NavItem(labelKey: 'inventoryProducts', icon: Icons.inventory_2_rounded, path: '/inventory-products'),
-    _NavItem(labelKey: 'finance', icon: Icons.account_balance_wallet_rounded, path: '/finance'),
+    _NavItem(
+      labelKey: 'finance',
+      icon: Icons.account_balance_wallet_rounded,
+      path: '/finance',
+      subItems: [
+        _SubNavItem(labelKey: 'priceCalculation', path: '/finance/price-calculation'),
+        _SubNavItem(labelKey: 'expenseTracking', path: '/finance/expense-tracking'),
+      ],
+    ),
   ];
 
   int _selectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
-    final index = _navItems.indexWhere((item) => location.startsWith(item.path));
+    final index = _navItems.indexWhere((item) => location.startsWith(item.path) || item.subItems.any((sub) => location.startsWith(sub.path)));
     return index < 0 ? 0 : index;
   }
 
@@ -44,6 +54,10 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
         return l10n.inventoryProducts;
       case 'finance':
         return l10n.finance;
+      case 'priceCalculation':
+        return l10n.priceCalculation;
+      case 'expenseTracking':
+        return l10n.expenseTracking;
       default:
         return key;
     }
@@ -169,12 +183,46 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                         ...List.generate(_navItems.length, (index) {
                           final item = _navItems[index];
                           final isSelected = index == selectedIndex;
-                          return _SidebarTile(
-                            item: item,
-                            isSelected: isSelected,
-                            collapsed: _collapsed,
-                            onTap: () => context.go(item.path),
-                            label: _getNavLabel(context, item.labelKey),
+                          final hasSubItems = item.subItems.isNotEmpty;
+                          final isExpanded = _expandedItems.contains(index);
+                          final location = GoRouterState.of(context).uri.toString();
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _SidebarTile(
+                                item: item,
+                                isSelected: isSelected,
+                                collapsed: _collapsed,
+                                hasSubItems: hasSubItems,
+                                isExpanded: isExpanded,
+                                onTap: () {
+                                  if (hasSubItems) {
+                                    setState(() {
+                                      if (isExpanded) {
+                                        _expandedItems.remove(index);
+                                      } else {
+                                        _expandedItems.add(index);
+                                      }
+                                    });
+                                    if (!isExpanded) context.go(item.path);
+                                  } else {
+                                    context.go(item.path);
+                                  }
+                                },
+                                label: _getNavLabel(context, item.labelKey),
+                              ),
+                              if (hasSubItems && isExpanded && !_collapsed)
+                                ...item.subItems.map((sub) {
+                                  final isSubSelected = location.startsWith(sub.path);
+                                  return _SubSidebarTile(
+                                    sub: sub,
+                                    isSelected: isSubSelected,
+                                    onTap: () => context.go(sub.path),
+                                    label: _getNavLabel(context, sub.labelKey),
+                                  );
+                                }),
+                            ],
                           );
                         }),
 
@@ -304,14 +352,52 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
             ...List.generate(_navItems.length, (index) {
               final item = _navItems[index];
               final isSelected = index == selectedIndex;
-              return _MobileDrawerTile(
-                item: item,
-                isSelected: isSelected,
-                onTap: () {
-                  Navigator.pop(context); // Close drawer
-                  context.go(item.path);
-                },
-                label: _getNavLabel(context, item.labelKey),
+              final hasSubItems = item.subItems.isNotEmpty;
+              final isExpanded = _expandedItems.contains(index);
+              final location = GoRouterState.of(context).uri.toString();
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _MobileDrawerTile(
+                    item: item,
+                    isSelected: isSelected,
+                    hasSubItems: hasSubItems,
+                    isExpanded: isExpanded,
+                    onTap: () {
+                      if (hasSubItems) {
+                        setState(() {
+                          if (isExpanded) {
+                            _expandedItems.remove(index);
+                          } else {
+                            _expandedItems.add(index);
+                          }
+                        });
+                        if (!isExpanded) {
+                          Navigator.pop(context);
+                          context.go(item.path);
+                        }
+                      } else {
+                        Navigator.pop(context);
+                        context.go(item.path);
+                      }
+                    },
+                    label: _getNavLabel(context, item.labelKey),
+                  ),
+                  if (hasSubItems && isExpanded)
+                    ...item.subItems.map((sub) {
+                      final isSubSelected = location.startsWith(sub.path);
+                      return _MobileDrawerSubTile(
+                        sub: sub,
+                        isSelected: isSubSelected,
+                        onTap: () {
+                          Navigator.pop(context);
+                          context.go(sub.path);
+                        },
+                        label: _getNavLabel(context, sub.labelKey),
+                      );
+                    }),
+                ],
               );
             }),
 
@@ -449,11 +535,18 @@ class _CollapseButtonState extends State<_CollapseButton> {
 
 // ── Data class ────────────────────────────────────────────────────────────────
 
+class _SubNavItem {
+  final String labelKey;
+  final String path;
+  const _SubNavItem({required this.labelKey, required this.path});
+}
+
 class _NavItem {
   final String labelKey;
   final IconData icon;
   final String path;
-  const _NavItem({required this.labelKey, required this.icon, required this.path});
+  final List<_SubNavItem> subItems;
+  const _NavItem({required this.labelKey, required this.icon, required this.path, this.subItems = const []});
 }
 
 // ── Sidebar tile ──────────────────────────────────────────────────────────────
@@ -462,10 +555,20 @@ class _SidebarTile extends StatefulWidget {
   final _NavItem item;
   final bool isSelected;
   final bool collapsed;
+  final bool hasSubItems;
+  final bool isExpanded;
   final VoidCallback onTap;
   final String label;
 
-  const _SidebarTile({required this.item, required this.isSelected, required this.collapsed, required this.onTap, required this.label});
+  const _SidebarTile({
+    required this.item,
+    required this.isSelected,
+    required this.collapsed,
+    required this.onTap,
+    required this.label,
+    this.hasSubItems = false,
+    this.isExpanded = false,
+  });
 
   @override
   State<_SidebarTile> createState() => _SidebarTileState();
@@ -515,15 +618,32 @@ class _SidebarTileState extends State<_SidebarTile> {
                       ? const SizedBox.shrink()
                       : Padding(
                           padding: const EdgeInsets.only(left: 10),
-                          child: Text(
-                            widget.label,
-                            style: TextStyle(
-                              color: widget.isSelected ? Colors.white : const Color(0xFFCBD5E1),
-                              fontSize: 14,
-                              fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w400,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  widget.label,
+                                  style: TextStyle(
+                                    color: widget.isSelected ? Colors.white : const Color(0xFFCBD5E1),
+                                    fontSize: 14,
+                                    fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w400,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ),
+                              if (widget.hasSubItems)
+                                AnimatedRotation(
+                                  turns: widget.isExpanded ? 0.5 : 0.0,
+                                  duration: const Duration(milliseconds: 200),
+                                  child: Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    size: 16,
+                                    color: widget.isSelected ? Colors.white.withValues(alpha: 0.8) : const Color(0xFF64748B),
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
                 ),
@@ -541,15 +661,90 @@ class _SidebarTileState extends State<_SidebarTile> {
   }
 }
 
+// ── Sub-sidebar tile ──────────────────────────────────────────────────────────
+
+class _SubSidebarTile extends StatefulWidget {
+  final _SubNavItem sub;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final String label;
+
+  const _SubSidebarTile({required this.sub, required this.isSelected, required this.onTap, required this.label});
+
+  @override
+  State<_SubSidebarTile> createState() => _SubSidebarTileState();
+}
+
+class _SubSidebarTileState extends State<_SubSidebarTile> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = widget.isSelected
+        ? Colors.white.withValues(alpha: 0.12)
+        : _hovered
+        ? Colors.white.withValues(alpha: 0.06)
+        : Colors.transparent;
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 28, right: 10, top: 1, bottom: 1),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(6)),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+            child: Row(
+              children: [
+                Container(
+                  width: 5,
+                  height: 5,
+                  decoration: BoxDecoration(color: widget.isSelected ? const Color(0xFF6366F1) : const Color(0xFF475569), shape: BoxShape.circle),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    widget.label,
+                    style: TextStyle(
+                      color: widget.isSelected ? Colors.white : const Color(0xFF94A3B8),
+                      fontSize: 13,
+                      fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w400,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 // ── Mobile Drawer Tile ────────────────────────────────────────────────────────
 
 class _MobileDrawerTile extends StatelessWidget {
   final _NavItem item;
   final bool isSelected;
+  final bool hasSubItems;
+  final bool isExpanded;
   final VoidCallback onTap;
   final String label;
 
-  const _MobileDrawerTile({required this.item, required this.isSelected, required this.onTap, required this.label});
+  const _MobileDrawerTile({
+    required this.item,
+    required this.isSelected,
+    required this.onTap,
+    required this.label,
+    this.hasSubItems = false,
+    this.isExpanded = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -575,7 +770,64 @@ class _MobileDrawerTile extends StatelessWidget {
                   ),
                 ),
               ),
-              if (isSelected) const Icon(Icons.check_rounded, color: Colors.white, size: 18),
+              if (hasSubItems)
+                AnimatedRotation(
+                  turns: isExpanded ? 0.5 : 0.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: isSelected ? Colors.white : const Color(0xFF64748B)),
+                )
+              else if (isSelected)
+                const Icon(Icons.check_rounded, color: Colors.white, size: 18),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Mobile Drawer Sub Tile ────────────────────────────────────────────────────
+
+class _MobileDrawerSubTile extends StatelessWidget {
+  final _SubNavItem sub;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final String label;
+
+  const _MobileDrawerSubTile({required this.sub, required this.isSelected, required this.onTap, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 28, right: 12, top: 1, bottom: 1),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.white.withValues(alpha: 0.1) : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF475569), shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : const Color(0xFF94A3B8),
+                    fontSize: 14,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
+              ),
+              if (isSelected) const Icon(Icons.check_rounded, color: Color(0xFF6366F1), size: 16),
             ],
           ),
         ),

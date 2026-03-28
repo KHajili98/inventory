@@ -21,6 +21,12 @@ class AppLocalizationsAz extends AppLocalizations {
   String get finance => 'Maliyyə';
 
   @override
+  String get priceCalculation => 'Qiymət Hesablaması';
+
+  @override
+  String get expenseTracking => 'Xərc İzləmə';
+
+  @override
   String get expandSidebar => 'Yan paneli genişləndir';
 
   @override

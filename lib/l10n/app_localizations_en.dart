@@ -21,6 +21,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get finance => 'Finance';
 
   @override
+  String get priceCalculation => 'Price Calculation';
+
+  @override
+  String get expenseTracking => 'Expense Tracking';
+
+  @override
   String get expandSidebar => 'Expand sidebar';
 
   @override

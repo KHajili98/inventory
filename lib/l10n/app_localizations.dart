@@ -122,6 +122,18 @@ abstract class AppLocalizations {
   /// **'Finance'**
   String get finance;
 
+  /// Price Calculation submenu label
+  ///
+  /// In en, this message translates to:
+  /// **'Price Calculation'**
+  String get priceCalculation;
+
+  /// Expense Tracking submenu label
+  ///
+  /// In en, this message translates to:
+  /// **'Expense Tracking'**
+  String get expenseTracking;
+
   /// Tooltip for expanding sidebar
   ///
   /// In en, this message translates to:

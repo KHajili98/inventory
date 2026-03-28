@@ -21,6 +21,16 @@
     "description": "Finance navigation label"
   },
 
+  "priceCalculation": "Price Calculation",
+  "@priceCalculation": {
+    "description": "Price Calculation submenu label"
+  },
+
+  "expenseTracking": "Expense Tracking",
+  "@expenseTracking": {
+    "description": "Expense Tracking submenu label"
+  },
+
   "expandSidebar": "Expand sidebar",
   "@expandSidebar": {
     "description": "Tooltip for expanding sidebar"
