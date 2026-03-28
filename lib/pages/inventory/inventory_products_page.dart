@@ -1544,8 +1544,8 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
         locationZone: _zoneCtrl[idx]!.text.trim().toUpperCase(),
         locationRow: _rowCtrl[idx]!.text.trim(),
         locationShelf: _shelfCtrl[idx]!.text.trim(),
-        // invoice-sourced fields
-        source: 'invoice',
+        // invoice-sourced fields — source is the invoice number (e.g. "INV-2024-001")
+        source: widget.invoice.invoiceNumber ?? widget.invoice.id,
         invoice: widget.invoice.id,
         invoiceUnitPriceUsd: unitPrice,
         invoiceQuantity: invQty,
