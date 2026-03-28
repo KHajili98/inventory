@@ -1177,6 +1177,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Est. Total: \${total}  (qty × \${unitPrice}/unit)'**
   String estimatedTotalPrice(String total, String unitPrice);
+
+  /// Button label to auto-generate a barcode
+  ///
+  /// In en, this message translates to:
+  /// **'Generate'**
+  String get generateBarcode;
+
+  /// Button label while barcode is being generated
+  ///
+  /// In en, this message translates to:
+  /// **'Generating…'**
+  String get generatingBarcode;
+
+  /// Snackbar message when barcode is generated
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode generated successfully'**
+  String get barcodeGeneratedSuccess;
+
+  /// Snackbar message when barcode generation fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to generate barcode: {error}'**
+  String barcodeGenerateFailed(String error);
 }
 
 class _AppLocalizationsDelegate

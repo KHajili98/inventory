@@ -594,4 +594,18 @@ class AppLocalizationsAz extends AppLocalizations {
   String estimatedTotalPrice(String total, String unitPrice) {
     return 'Təxmini cəm: \$$total  (miq. × \$$unitPrice/vahid)';
   }
+
+  @override
+  String get generateBarcode => 'Yarat';
+
+  @override
+  String get generatingBarcode => 'Yaradılır…';
+
+  @override
+  String get barcodeGeneratedSuccess => 'Barkod uğurla yaradıldı';
+
+  @override
+  String barcodeGenerateFailed(String error) {
+    return 'Barkod yaradıla bilmədi: $error';
+  }
 }

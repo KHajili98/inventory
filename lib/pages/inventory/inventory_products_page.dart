@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:inventory/core/network/api_result.dart';
 import 'package:inventory/core/utils/responsive.dart';
+import 'package:inventory/features/barcode/data/repositories/barcode_repository.dart';
 import 'package:inventory/features/inventory_products/cubit/inventory_products_cubit.dart';
 import 'package:inventory/features/inventory_products/cubit/inventory_products_state.dart';
 import 'package:inventory/features/inventory_products/data/models/create_inventory_product_request_model.dart';
@@ -1957,12 +1958,19 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                               children: [
                                 Expanded(
                                   flex: 3,
-                                  child: _DetailField(
-                                    ctrl: _barcodeCtrl[idx]!,
-                                    label: l10n.barcodeField,
-                                    hint: 'e.g. 6901234500010',
-                                    required: true,
-                                    icon: Icons.qr_code_rounded,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      _DetailField(
+                                        ctrl: _barcodeCtrl[idx]!,
+                                        label: l10n.barcodeField,
+                                        hint: 'e.g. 6901234500010',
+                                        required: true,
+                                        icon: Icons.qr_code_rounded,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      _GenerateBarcodeButton(ctrl: _barcodeCtrl[idx]!),
+                                    ],
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -2321,6 +2329,73 @@ class _DetailField extends StatelessWidget {
         ),
         if (suffixWidget != null) suffixWidget!,
       ],
+    );
+  }
+}
+
+// ── Generate Barcode Button ───────────────────────────────────────────────────
+/// A small button that calls POST /api/generate-barcode/ and fills [ctrl].
+class _GenerateBarcodeButton extends StatefulWidget {
+  final TextEditingController ctrl;
+
+  const _GenerateBarcodeButton({required this.ctrl});
+
+  @override
+  State<_GenerateBarcodeButton> createState() => _GenerateBarcodeButtonState();
+}
+
+class _GenerateBarcodeButtonState extends State<_GenerateBarcodeButton> {
+  bool _loading = false;
+
+  Future<void> _generate() async {
+    setState(() => _loading = true);
+    final result = await BarcodeRepository.instance.generateBarcode();
+    if (!mounted) return;
+    setState(() => _loading = false);
+    final l10n = AppLocalizations.of(context)!;
+    switch (result) {
+      case Success(:final data):
+        widget.ctrl.text = data;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.barcodeGeneratedSuccess),
+            backgroundColor: const Color(0xFF22C55E),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      case Failure(:final message):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.barcodeGenerateFailed(message)),
+            backgroundColor: const Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return SizedBox(
+      height: 28,
+      child: TextButton.icon(
+        onPressed: _loading ? null : _generate,
+        style: TextButton.styleFrom(
+          foregroundColor: const Color(0xFF6366F1),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        ),
+        icon: _loading
+            ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 1.5, color: Color(0xFF6366F1)))
+            : const Icon(Icons.auto_awesome_rounded, size: 13),
+        label: Text(_loading ? l10n.generatingBarcode : l10n.generateBarcode, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+      ),
     );
   }
 }
@@ -2760,7 +2835,16 @@ class _ProductDialogState extends State<_ProductDialog> {
                     children: [
                       Expanded(child: _field(_size, l10n.sizeField, 'e.g. M / 42')),
                       const SizedBox(width: 16),
-                      Expanded(child: _field(_barcode, l10n.barcodeField, 'e.g. 1234500001', required: true)),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _field(_barcode, l10n.barcodeField, 'e.g. 1234500001', required: true),
+                            const SizedBox(height: 4),
+                            _GenerateBarcodeButton(ctrl: _barcode),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),

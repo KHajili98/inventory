@@ -365,5 +365,28 @@
       "total": { "type": "String" },
       "unitPrice": { "type": "String" }
     }
+  },
+
+  "generateBarcode": "Yarat",
+  "@generateBarcode": {
+    "description": "Barkod avtomatik yaratmaq üçün düymə"
+  },
+
+  "generatingBarcode": "Yaradılır…",
+  "@generatingBarcode": {
+    "description": "Barkod yaradılarkən düymə mətni"
+  },
+
+  "barcodeGeneratedSuccess": "Barkod uğurla yaradıldı",
+  "@barcodeGeneratedSuccess": {
+    "description": "Barkod yaradıldıqda snackbar mesajı"
+  },
+
+  "barcodeGenerateFailed": "Barkod yaradıla bilmədi: {error}",
+  "@barcodeGenerateFailed": {
+    "description": "Barkod yaradılması uğursuz olduqda snackbar mesajı",
+    "placeholders": {
+      "error": { "type": "String" }
+    }
   }
 }

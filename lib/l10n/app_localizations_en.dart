@@ -589,4 +589,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String estimatedTotalPrice(String total, String unitPrice) {
     return 'Est. Total: \$$total  (qty × \$$unitPrice/unit)';
   }
+
+  @override
+  String get generateBarcode => 'Generate';
+
+  @override
+  String get generatingBarcode => 'Generating…';
+
+  @override
+  String get barcodeGeneratedSuccess => 'Barcode generated successfully';
+
+  @override
+  String barcodeGenerateFailed(String error) {
+    return 'Failed to generate barcode: $error';
+  }
 }

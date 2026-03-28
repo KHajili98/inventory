@@ -19,6 +19,9 @@ abstract class ApiConstants {
   // ── Inventory Products ───────────────────────────────────────────────────────
   static const String inventoryProducts = '/api/inventory-products/';
 
+  // ── Barcode Generation ────────────────────────────────────────────────────────
+  static const String generateBarcode = '/api/generate-barcode/';
+
   // ── Timeouts ────────────────────────────────────────────────────────────────
   static const Duration connectTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(minutes: 3); // OCR can take ~75 s

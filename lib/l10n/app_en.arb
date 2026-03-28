@@ -965,5 +965,28 @@
       "total": { "type": "String" },
       "unitPrice": { "type": "String" }
     }
+  },
+
+  "generateBarcode": "Generate",
+  "@generateBarcode": {
+    "description": "Button label to auto-generate a barcode"
+  },
+
+  "generatingBarcode": "Generating…",
+  "@generatingBarcode": {
+    "description": "Button label while barcode is being generated"
+  },
+
+  "barcodeGeneratedSuccess": "Barcode generated successfully",
+  "@barcodeGeneratedSuccess": {
+    "description": "Snackbar message when barcode is generated"
+  },
+
+  "barcodeGenerateFailed": "Failed to generate barcode: {error}",
+  "@barcodeGenerateFailed": {
+    "description": "Snackbar message when barcode generation fails",
+    "placeholders": {
+      "error": { "type": "String" }
+    }
   }
 }
