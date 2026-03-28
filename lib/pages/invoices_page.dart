@@ -48,7 +48,8 @@ class _InvoicesPageState extends State<InvoicesPage> {
       totalAmount: item.totalAmount ?? 0.0,
       status: InvoiceStatus.pending,
       rows: const [],
-      invoiceUrl: item.invoiceImageUrl,
+      invoiceUrls: item.invoiceImageUrls,
+      processingIds: item.invoiceProcessing,
     );
   }
 
@@ -75,8 +76,12 @@ class _InvoicesPageState extends State<InvoicesPage> {
         child: _OcrProcessingDialog(
           filename: filename,
           imageBytes: bytes,
-          onConfirm: (rows, response) {
+          onConfirm: (rows, response, allResponses) {
             Navigator.of(context, rootNavigator: true).pop();
+
+            // Collect all image URLs and processing IDs from every uploaded page
+            final allImageUrls = allResponses.map((r) => r.invoiceUrl).whereType<String>().toList();
+            final allProcessingIds = allResponses.map((r) => r.processingMetadata?.id).whereType<String>().toList();
 
             final newItem = InvoiceListItemModel(
               id: response.processingMetadata?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
@@ -85,7 +90,8 @@ class _InvoicesPageState extends State<InvoicesPage> {
               supplierName: response.supplierName ?? 'Unknown Supplier',
               totalAmount: response.totalAmount ?? rows.fold<double>(0.0, (s, r) => s + r.total),
               currency: 'USD',
-              invoiceImageUrls: response.invoiceUrl != null ? [response.invoiceUrl!] : [],
+              invoiceImageUrls: allImageUrls,
+              invoiceProcessing: allProcessingIds,
               totalItemsCount: rows.fold(0, (s, r) => s + r.qty),
               createdAt: DateTime.now(),
             );
@@ -102,13 +108,13 @@ class _InvoicesPageState extends State<InvoicesPage> {
               totalAmount: newItem.totalAmount ?? 0.0,
               status: InvoiceStatus.pending,
               rows: rows,
-              invoiceUrl: newItem.invoiceImageUrl,
+              invoiceUrls: allImageUrls,
               supplierAddress: response.extractedData?.supplierAddress,
               supplierTaxId: response.extractedData?.supplierTaxId,
               contactNumber: response.extractedData?.contactNumber,
               contractNumber: response.extractedData?.contractNumber,
               currency: response.extractedData?.currency ?? 'USD',
-              processingId: response.processingMetadata?.id,
+              processingIds: allProcessingIds,
             );
             _openEditPage(newRecord);
           },
@@ -144,7 +150,8 @@ class _InvoicesPageState extends State<InvoicesPage> {
                   supplierName: inv.supplier,
                   totalAmount: inv.totalAmount,
                   currency: 'USD',
-                  invoiceImageUrls: inv.invoiceUrl != null ? [inv.invoiceUrl!] : [],
+                  invoiceImageUrls: inv.invoiceUrls,
+                  invoiceProcessing: inv.processingIds,
                   totalItemsCount: inv.totalItems,
                   createdAt: _locallyAdded[idx].createdAt,
                 );
@@ -594,7 +601,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
 class _OcrProcessingDialog extends StatefulWidget {
   final String filename;
   final Uint8List imageBytes;
-  final void Function(List<InvoiceRow> rows, InvoiceUploadResponseModel response) onConfirm;
+  final void Function(List<InvoiceRow> rows, InvoiceUploadResponseModel firstResponse, List<InvoiceUploadResponseModel> allResponses) onConfirm;
 
   const _OcrProcessingDialog({required this.filename, required this.imageBytes, required this.onConfirm});
 
@@ -979,7 +986,7 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
             Expanded(
               flex: 2,
               child: FilledButton.icon(
-                onPressed: () => widget.onConfirm(rows, _firstResponse),
+                onPressed: () => widget.onConfirm(rows, _firstResponse, List.unmodifiable(_responses)),
                 icon: const Icon(Icons.open_in_new_rounded, size: 16),
                 label: Text(l10n.openAndEditTable),
                 style: FilledButton.styleFrom(

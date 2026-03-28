@@ -8,7 +8,9 @@ class InvoiceRecord {
   final double totalAmount;
   final InvoiceStatus status;
   final List<InvoiceRow> rows;
-  final String? invoiceUrl;
+
+  /// All invoice image URLs (one per uploaded page).
+  final List<String> invoiceUrls;
 
   // Extra fields from OCR result — needed for the confirm POST body
   final String? supplierAddress;
@@ -16,7 +18,9 @@ class InvoiceRecord {
   final String? contactNumber;
   final String? contractNumber;
   final String? currency;
-  final String? processingId; // processing_metadata.id from OCR upload
+
+  /// All processing IDs from OCR upload (one per uploaded page).
+  final List<String> processingIds;
 
   InvoiceRecord({
     required this.id,
@@ -28,14 +32,17 @@ class InvoiceRecord {
     required this.totalAmount,
     required this.status,
     required this.rows,
-    this.invoiceUrl,
+    this.invoiceUrls = const [],
     this.supplierAddress,
     this.supplierTaxId,
     this.contactNumber,
     this.contractNumber,
     this.currency,
-    this.processingId,
+    this.processingIds = const [],
   });
+
+  /// Convenience getter — first image URL or null.
+  String? get invoiceUrl => invoiceUrls.isNotEmpty ? invoiceUrls.first : null;
 }
 
 enum InvoiceStatus { pending, confirmed, cancelled }

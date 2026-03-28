@@ -388,7 +388,14 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
                       color: const Color(0xFFF59E0B),
                     ),
                   ),
-                  if (inv.invoiceUrl != null) ...[const SizedBox(width: 10), _ImageSummaryCard(url: inv.invoiceUrl!)],
+                  ...inv.invoiceUrls.asMap().entries.map(
+                    (e) => Row(
+                      children: [
+                        const SizedBox(width: 10),
+                        _ImageSummaryCard(url: e.value, label: inv.invoiceUrls.length > 1 ? 'Page ${e.key + 1}' : null),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             )
@@ -420,7 +427,14 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
                     color: const Color(0xFFF59E0B),
                   ),
                 ),
-                if (inv.invoiceUrl != null) ...[const SizedBox(width: 12), _ImageSummaryCard(url: inv.invoiceUrl!)],
+                ...inv.invoiceUrls.asMap().entries.map(
+                  (e) => Row(
+                    children: [
+                      const SizedBox(width: 12),
+                      _ImageSummaryCard(url: e.value, label: inv.invoiceUrls.length > 1 ? 'Page ${e.key + 1}' : null),
+                    ],
+                  ),
+                ),
               ],
             ),
     );
@@ -1090,7 +1104,8 @@ class _FooterStat extends StatelessWidget {
 
 class _ImageSummaryCard extends StatelessWidget {
   final String url;
-  const _ImageSummaryCard({required this.url});
+  final String? label;
+  const _ImageSummaryCard({required this.url, this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -1107,22 +1122,22 @@ class _ImageSummaryCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: color.withOpacity(0.18)),
           ),
-          child: const Row(
+          child: Row(
             children: [
-              Icon(Icons.image_search_rounded, color: color, size: 20),
-              SizedBox(width: 10),
+              const Icon(Icons.image_search_rounded, color: color, size: 20),
+              const SizedBox(width: 10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Invoice Image', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
-                  Text(
+                  Text(label ?? 'Invoice Image', style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                  const Text(
                     'View original',
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
                   ),
                 ],
               ),
-              SizedBox(width: 6),
-              Icon(Icons.open_in_new_rounded, color: color, size: 14),
+              const SizedBox(width: 6),
+              const Icon(Icons.open_in_new_rounded, color: color, size: 14),
             ],
           ),
         ),

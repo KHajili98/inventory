@@ -36,8 +36,8 @@ class InvoiceConfirmRepository {
         'contract_number': contractNumber ?? invoice.contractNumber,
         'total_amount': double.parse(rows.fold(0.0, (sum, r) => sum + r.total).toStringAsFixed(10)),
         'currency': invoice.currency ?? 'USD',
-        if (invoice.invoiceUrl != null) 'invoice_image_url': invoice.invoiceUrl,
-        if (invoice.processingId != null) 'invoice_processing': [invoice.processingId],
+        if (invoice.invoiceUrls.isNotEmpty) 'invoice_image_url': invoice.invoiceUrls,
+        if (invoice.processingIds.isNotEmpty) 'invoice_processing': invoice.processingIds,
         'items': rows
             .map(
               (r) => {
