@@ -189,11 +189,11 @@ class _InvoiceDetailContent extends StatelessWidget {
                       style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF4F46E5)),
                     ),
                   ),
-                ...invoice.invoiceImageUrls.asMap().entries.map(
-                  (e) => OutlinedButton.icon(
-                    onPressed: () => _showImageDialog(context, invoice.invoiceImageUrls, e.key),
+                if (invoice.invoiceImageUrls.isNotEmpty)
+                  OutlinedButton.icon(
+                    onPressed: () => _showImageDialog(context, invoice.invoiceImageUrls, 0),
                     icon: const Icon(Icons.image_search_rounded, size: 16),
-                    label: Text(invoice.invoiceImageUrls.length > 1 ? 'Image ${e.key + 1}' : 'View Image'),
+                    label: Text(invoice.invoiceImageUrls.length > 1 ? 'View Images (${invoice.invoiceImageUrls.length})' : 'View Image'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF0EA5E9),
                       side: const BorderSide(color: Color(0xFF0EA5E9)),
@@ -201,7 +201,6 @@ class _InvoiceDetailContent extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                   ),
-                ),
               ],
             ),
           ],
