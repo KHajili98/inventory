@@ -539,4 +539,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String productSaveFailed(String error) {
     return 'Failed to save product: $error';
   }
+
+  @override
+  String get loadingInvoices => 'Loading invoices…';
+
+  @override
+  String fetchInvoicesFailed(String error) {
+    return 'Failed to load invoices: $error';
+  }
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get loadingInvoiceDetail => 'Loading invoice details…';
+
+  @override
+  String fetchInvoiceDetailFailed(String error) {
+    return 'Failed to load invoice: $error';
+  }
+
+  @override
+  String nItemsInInvoice(int n) {
+    return '$n item(s) in invoice';
+  }
+
+  @override
+  String get invoicePcsPerCarton => 'Inv. Pcs/Carton';
+
+  @override
+  String get invoiceCartonCount => 'Inv. Carton Count';
+
+  @override
+  String importingProducts(int current, int total) {
+    return 'Importing $current of $total…';
+  }
+
+  @override
+  String importSuccessN(int n) {
+    return '$n product(s) imported successfully!';
+  }
+
+  @override
+  String importFailedN(int n) {
+    return '$n product(s) failed to import.';
+  }
 }

@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:inventory/core/network/api_result.dart';
+import 'package:inventory/core/utils/responsive.dart';
 import 'package:inventory/features/inventory_products/cubit/inventory_products_cubit.dart';
 import 'package:inventory/features/inventory_products/cubit/inventory_products_state.dart';
 import 'package:inventory/features/inventory_products/data/models/create_inventory_product_request_model.dart';
 import 'package:inventory/features/inventory_products/data/models/inventory_product_response_model.dart';
-import 'package:inventory/models/invoice_models.dart';
-import 'package:inventory/models/product_models.dart';
+import 'package:inventory/features/invoice_detail/data/models/invoice_detail_model.dart';
+import 'package:inventory/features/invoice_detail/data/repositories/invoice_detail_repository.dart';
+import 'package:inventory/features/invoice_list/data/models/invoice_list_response_model.dart';
+import 'package:inventory/features/invoice_list/data/repositories/invoice_list_repository.dart';
 import 'package:inventory/l10n/app_localizations.dart';
-import 'package:inventory/core/utils/responsive.dart';
+import 'package:inventory/models/product_models.dart';
 
 class InventoryProductsPage extends StatelessWidget {
   const InventoryProductsPage({super.key});
@@ -452,36 +456,15 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
     showDialog(
       context: context,
       builder: (_) => _InvoicePickerDialog(
-        invoices: mockInvoices,
-        onSelected: (invoice) {
-          Navigator.of(context, rootNavigator: true).pop();
-          _showInvoiceRowsDialog(invoice);
+        inventoryProductsCubit: context.read<InventoryProductsCubit>(),
+        onDone: () {
+          // List refreshed inside dialog after each successful import
         },
       ),
     );
   }
 
-  void _showInvoiceRowsDialog(InvoiceRecord invoice) {
-    showDialog(
-      context: context,
-      builder: (_) => _InvoiceRowsDialog(
-        invoice: invoice,
-        onImport: (products) {
-          // Products imported from invoice; refresh from API to reflect server-side updates
-          context.read<InventoryProductsCubit>().refresh();
-          final l10n = AppLocalizations.of(context)!;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.nProductsImported(products.length, invoice.invoiceNo)),
-              backgroundColor: const Color(0xFF22C55E),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-          );
-        },
-      ),
-    );
-  }
+  // _showInvoiceRowsDialog is no longer needed — _InvoicePickerDialog navigates internally.
 
   Widget _buildStatsRow() {
     final l10n = AppLocalizations.of(context)!;
@@ -1201,13 +1184,57 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// Invoice Picker Dialog
+// Invoice Picker Dialog — fetches real invoice list from API
 // ═══════════════════════════════════════════════════════════════════════════════
-class _InvoicePickerDialog extends StatelessWidget {
-  final List<InvoiceRecord> invoices;
-  final ValueChanged<InvoiceRecord> onSelected;
+class _InvoicePickerDialog extends StatefulWidget {
+  final InventoryProductsCubit inventoryProductsCubit;
+  final VoidCallback? onDone;
 
-  const _InvoicePickerDialog({required this.invoices, required this.onSelected});
+  const _InvoicePickerDialog({required this.inventoryProductsCubit, this.onDone});
+
+  @override
+  State<_InvoicePickerDialog> createState() => _InvoicePickerDialogState();
+}
+
+class _InvoicePickerDialogState extends State<_InvoicePickerDialog> {
+  bool _loading = true;
+  String? _error;
+  List<InvoiceListItemModel> _invoices = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchInvoices();
+  }
+
+  Future<void> _fetchInvoices() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    final result = await InvoiceListRepository.instance.fetchInvoices(page: 1, pageSize: 100);
+    if (!mounted) return;
+    switch (result) {
+      case Success(:final data):
+        setState(() {
+          _invoices = data.results;
+          _loading = false;
+        });
+      case Failure(:final message):
+        setState(() {
+          _error = message;
+          _loading = false;
+        });
+    }
+  }
+
+  void _onSelectInvoice(InvoiceListItemModel inv) {
+    Navigator.of(context, rootNavigator: true).pop();
+    showDialog(
+      context: context,
+      builder: (_) => _InvoiceRowsDialog(invoice: inv, inventoryProductsCubit: widget.inventoryProductsCubit, onDone: widget.onDone),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1215,13 +1242,14 @@ class _InvoicePickerDialog extends StatelessWidget {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: SizedBox(
-        width: 540,
+        width: 560,
         child: Padding(
           padding: const EdgeInsets.all(28),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ── Header ────────────────────────────────────────────────────
               Row(
                 children: [
                   Container(
@@ -1252,108 +1280,108 @@ class _InvoicePickerDialog extends StatelessWidget {
               const SizedBox(height: 20),
               const Divider(color: Color(0xFFE2E8F0)),
               const SizedBox(height: 16),
-              if (invoices.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 32),
-                  child: Center(
-                    child: Column(
-                      children: [
-                        const Icon(Icons.inbox_rounded, size: 40, color: Color(0xFFCBD5E1)),
-                        const SizedBox(height: 8),
-                        Text(l10n.noInvoicesAvailable, style: const TextStyle(fontSize: 14, color: Color(0xFF94A3B8))),
-                        const SizedBox(height: 4),
-                        Text(l10n.addInvoicesFirst, style: const TextStyle(fontSize: 12, color: Color(0xFFCBD5E1))),
-                      ],
-                    ),
-                  ),
-                )
-              else
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 360),
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: invoices.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
-                    itemBuilder: (_, i) {
-                      final inv = invoices[i];
-                      final statusColor = inv.status == InvoiceStatus.confirmed
-                          ? const Color(0xFF22C55E)
-                          : inv.status == InvoiceStatus.pending
-                          ? const Color(0xFFF59E0B)
-                          : const Color(0xFFEF4444);
-                      final statusLabel = inv.status == InvoiceStatus.confirmed
-                          ? l10n.confirmed
-                          : inv.status == InvoiceStatus.pending
-                          ? l10n.pending
-                          : l10n.cancelled;
-                      return InkWell(
-                        onTap: () => onSelected(inv),
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
+              // ── Body ──────────────────────────────────────────────────────
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 400, minHeight: 120),
+                child: _loading
+                    ? const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1)))
+                    : _error != null
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.error_outline_rounded, size: 36, color: Color(0xFFEF4444)),
+                            const SizedBox(height: 8),
+                            Text(
+                              _error!,
+                              style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            FilledButton.icon(
+                              onPressed: _fetchInvoices,
+                              icon: const Icon(Icons.refresh_rounded, size: 16),
+                              label: Text(l10n.retry),
+                              style: FilledButton.styleFrom(backgroundColor: const Color(0xFF6366F1)),
+                            ),
+                          ],
+                        ),
+                      )
+                    : _invoices.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.inbox_rounded, size: 40, color: Color(0xFFCBD5E1)),
+                            const SizedBox(height: 8),
+                            Text(l10n.noInvoicesAvailable, style: const TextStyle(fontSize: 14, color: Color(0xFF94A3B8))),
+                            const SizedBox(height: 4),
+                            Text(l10n.addInvoicesFirst, style: const TextStyle(fontSize: 12, color: Color(0xFFCBD5E1))),
+                          ],
+                        ),
+                      )
+                    : ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: _invoices.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 8),
+                        itemBuilder: (_, i) {
+                          final inv = _invoices[i];
+                          return InkWell(
+                            onTap: () => _onSelectInvoice(inv),
                             borderRadius: BorderRadius.circular(10),
-                            color: Colors.white,
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 42,
-                                height: 42,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF8FAFC),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                                ),
-                                child: const Icon(Icons.description_rounded, size: 20, color: Color(0xFF64748B)),
+                            child: Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                                borderRadius: BorderRadius.circular(10),
+                                color: Colors.white,
                               ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF8FAFC),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                                    ),
+                                    child: const Icon(Icons.description_rounded, size: 18, color: Color(0xFF64748B)),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          inv.invoiceNo,
+                                          inv.invoiceNumber ?? '—',
                                           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
                                         ),
-                                        const SizedBox(width: 8),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                          decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                                          child: Text(
-                                            statusLabel,
-                                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: statusColor),
-                                          ),
-                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(inv.supplierName ?? '—', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
                                       ],
                                     ),
-                                    const SizedBox(height: 2),
-                                    Text(inv.supplier, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
-                                  ],
-                                ),
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    '${inv.totalItems} ${l10n.items.toLowerCase()}',
-                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
                                   ),
-                                  Text(inv.date, style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        l10n.nItemsInInvoice(inv.totalItemsCount),
+                                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                                      ),
+                                      if (inv.invoiceDate != null)
+                                        Text(inv.invoiceDate!, style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Icon(Icons.chevron_right_rounded, color: Color(0xFFCBD5E1)),
                                 ],
                               ),
-                              const SizedBox(width: 12),
-                              const Icon(Icons.chevron_right_rounded, color: Color(0xFFCBD5E1)),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
               const SizedBox(height: 16),
               Align(
                 alignment: Alignment.centerRight,
@@ -1371,69 +1399,97 @@ class _InvoicePickerDialog extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// Invoice Rows Dialog — two-step: select SKUs → fill barcode/location/actual qty
+// Invoice Rows Dialog — fetches invoice detail, lets user pick rows,
+// then posts each to POST /api/inventory-products/
 // ═══════════════════════════════════════════════════════════════════════════════
 class _InvoiceRowsDialog extends StatefulWidget {
-  final InvoiceRecord invoice;
-  final ValueChanged<List<Product>> onImport;
+  final InvoiceListItemModel invoice;
+  final InventoryProductsCubit inventoryProductsCubit;
+  final VoidCallback? onDone;
 
-  const _InvoiceRowsDialog({required this.invoice, required this.onImport});
+  const _InvoiceRowsDialog({required this.invoice, required this.inventoryProductsCubit, this.onDone});
 
   @override
   State<_InvoiceRowsDialog> createState() => _InvoiceRowsDialogState();
 }
 
 class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
-  late final List<_MergedRow> _mergedRows;
-  final Set<int> _selected = {};
-  int _step = 0;
+  // ── Loading state for invoice detail ────────────────────────────────────────
+  bool _loadingDetail = true;
+  String? _detailError;
+  InvoiceDetailModel? _detail;
 
+  // ── Step & selection ─────────────────────────────────────────────────────────
+  int _step = 0;
+  final Set<int> _selected = {};
+
+  // ── Per-row controllers (keyed by item index in _detail.items) ───────────────
   final Map<int, TextEditingController> _barcodeCtrl = {};
+  final Map<int, TextEditingController> _actualQtyCtrl = {};
+  final Map<int, TextEditingController> _actPcsCtrl = {};
+  final Map<int, TextEditingController> _actCartonsCtrl = {};
   final Map<int, TextEditingController> _zoneCtrl = {};
   final Map<int, TextEditingController> _rowCtrl = {};
   final Map<int, TextEditingController> _shelfCtrl = {};
-  final Map<int, TextEditingController> _actualQtyCtrl = {};
+
   final _formKey = GlobalKey<FormState>();
+
+  // ── Import progress ──────────────────────────────────────────────────────────
+  bool _importing = false;
+  int _importProgress = 0;
 
   @override
   void initState() {
     super.initState();
-    _mergedRows = _mergeRows(widget.invoice.rows);
+    _fetchDetail();
   }
 
-  List<_MergedRow> _mergeRows(List<InvoiceRow> rows) {
-    final map = <String, _MergedRow>{};
-    for (final r in rows) {
-      if (map.containsKey(r.productName)) {
-        map[r.productName] = map[r.productName]!.copyWithAddedQty(r.qty);
-      } else {
-        map[r.productName] = _MergedRow(
-          sku: r.productName,
-          modelCode: r.modelCode,
-          color: r.color,
-          size: r.size,
-          totalQty: r.qty,
-          unitPrice: r.unitPrice,
-        );
-      }
+  Future<void> _fetchDetail() async {
+    setState(() {
+      _loadingDetail = true;
+      _detailError = null;
+    });
+    final result = await InvoiceDetailRepository.instance.fetchInvoiceDetail(widget.invoice.id);
+    if (!mounted) return;
+    switch (result) {
+      case Success(:final data):
+        setState(() {
+          _detail = data;
+          _loadingDetail = false;
+        });
+      case Failure(:final message):
+        setState(() {
+          _detailError = message;
+          _loadingDetail = false;
+        });
     }
-    return map.values.toList();
   }
 
   void _initControllersForSelected() {
+    final items = _detail!.items;
     for (final idx in _selected) {
-      final mr = _mergedRows[idx];
+      final item = items[idx];
       _barcodeCtrl.putIfAbsent(idx, () => TextEditingController());
+      _actualQtyCtrl.putIfAbsent(idx, () => TextEditingController(text: '${item.quantity ?? 0}'));
+      _actPcsCtrl.putIfAbsent(idx, () => TextEditingController(text: '${item.piecesPerCarton ?? 0}'));
+      _actCartonsCtrl.putIfAbsent(idx, () => TextEditingController(text: '${(item.cartonCount ?? 0).toInt()}'));
       _zoneCtrl.putIfAbsent(idx, () => TextEditingController());
       _rowCtrl.putIfAbsent(idx, () => TextEditingController(text: '1'));
       _shelfCtrl.putIfAbsent(idx, () => TextEditingController(text: '1'));
-      _actualQtyCtrl.putIfAbsent(idx, () => TextEditingController(text: '${mr.totalQty}'));
     }
   }
 
   @override
   void dispose() {
-    for (final c in [..._barcodeCtrl.values, ..._zoneCtrl.values, ..._rowCtrl.values, ..._shelfCtrl.values, ..._actualQtyCtrl.values]) {
+    for (final c in [
+      ..._barcodeCtrl.values,
+      ..._actualQtyCtrl.values,
+      ..._actPcsCtrl.values,
+      ..._actCartonsCtrl.values,
+      ..._zoneCtrl.values,
+      ..._rowCtrl.values,
+      ..._shelfCtrl.values,
+    ]) {
       c.dispose();
     }
     super.dispose();
@@ -1445,60 +1501,133 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
     setState(() => _step = 1);
   }
 
-  void _importProducts() {
+  Future<void> _importProducts() async {
     if (!_formKey.currentState!.validate()) return;
-    final products = <Product>[];
-    for (final idx in _selected) {
-      final mr = _mergedRows[idx];
-      final actualQty = int.tryParse(_actualQtyCtrl[idx]!.text) ?? mr.totalQty;
-      products.add(
-        Product(
-          id: '${DateTime.now().millisecondsSinceEpoch}_$idx',
-          sku: mr.sku,
-          name: mr.modelCode,
-          color: mr.color.isEmpty ? '—' : mr.color,
-          quantity: actualQty,
-          unitPrice: mr.unitPrice,
-          barcode: _barcodeCtrl[idx]!.text.trim(),
-          coordinate: WarehouseCoordinate(
-            zone: _zoneCtrl[idx]!.text.trim().toUpperCase(),
-            row: int.tryParse(_rowCtrl[idx]!.text) ?? 1,
-            shelf: int.tryParse(_shelfCtrl[idx]!.text) ?? 1,
-          ),
-          status: Product.statusFromQty(actualQty),
-          invoiceQty: mr.totalQty,
-          invoiceTotalPrice: mr.totalQty * mr.unitPrice,
-          actualTotalPrice: actualQty * mr.unitPrice,
-          sourceInvoiceId: widget.invoice.id,
-          sourceInvoiceNo: widget.invoice.invoiceNo,
+    final l10n = AppLocalizations.of(context)!;
+    final items = _detail!.items;
+    final selectedList = _selected.toList();
+
+    setState(() {
+      _importing = true;
+      _importProgress = 0;
+    });
+
+    int successCount = 0;
+    int failCount = 0;
+
+    for (int i = 0; i < selectedList.length; i++) {
+      final idx = selectedList[i];
+      final item = items[idx];
+      final actualQty = int.tryParse(_actualQtyCtrl[idx]!.text.trim()) ?? (item.quantity ?? 0);
+      final actPcs = int.tryParse(_actPcsCtrl[idx]!.text.trim()) ?? (item.piecesPerCarton ?? 0);
+      final actCartons = int.tryParse(_actCartonsCtrl[idx]!.text.trim()) ?? 0;
+      final unitPrice = item.unitPriceUsd ?? 0.0;
+      final invQty = item.quantity ?? 0;
+      final invPcs = item.piecesPerCarton ?? 0;
+      final invCartons = (item.cartonCount ?? 0).toInt();
+      final invTotal = item.totalPrice ?? 0.0;
+      final actualTotal = actualQty * unitPrice;
+
+      final request = CreateInventoryProductRequestModel(
+        productName: item.productName ?? '',
+        modelCode: item.modelCode ?? '',
+        color: item.color ?? '',
+        colorCode: item.colorCode ?? '',
+        size: item.size ?? '',
+        barcode: _barcodeCtrl[idx]!.text.trim(),
+        actualQuantity: actualQty,
+        actualTotalPrice: actualTotal,
+        actualPiecesPerCarton: actPcs,
+        actualCartonCount: actCartons,
+        locationZone: _zoneCtrl[idx]!.text.trim().toUpperCase(),
+        locationRow: _rowCtrl[idx]!.text.trim(),
+        locationShelf: _shelfCtrl[idx]!.text.trim(),
+        // invoice-sourced fields
+        source: 'invoice',
+        invoice: widget.invoice.id,
+        invoiceUnitPriceUsd: unitPrice,
+        invoiceQuantity: invQty,
+        invoiceTotalPrice: invTotal,
+        invoicePiecesPerCarton: invPcs,
+        invoiceCartonCount: invCartons,
+      );
+
+      final result = await InvoiceDetailRepository.instance.fetchInvoiceDetail(widget.invoice.id).then((_) async {
+        // We already have detail; directly create the product
+        return await _postProduct(request);
+      });
+
+      if (!mounted) return;
+
+      if (result) {
+        successCount++;
+      } else {
+        failCount++;
+      }
+
+      setState(() => _importProgress = i + 1);
+    }
+
+    if (!mounted) return;
+
+    // Refresh the inventory list
+    widget.inventoryProductsCubit.refresh();
+
+    Navigator.of(context, rootNavigator: true).pop();
+
+    final messenger = ScaffoldMessenger.of(context);
+    if (successCount > 0) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.importSuccessN(successCount)),
+          backgroundColor: const Color(0xFF22C55E),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       );
     }
-    Navigator.of(context, rootNavigator: true).pop();
-    widget.onImport(products);
+    if (failCount > 0) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.importFailedN(failCount)),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    }
+
+    widget.onDone?.call();
+  }
+
+  /// Posts a single product via the cubit and returns true on success.
+  Future<bool> _postProduct(CreateInventoryProductRequestModel request) async {
+    await widget.inventoryProductsCubit.createProduct(request);
+    final s = widget.inventoryProductsCubit.state;
+    return s is InventoryProductCreated || s is InventoryProductsLoaded;
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: SizedBox(
-        width: 760,
-        height: 620,
+        width: 800,
+        height: 640,
         child: Column(
           children: [
-            _buildHeader(),
-            _buildStepIndicator(),
-            Expanded(child: _step == 0 ? _buildStep1() : _buildStep2()),
-            _buildFooter(),
+            _buildHeader(l10n),
+            if (!_loadingDetail && _detailError == null && _detail != null) _buildStepIndicator(l10n),
+            Expanded(child: _buildBody(l10n)),
+            if (!_loadingDetail && _detailError == null && _detail != null) _buildFooter(l10n),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
-    final l10n = AppLocalizations.of(context)!;
+  Widget _buildHeader(AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 20, 16, 16),
       decoration: const BoxDecoration(
@@ -1519,15 +1648,15 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  l10n.importFromInvoiceNo(widget.invoice.invoiceNo),
+                  l10n.importFromInvoiceNo(widget.invoice.invoiceNumber ?? widget.invoice.id),
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
                 ),
-                Text(widget.invoice.supplier, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                Text(widget.invoice.supplierName ?? '—', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
               ],
             ),
           ),
           IconButton(
-            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+            onPressed: _importing ? null : () => Navigator.of(context, rootNavigator: true).pop(),
             icon: const Icon(Icons.close_rounded, size: 20, color: Color(0xFF94A3B8)),
           ),
         ],
@@ -1535,10 +1664,9 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
     );
   }
 
-  Widget _buildStepIndicator() {
-    final l10n = AppLocalizations.of(context)!;
+  Widget _buildStepIndicator(AppLocalizations l10n) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
       color: const Color(0xFFF8FAFC),
       child: Row(
         children: [
@@ -1550,38 +1678,90 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
     );
   }
 
-  Widget _buildStep1() {
-    final l10n = AppLocalizations.of(context)!;
+  Widget _buildBody(AppLocalizations l10n) {
+    if (_loadingDetail) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(color: Color(0xFF6366F1)),
+            const SizedBox(height: 12),
+            Text(l10n.loadingInvoiceDetail, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+          ],
+        ),
+      );
+    }
+    if (_detailError != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error_outline_rounded, size: 40, color: Color(0xFFEF4444)),
+            const SizedBox(height: 8),
+            Text(
+              _detailError!,
+              style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            FilledButton.icon(
+              onPressed: _fetchDetail,
+              icon: const Icon(Icons.refresh_rounded, size: 16),
+              label: Text(l10n.retry),
+              style: FilledButton.styleFrom(backgroundColor: const Color(0xFF6366F1)),
+            ),
+          ],
+        ),
+      );
+    }
+    if (_importing) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(color: Color(0xFF22C55E)),
+            const SizedBox(height: 12),
+            Text(l10n.importingProducts(_importProgress, _selected.length), style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+          ],
+        ),
+      );
+    }
+    return _step == 0 ? _buildStep1(l10n) : _buildStep2(l10n);
+  }
+
+  Widget _buildStep1(AppLocalizations l10n) {
+    final items = _detail!.items;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+          padding: const EdgeInsets.fromLTRB(24, 14, 24, 8),
           child: Row(
             children: [
-              Text(l10n.nUniqueSkusFromInvoice(_mergedRows.length), style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+              Text(l10n.nUniqueSkusFromInvoice(items.length), style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
               const Spacer(),
               TextButton.icon(
                 onPressed: () => setState(() {
-                  if (_selected.length == _mergedRows.length)
+                  if (_selected.length == items.length)
                     _selected.clear();
                   else
-                    _selected.addAll(List.generate(_mergedRows.length, (i) => i));
+                    _selected.addAll(List.generate(items.length, (i) => i));
                 }),
-                icon: Icon(_selected.length == _mergedRows.length ? Icons.deselect_rounded : Icons.select_all_rounded, size: 16),
-                label: Text(_selected.length == _mergedRows.length ? l10n.deselectAll : l10n.selectAllLabel),
+                icon: Icon(_selected.length == items.length ? Icons.deselect_rounded : Icons.select_all_rounded, size: 16),
+                label: Text(_selected.length == items.length ? l10n.deselectAll : l10n.selectAllLabel),
                 style: TextButton.styleFrom(foregroundColor: const Color(0xFF6366F1)),
               ),
             ],
           ),
         ),
+        // Table header
         Container(
           color: const Color(0xFFF1F5F9),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           child: Row(
             children: [
               const SizedBox(width: 40),
-              Expanded(flex: 3, child: _TH(l10n.sku)),
+              Expanded(flex: 3, child: _TH(l10n.productName)),
               Expanded(flex: 2, child: _TH(l10n.model)),
               Expanded(flex: 2, child: _TH(l10n.color)),
               Expanded(flex: 1, child: _TH(l10n.size)),
@@ -1591,13 +1771,14 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
             ],
           ),
         ),
+        // Rows
         Expanded(
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            itemCount: _mergedRows.length,
+            itemCount: items.length,
             separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
             itemBuilder: (_, i) {
-              final mr = _mergedRows[i];
+              final item = items[i];
               final isSelected = _selected.contains(i);
               return InkWell(
                 onTap: () => setState(() {
@@ -1628,37 +1809,40 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                       Expanded(
                         flex: 3,
                         child: Text(
-                          mr.sku,
+                          item.productName ?? '—',
                           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
                         ),
                       ),
                       Expanded(
                         flex: 2,
-                        child: Text(mr.modelCode, style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
+                        child: Text(item.modelCode ?? '—', style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
                       ),
                       Expanded(
                         flex: 2,
-                        child: Text(mr.color.isEmpty ? '—' : mr.color, style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
+                        child: Text(item.color?.isEmpty ?? true ? '—' : item.color!, style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
                       ),
                       Expanded(
                         flex: 1,
-                        child: Text(mr.size, style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+                        child: Text(item.size?.isEmpty ?? true ? '—' : item.size!, style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
                       ),
                       Expanded(
                         flex: 2,
                         child: Text(
-                          '${mr.totalQty} ${l10n.pcs}',
+                          '${item.quantity ?? 0} ${l10n.pcs}',
                           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
                         ),
                       ),
                       Expanded(
                         flex: 2,
-                        child: Text('\$${mr.unitPrice.toStringAsFixed(4)}', style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
+                        child: Text(
+                          '\$${(item.unitPriceUsd ?? 0).toStringAsFixed(4)}',
+                          style: const TextStyle(fontSize: 13, color: Color(0xFF475569)),
+                        ),
                       ),
                       Expanded(
                         flex: 2,
                         child: Text(
-                          '\$${(mr.totalQty * mr.unitPrice).toStringAsFixed(2)}',
+                          '\$${(item.totalPrice ?? 0).toStringAsFixed(2)}',
                           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
                         ),
                       ),
@@ -1673,16 +1857,16 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
     );
   }
 
-  Widget _buildStep2() {
-    final l10n = AppLocalizations.of(context)!;
-    final selectedList = _selected.map((i) => (i, _mergedRows[i])).toList();
+  Widget _buildStep2(AppLocalizations l10n) {
+    final items = _detail!.items;
+    final selectedList = _selected.toList();
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+            padding: const EdgeInsets.fromLTRB(24, 14, 24, 8),
             child: Row(
               children: [
                 const Icon(Icons.info_outline_rounded, size: 16, color: Color(0xFF94A3B8)),
@@ -1697,7 +1881,8 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
               itemCount: selectedList.length,
               separatorBuilder: (_, __) => const SizedBox(height: 16),
               itemBuilder: (_, listIdx) {
-                final (idx, mr) = selectedList[listIdx];
+                final idx = selectedList[listIdx];
+                final item = items[idx];
                 return Container(
                   decoration: BoxDecoration(
                     border: Border.all(color: const Color(0xFFE2E8F0)),
@@ -1717,29 +1902,44 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                         ),
                         child: Row(
                           children: [
-                            Text(
-                              mr.sku,
-                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(mr.modelCode, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
-                            if (mr.color.isNotEmpty) ...[
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(10)),
-                                child: Text(
-                                  mr.color,
-                                  style: const TextStyle(fontSize: 11, color: Color(0xFF6366F1), fontWeight: FontWeight.w500),
-                                ),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.productName ?? '—',
+                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Row(
+                                    children: [
+                                      if (item.modelCode?.isNotEmpty ?? false) ...[
+                                        Text(item.modelCode!, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                                        const SizedBox(width: 8),
+                                      ],
+                                      if (item.color?.isNotEmpty ?? false)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                          decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(10)),
+                                          child: Text(
+                                            item.color!,
+                                            style: const TextStyle(fontSize: 11, color: Color(0xFF6366F1), fontWeight: FontWeight.w500),
+                                          ),
+                                        ),
+                                      if (item.colorCode?.isNotEmpty ?? false) ...[
+                                        const SizedBox(width: 6),
+                                        Text('(${item.colorCode})', style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+                                      ],
+                                    ],
+                                  ),
+                                ],
                               ),
-                            ],
-                            const Spacer(),
+                            ),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                               decoration: BoxDecoration(color: const Color(0xFFE0F2FE), borderRadius: BorderRadius.circular(10)),
                               child: Text(
-                                l10n.invoiceQtyLabel(mr.totalQty),
+                                l10n.invoiceQtyLabel(item.quantity ?? 0),
                                 style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF0284C7)),
                               ),
                             ),
@@ -1748,9 +1948,10 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                       ),
                       // Form fields
                       Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(14),
                         child: Column(
                           children: [
+                            // Row 1: barcode + actual qty
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -1770,15 +1971,15 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                                   child: _DetailField(
                                     ctrl: _actualQtyCtrl[idx]!,
                                     label: l10n.actualQtyReceived,
-                                    hint: '${mr.totalQty}',
+                                    hint: '${item.quantity ?? 0}',
                                     required: true,
                                     isNumber: true,
                                     icon: Icons.numbers_rounded,
                                     suffixWidget: ValueListenableBuilder(
                                       valueListenable: _actualQtyCtrl[idx]!,
                                       builder: (_, __, ___) {
-                                        final actual = int.tryParse(_actualQtyCtrl[idx]!.text) ?? mr.totalQty;
-                                        final diff = actual - mr.totalQty;
+                                        final actual = int.tryParse(_actualQtyCtrl[idx]!.text) ?? (item.quantity ?? 0);
+                                        final diff = actual - (item.quantity ?? 0);
                                         if (diff == 0) return const SizedBox.shrink();
                                         return Padding(
                                           padding: const EdgeInsets.only(top: 4),
@@ -1807,7 +2008,33 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 10),
+                            // Row 2: actual pcs/carton + actual carton count
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _DetailField(
+                                    ctrl: _actPcsCtrl[idx]!,
+                                    label: l10n.actualPcsPerCarton,
+                                    hint: '${item.piecesPerCarton ?? 0}',
+                                    isNumber: true,
+                                    icon: Icons.widgets_outlined,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _DetailField(
+                                    ctrl: _actCartonsCtrl[idx]!,
+                                    label: l10n.actualCartonCount,
+                                    hint: '${(item.cartonCount ?? 0).toInt()}',
+                                    isNumber: true,
+                                    icon: Icons.inventory_2_outlined,
+                                  ),
+                                ),
+                              ],
+                            ),
                             const SizedBox(height: 12),
+                            // Row 3: warehouse location
                             Row(
                               children: [
                                 const Icon(Icons.location_on_rounded, size: 15, color: Color(0xFF6366F1)),
@@ -1886,8 +2113,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
     );
   }
 
-  Widget _buildFooter() {
-    final l10n = AppLocalizations.of(context)!;
+  Widget _buildFooter(AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
       decoration: const BoxDecoration(
@@ -1899,7 +2125,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
         children: [
           if (_step == 1)
             OutlinedButton.icon(
-              onPressed: () => setState(() => _step = 0),
+              onPressed: _importing ? null : () => setState(() => _step = 0),
               icon: const Icon(Icons.arrow_back_rounded, size: 16),
               label: Text(l10n.back),
               style: OutlinedButton.styleFrom(
@@ -1915,7 +2141,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
             ),
           const Spacer(),
           if (_step == 0) ...[
-            Text(l10n.nOfMSelected(_selected.length, _mergedRows.length), style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+            Text(l10n.nOfMSelected(_selected.length, _detail!.items.length), style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
             const SizedBox(width: 16),
             FilledButton.icon(
               onPressed: _selected.isEmpty ? null : _goToStep2,
@@ -1930,11 +2156,14 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
             ),
           ] else
             FilledButton.icon(
-              onPressed: _importProducts,
-              icon: const Icon(Icons.download_rounded, size: 16),
+              onPressed: _importing ? null : _importProducts,
+              icon: _importing
+                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Icon(Icons.download_rounded, size: 16),
               label: Text(l10n.importNProducts(_selected.length)),
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFF22C55E),
+                disabledBackgroundColor: const Color(0xFFCBD5E1),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               ),
@@ -1943,28 +2172,6 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
       ),
     );
   }
-}
-
-// ── Data helpers ──────────────────────────────────────────────────────────────
-class _MergedRow {
-  final String sku;
-  final String modelCode;
-  final String color;
-  final String size;
-  final int totalQty;
-  final double unitPrice;
-
-  const _MergedRow({
-    required this.sku,
-    required this.modelCode,
-    required this.color,
-    required this.size,
-    required this.totalQty,
-    required this.unitPrice,
-  });
-
-  _MergedRow copyWithAddedQty(int extra) =>
-      _MergedRow(sku: sku, modelCode: modelCode, color: color, size: size, totalQty: totalQty + extra, unitPrice: unitPrice);
 }
 
 // ── Step bubble ───────────────────────────────────────────────────────────────

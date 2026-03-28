@@ -334,5 +334,27 @@
 
   "productSavedSuccess": "Məhsul uğurla əlavə edildi!",
 
-  "productSaveFailed": "Məhsulu saxlamaq mümkün olmadı: {error}"
+  "productSaveFailed": "Məhsulu saxlamaq mümkün olmadı: {error}",
+
+  "loadingInvoices": "Qaimələr yüklənir…",
+
+  "fetchInvoicesFailed": "Qaimələri yükləmək alınmadı: {error}",
+
+  "retry": "Yenidən cəhd et",
+
+  "loadingInvoiceDetail": "Qaimə məlumatları yüklənir…",
+
+  "fetchInvoiceDetailFailed": "Qaiməni yükləmək alınmadı: {error}",
+
+  "nItemsInInvoice": "Qaimədə {n} məhsul",
+
+  "invoicePcsPerCarton": "Qaim. Əd/Karton",
+
+  "invoiceCartonCount": "Qaim. Karton Sayı",
+
+  "importingProducts": "{current}/{total} idxal edilir…",
+
+  "importSuccessN": "{n} məhsul uğurla idxal edildi!",
+
+  "importFailedN": "{n} məhsul idxal edilə bilmədi."
 }

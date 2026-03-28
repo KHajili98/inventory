@@ -1105,6 +1105,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to save product: {error}'**
   String productSaveFailed(String error);
+
+  /// Loading state for invoice picker
+  ///
+  /// In en, this message translates to:
+  /// **'Loading invoices…'**
+  String get loadingInvoices;
+
+  /// Error message when invoice list fails to load
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load invoices: {error}'**
+  String fetchInvoicesFailed(String error);
+
+  /// Retry button label
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// Loading state for invoice detail
+  ///
+  /// In en, this message translates to:
+  /// **'Loading invoice details…'**
+  String get loadingInvoiceDetail;
+
+  /// Error message when invoice detail fails to load
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load invoice: {error}'**
+  String fetchInvoiceDetailFailed(String error);
+
+  /// Invoice item count label
+  ///
+  /// In en, this message translates to:
+  /// **'{n} item(s) in invoice'**
+  String nItemsInInvoice(int n);
+
+  /// Invoice pieces per carton field label
+  ///
+  /// In en, this message translates to:
+  /// **'Inv. Pcs/Carton'**
+  String get invoicePcsPerCarton;
+
+  /// Invoice carton count field label
+  ///
+  /// In en, this message translates to:
+  /// **'Inv. Carton Count'**
+  String get invoiceCartonCount;
+
+  /// Progress message while importing products from invoice
+  ///
+  /// In en, this message translates to:
+  /// **'Importing {current} of {total}…'**
+  String importingProducts(int current, int total);
+
+  /// Snackbar message after successful import
+  ///
+  /// In en, this message translates to:
+  /// **'{n} product(s) imported successfully!'**
+  String importSuccessN(int n);
+
+  /// Snackbar message when some imports fail
+  ///
+  /// In en, this message translates to:
+  /// **'{n} product(s) failed to import.'**
+  String importFailedN(int n);
 }
 
 class _AppLocalizationsDelegate

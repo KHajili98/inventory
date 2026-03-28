@@ -882,5 +882,79 @@
     "placeholders": {
       "error": { "type": "String" }
     }
+  },
+
+  "loadingInvoices": "Loading invoices…",
+  "@loadingInvoices": {
+    "description": "Loading state for invoice picker"
+  },
+
+  "fetchInvoicesFailed": "Failed to load invoices: {error}",
+  "@fetchInvoicesFailed": {
+    "description": "Error message when invoice list fails to load",
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
+  "retry": "Retry",
+  "@retry": {
+    "description": "Retry button label"
+  },
+
+  "loadingInvoiceDetail": "Loading invoice details…",
+  "@loadingInvoiceDetail": {
+    "description": "Loading state for invoice detail"
+  },
+
+  "fetchInvoiceDetailFailed": "Failed to load invoice: {error}",
+  "@fetchInvoiceDetailFailed": {
+    "description": "Error message when invoice detail fails to load",
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+
+  "nItemsInInvoice": "{n} item(s) in invoice",
+  "@nItemsInInvoice": {
+    "description": "Invoice item count label",
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+
+  "invoicePcsPerCarton": "Inv. Pcs/Carton",
+  "@invoicePcsPerCarton": {
+    "description": "Invoice pieces per carton field label"
+  },
+
+  "invoiceCartonCount": "Inv. Carton Count",
+  "@invoiceCartonCount": {
+    "description": "Invoice carton count field label"
+  },
+
+  "importingProducts": "Importing {current} of {total}…",
+  "@importingProducts": {
+    "description": "Progress message while importing products from invoice",
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "importSuccessN": "{n} product(s) imported successfully!",
+  "@importSuccessN": {
+    "description": "Snackbar message after successful import",
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+
+  "importFailedN": "{n} product(s) failed to import.",
+  "@importFailedN": {
+    "description": "Snackbar message when some imports fail",
+    "placeholders": {
+      "n": { "type": "int" }
+    }
   }
 }

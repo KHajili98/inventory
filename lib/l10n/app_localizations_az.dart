@@ -544,4 +544,49 @@ class AppLocalizationsAz extends AppLocalizations {
   String productSaveFailed(String error) {
     return 'Məhsulu saxlamaq mümkün olmadı: $error';
   }
+
+  @override
+  String get loadingInvoices => 'Qaimələr yüklənir…';
+
+  @override
+  String fetchInvoicesFailed(String error) {
+    return 'Qaimələri yükləmək alınmadı: $error';
+  }
+
+  @override
+  String get retry => 'Yenidən cəhd et';
+
+  @override
+  String get loadingInvoiceDetail => 'Qaimə məlumatları yüklənir…';
+
+  @override
+  String fetchInvoiceDetailFailed(String error) {
+    return 'Qaiməni yükləmək alınmadı: $error';
+  }
+
+  @override
+  String nItemsInInvoice(int n) {
+    return 'Qaimədə $n məhsul';
+  }
+
+  @override
+  String get invoicePcsPerCarton => 'Qaim. Əd/Karton';
+
+  @override
+  String get invoiceCartonCount => 'Qaim. Karton Sayı';
+
+  @override
+  String importingProducts(int current, int total) {
+    return '$current/$total idxal edilir…';
+  }
+
+  @override
+  String importSuccessN(int n) {
+    return '$n məhsul uğurla idxal edildi!';
+  }
+
+  @override
+  String importFailedN(int n) {
+    return '$n məhsul idxal edilə bilmədi.';
+  }
 }
