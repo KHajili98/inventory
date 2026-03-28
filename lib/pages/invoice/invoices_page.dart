@@ -11,8 +11,8 @@ import 'package:inventory/features/invoice_ocr/cubit/invoice_ocr_cubit.dart';
 import 'package:inventory/features/invoice_ocr/cubit/invoice_ocr_state.dart';
 import 'package:inventory/features/invoice_ocr/data/models/invoice_upload_response_model.dart';
 import 'package:inventory/models/invoice_models.dart';
-import 'package:inventory/pages/invoice_detail_page.dart';
-import 'package:inventory/pages/invoice_edit_page.dart';
+import 'package:inventory/pages/invoice/invoice_detail_page.dart';
+import 'package:inventory/pages/invoice/invoice_edit_page.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 import 'package:inventory/core/utils/responsive.dart';
 

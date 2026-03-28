@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
-import 'package:inventory/pages/expense_tracking_page.dart';
-import 'package:inventory/pages/finance_page.dart';
-import 'package:inventory/pages/inventory_products_page.dart';
-import 'package:inventory/pages/invoices_page.dart';
-import 'package:inventory/pages/price_calculation_page.dart';
+import 'package:inventory/pages/invoice/expense_tracking_page.dart';
+import 'package:inventory/pages/invoice/finance_page.dart';
+import 'package:inventory/pages/inventory/inventory_products_page.dart';
+import 'package:inventory/pages/invoice/invoices_page.dart';
+import 'package:inventory/pages/invoice/price_calculation_page.dart';
 import 'package:inventory/widgets/app_shell.dart';
 
 final appRouter = GoRouter(
