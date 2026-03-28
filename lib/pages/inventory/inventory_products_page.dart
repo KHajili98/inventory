@@ -197,15 +197,164 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
     });
   }
 
-  void _deleteSelected() {
-    // Local removal — no delete API endpoint for products yet
+  Future<void> _deleteSelected() async {
+    if (_selectedIds.isEmpty) return;
+
+    // Collect the product models for the selected IDs
     final loaded = context.read<InventoryProductsCubit>().state;
-    if (loaded is InventoryProductsLoaded) {
-      final remaining = loaded.products.where((p) => !_selectedIds.contains(p.id)).toList();
-      setState(() {
-        _selectedIds.clear();
-        _filtered = _applyFilterAndSort(remaining);
-      });
+    if (loaded is! InventoryProductsLoaded) return;
+
+    final toDelete = loaded.products.where((p) => _selectedIds.contains(p.id)).toList();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierColor: Colors.black26,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(color: const Color(0xFFFEF2F2), borderRadius: BorderRadius.circular(10)),
+              child: const Icon(Icons.delete_sweep_rounded, color: Color(0xFFEF4444), size: 18),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'Delete ${toDelete.length} Product${toDelete.length == 1 ? '' : 's'}',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: 420,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Are you sure you want to delete the following products? This action cannot be undone.',
+                style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+              ),
+              const SizedBox(height: 12),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 260),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: toDelete.length,
+                      separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                      itemBuilder: (_, i) {
+                        final p = toDelete[i];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.inventory_2_outlined, size: 14, color: Color(0xFF94A3B8)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  p.productGeneratedName ?? p.productName ?? '—',
+                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (p.barcode != null) ...[
+                                const SizedBox(width: 8),
+                                Text(
+                                  p.barcode!,
+                                  style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8), fontFamily: 'monospace'),
+                                ),
+                              ],
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel', style: TextStyle(color: Color(0xFF94A3B8))),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            icon: const Icon(Icons.delete_sweep_rounded, size: 16),
+            label: Text('Delete ${toDelete.length}'),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final cubit = context.read<InventoryProductsCubit>();
+
+    // Fire all delete requests in parallel
+    final results = await Future.wait(toDelete.map((p) async => (product: p, result: await cubit.deleteProduct(p.id))));
+
+    if (!mounted) return;
+
+    final failed = results.where((r) => r.result is Failure).toList();
+    final successCount = results.length - failed.length;
+
+    if (successCount > 0) {
+      setState(() => _selectedIds.removeWhere((id) => results.where((r) => r.result is Success).map((r) => r.product.id).contains(id)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$successCount product${successCount == 1 ? '' : 's'} deleted successfully.'),
+          backgroundColor: const Color(0xFF22C55E),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    }
+
+    if (failed.isNotEmpty) {
+      final errorLines = failed
+          .map((r) {
+            final name = r.product.productGeneratedName ?? r.product.productName ?? r.product.id;
+            final msg = (r.result as Failure).message;
+            return '• $name: $msg';
+          })
+          .join('\n');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          duration: const Duration(seconds: 8),
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline_rounded, color: Colors.white, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '${failed.length} deletion${failed.length == 1 ? '' : 's'} failed:\n$errorLines',
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
     }
   }
 
