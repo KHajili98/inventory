@@ -1,4 +1,7 @@
 /// Request body for POST /api/inventory-products/
+///
+/// [barcodeType] must be either `'preprinted'` (user typed the barcode manually)
+/// or `'generated'` (barcode was obtained via POST /api/generate-barcode/).
 class CreateInventoryProductRequestModel {
   final String modelCode;
   final String productName;
@@ -16,6 +19,9 @@ class CreateInventoryProductRequestModel {
   final int actualCartonCount;
   final String invoice;
   final String barcode;
+
+  /// `'preprinted'` or `'generated'`
+  final String barcodeType;
   final String locationZone;
   final String locationRow;
   final String locationShelf;
@@ -38,6 +44,7 @@ class CreateInventoryProductRequestModel {
     required this.actualCartonCount,
     this.invoice = '',
     required this.barcode,
+    this.barcodeType = 'preprinted',
     required this.locationZone,
     required this.locationRow,
     required this.locationShelf,
@@ -61,6 +68,7 @@ class CreateInventoryProductRequestModel {
     'actual_carton_count': actualCartonCount,
     'invoice': invoice,
     'barcode': barcode,
+    'barcode_type': barcodeType,
     'location_zone': locationZone,
     'location_row': locationRow,
     'location_shelf': locationShelf,

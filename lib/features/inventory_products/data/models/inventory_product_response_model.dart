@@ -36,6 +36,10 @@ class InventoryProductItemModel {
   final int? actualCartonCount;
   final String? invoice;
   final String? barcode;
+
+  /// `'preprinted'` or `'generated'`
+  final String? barcodeType;
+  final bool? barcodePrinted;
   final String? locationZone;
   final String? locationRow;
   final String? locationShelf;
@@ -62,6 +66,8 @@ class InventoryProductItemModel {
     this.actualCartonCount,
     this.invoice,
     this.barcode,
+    this.barcodeType,
+    this.barcodePrinted,
     this.locationZone,
     this.locationRow,
     this.locationShelf,
@@ -89,6 +95,8 @@ class InventoryProductItemModel {
     actualCartonCount: json['actual_carton_count'] != null ? (json['actual_carton_count'] as num).toInt() : null,
     invoice: json['invoice'] as String?,
     barcode: json['barcode'] as String?,
+    barcodeType: json['barcode_type'] as String?,
+    barcodePrinted: json['barcode_printed'] as bool?,
     locationZone: json['location_zone'] as String?,
     locationRow: json['location_row'] as String?,
     locationShelf: json['location_shelf'] as String?,
@@ -116,6 +124,8 @@ class InventoryProductItemModel {
     'actual_carton_count': actualCartonCount,
     'invoice': invoice,
     'barcode': barcode,
+    'barcode_type': barcodeType,
+    'barcode_printed': barcodePrinted,
     'location_zone': locationZone,
     'location_row': locationRow,
     'location_shelf': locationShelf,

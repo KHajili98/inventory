@@ -1432,6 +1432,8 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
   final Map<int, TextEditingController> _zoneCtrl = {};
   final Map<int, TextEditingController> _rowCtrl = {};
   final Map<int, TextEditingController> _shelfCtrl = {};
+  // Tracks whether the barcode for each row was API-generated ('generated') or typed ('preprinted')
+  final Map<int, String> _barcodeTypeMap = {};
 
   final _formKey = GlobalKey<FormState>();
 
@@ -1471,13 +1473,23 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
   void _initControllersForSelected() {
     for (final idx in _selected) {
       // actual_* fields start EMPTY — user must fill them manually
-      _barcodeCtrl.putIfAbsent(idx, () => TextEditingController());
+      _barcodeCtrl.putIfAbsent(idx, () {
+        final ctrl = TextEditingController();
+        // Any manual edit → mark as 'preprinted'
+        ctrl.addListener(() {
+          if (_barcodeTypeMap[idx] != 'generated') {
+            _barcodeTypeMap[idx] = 'preprinted';
+          }
+        });
+        return ctrl;
+      });
       _actualQtyCtrl.putIfAbsent(idx, () => TextEditingController());
       _actPcsCtrl.putIfAbsent(idx, () => TextEditingController());
       _actCartonsCtrl.putIfAbsent(idx, () => TextEditingController());
       _zoneCtrl.putIfAbsent(idx, () => TextEditingController());
       _rowCtrl.putIfAbsent(idx, () => TextEditingController());
       _shelfCtrl.putIfAbsent(idx, () => TextEditingController());
+      _barcodeTypeMap.putIfAbsent(idx, () => 'preprinted');
     }
   }
 
@@ -1541,6 +1553,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
         colorCode: item.colorCode ?? '',
         size: item.size ?? '',
         barcode: _barcodeCtrl[idx]!.text.trim(),
+        barcodeType: _barcodeTypeMap[idx] ?? 'preprinted',
         actualQuantity: actualQty,
         actualTotalPrice: actualTotal,
         actualPiecesPerCarton: actPcs,
@@ -2018,7 +2031,10 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                                         icon: Icons.qr_code_rounded,
                                       ),
                                       const SizedBox(height: 4),
-                                      _GenerateBarcodeButton(ctrl: _barcodeCtrl[idx]!),
+                                      _GenerateBarcodeButton(
+                                        ctrl: _barcodeCtrl[idx]!,
+                                        onGenerated: (_) => setState(() => _barcodeTypeMap[idx] = 'generated'),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -2384,10 +2400,15 @@ class _DetailField extends StatelessWidget {
 
 // ── Generate Barcode Button ───────────────────────────────────────────────────
 /// A small button that calls POST /api/generate-barcode/ and fills [ctrl].
+/// [onGenerated] is called with `true` after a successful API generation,
+/// so the parent can set barcode_type = 'generated'.
 class _GenerateBarcodeButton extends StatefulWidget {
   final TextEditingController ctrl;
 
-  const _GenerateBarcodeButton({required this.ctrl});
+  /// Called with `true` when the barcode was successfully generated via API.
+  final ValueChanged<bool>? onGenerated;
+
+  const _GenerateBarcodeButton({required this.ctrl, this.onGenerated});
 
   @override
   State<_GenerateBarcodeButton> createState() => _GenerateBarcodeButtonState();
@@ -2405,6 +2426,7 @@ class _GenerateBarcodeButtonState extends State<_GenerateBarcodeButton> {
     switch (result) {
       case Success(:final data):
         widget.ctrl.text = data;
+        widget.onGenerated?.call(true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.barcodeGeneratedSuccess),
@@ -2698,6 +2720,9 @@ class _ProductDialogState extends State<_ProductDialog> {
   final _formKey = GlobalKey<FormState>();
   bool _isSaving = false;
 
+  // 'preprinted' when user types the barcode, 'generated' when obtained via API
+  String _barcodeType = 'preprinted';
+
   // ── Product info ────────────────────────────────────────────────────────────
   late final TextEditingController _productName; // product_name
   late final TextEditingController _modelCode; // model_code
@@ -2724,6 +2749,12 @@ class _ProductDialogState extends State<_ProductDialog> {
     _colorCode = TextEditingController();
     _size = TextEditingController();
     _barcode = TextEditingController(text: p?.barcode ?? '');
+    // Any manual keystroke marks the barcode as 'preprinted'
+    _barcode.addListener(() {
+      if (_barcodeType != 'generated') {
+        _barcodeType = 'preprinted';
+      }
+    });
     _actualQty = TextEditingController(text: p != null ? '${p.quantity}' : '');
     _actualPcsPerCarton = TextEditingController();
     _actualCartonCount = TextEditingController();
@@ -2769,6 +2800,7 @@ class _ProductDialogState extends State<_ProductDialog> {
       colorCode: _colorCode.text.trim(),
       size: _size.text.trim(),
       barcode: _barcode.text.trim(),
+      barcodeType: _barcodeType,
       actualQuantity: actualQty,
       actualTotalPrice: actualTotalPrice,
       actualPiecesPerCarton: actualPcs,
@@ -2887,7 +2919,7 @@ class _ProductDialogState extends State<_ProductDialog> {
                           children: [
                             _field(_barcode, l10n.barcodeField, 'e.g. 1234500001', required: true),
                             const SizedBox(height: 4),
-                            _GenerateBarcodeButton(ctrl: _barcode),
+                            _GenerateBarcodeButton(ctrl: _barcode, onGenerated: (_) => setState(() => _barcodeType = 'generated')),
                           ],
                         ),
                       ),
