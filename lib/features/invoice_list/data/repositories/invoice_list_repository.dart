@@ -32,6 +32,21 @@ class InvoiceListRepository {
     }
   }
 
+  /// Deletes an invoice by its UUID.
+  Future<ApiResult<void>> deleteInvoice(String id) async {
+    try {
+      final response = await _dio.delete<dynamic>(ApiConstants.invoiceDelete(id));
+      if (response.statusCode == 200 || response.statusCode == 204 || response.statusCode == 202) {
+        return const Success(null);
+      }
+      return Failure('Unexpected status: ${response.statusCode}', statusCode: response.statusCode);
+    } on DioException catch (e) {
+      return Failure(_parseDioError(e), statusCode: e.response?.statusCode);
+    } catch (e) {
+      return Failure(e.toString());
+    }
+  }
+
   String _parseDioError(DioException e) {
     switch (e.type) {
       case DioExceptionType.connectionTimeout:

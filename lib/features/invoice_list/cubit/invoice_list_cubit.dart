@@ -65,4 +65,17 @@ class InvoiceListCubit extends Cubit<InvoiceListState> {
       emit(current.copyWith(invoices: [invoice, ...current.invoices], totalCount: current.totalCount + 1));
     }
   }
+
+  /// Delete an invoice by UUID and remove it from the loaded list.
+  Future<ApiResult<void>> deleteInvoice(String id) async {
+    final result = await _repository.deleteInvoice(id);
+    if (result is Success) {
+      final current = state;
+      if (current is InvoiceListLoaded) {
+        final updated = current.invoices.where((i) => i.id != id).toList();
+        emit(current.copyWith(invoices: updated, totalCount: (current.totalCount - 1).clamp(0, current.totalCount)));
+      }
+    }
+    return result;
+  }
 }

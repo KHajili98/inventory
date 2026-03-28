@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:inventory/core/network/api_result.dart';
 import 'package:inventory/features/invoice_list/cubit/invoice_list_cubit.dart';
 import 'package:inventory/features/invoice_list/cubit/invoice_list_state.dart';
 import 'package:inventory/features/invoice_list/data/models/invoice_list_response_model.dart';
@@ -480,6 +481,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
                           ],
                         ),
                       ),
+                      _DeleteButton(invoiceId: inv.id, onDeleted: () => _onInvoiceDeleted(inv.id)),
                       const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
                     ],
                   ),
@@ -582,10 +584,28 @@ class _InvoicesPageState extends State<InvoicesPage> {
                 style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
               ),
             ),
+            // Delete
+            _DeleteButton(invoiceId: inv.id, onDeleted: () => _onInvoiceDeleted(inv.id)),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _onInvoiceDeleted(String id) async {
+    // Remove from local list first for immediate feedback
+    setState(() => _locallyAdded.removeWhere((i) => i.id == id));
+    final result = await context.read<InvoiceListCubit>().deleteInvoice(id);
+    if (result is Failure && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to delete invoice: ${(result as dynamic).message}'),
+          backgroundColor: const Color(0xFFDC2626),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    }
   }
 
   String _formatDateTime(DateTime dt) {
@@ -1161,6 +1181,67 @@ class _MobileInfoItem extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _DeleteButton extends StatefulWidget {
+  final String invoiceId;
+  final VoidCallback onDeleted;
+  const _DeleteButton({required this.invoiceId, required this.onDeleted});
+
+  @override
+  State<_DeleteButton> createState() => _DeleteButtonState();
+}
+
+class _DeleteButtonState extends State<_DeleteButton> {
+  Future<void> _confirmAndDelete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Delete Invoice',
+          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+        ),
+        content: const Text(
+          'Are you sure you want to delete this invoice? This action cannot be undone.',
+          style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B))),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      widget.onDeleted();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: () => _confirmAndDelete(context),
+      icon: const Icon(Icons.delete_outline_rounded, size: 18),
+      tooltip: 'Delete invoice',
+      style: IconButton.styleFrom(
+        foregroundColor: const Color(0xFFDC2626),
+        backgroundColor: const Color(0xFFFEF2F2),
+        padding: const EdgeInsets.all(6),
+        minimumSize: const Size(32, 32),
+      ),
     );
   }
 }
