@@ -61,8 +61,23 @@ class InventoryProductsRepository {
         return 'No internet connection.';
       case DioExceptionType.badResponse:
         final data = e.response?.data;
-        if (data is Map && data['message'] != null) {
-          return data['message'].toString();
+        if (data is Map) {
+          if (data['message'] != null) {
+            return data['message'].toString();
+          }
+          if (data['detail'] != null) {
+            return data['detail'].toString();
+          }
+          // Field-level validation errors: {"barcode": ["already exists."], ...}
+          final fieldErrors = <String>[];
+          data.forEach((key, value) {
+            if (value is List && value.isNotEmpty) {
+              fieldErrors.add('$key: ${value.first}');
+            } else if (value is String) {
+              fieldErrors.add('$key: $value');
+            }
+          });
+          if (fieldErrors.isNotEmpty) return fieldErrors.join('\n');
         }
         return 'Server error (${e.response?.statusCode}).';
       default:

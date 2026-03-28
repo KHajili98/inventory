@@ -1438,6 +1438,8 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
   // ── Import progress ──────────────────────────────────────────────────────────
   bool _importing = false;
   int _importProgress = 0;
+  // Maps item index → API error message for rows that failed to import.
+  final Map<int, String> _rowErrors = {};
 
   @override
   void initState() {
@@ -1513,7 +1515,8 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
     });
 
     int successCount = 0;
-    int failCount = 0;
+    // Maps item index → error message for failed rows
+    final Map<int, String> rowErrors = {};
 
     for (int i = 0; i < selectedList.length; i++) {
       final idx = selectedList[i];
@@ -1556,14 +1559,14 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
       );
 
       // Post the product directly (no need to re-fetch invoice detail)
-      final result = await _postProduct(request);
+      final error = await _postProduct(request);
 
       if (!mounted) return;
 
-      if (result) {
+      if (error == null) {
         successCount++;
       } else {
-        failCount++;
+        rowErrors[idx] = error;
       }
 
       setState(() => _importProgress = i + 1);
@@ -1571,12 +1574,12 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
 
     if (!mounted) return;
 
-    // Refresh the inventory list
-    widget.inventoryProductsCubit.refresh();
+    if (successCount > 0) widget.inventoryProductsCubit.refresh();
 
     Navigator.of(context, rootNavigator: true).pop();
 
     final messenger = ScaffoldMessenger.of(context);
+
     if (successCount > 0) {
       messenger.showSnackBar(
         SnackBar(
@@ -1587,13 +1590,33 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
         ),
       );
     }
-    if (failCount > 0) {
+
+    if (rowErrors.isNotEmpty) {
+      // Show each failed product name + its error message
+      final items = _detail!.items;
+      final errorLines = rowErrors.entries
+          .map((e) {
+            final name = items[e.key].productName ?? 'Item ${e.key + 1}';
+            return '$name: ${e.value}';
+          })
+          .join('\n');
+
       messenger.showSnackBar(
         SnackBar(
-          content: Text(l10n.importFailedN(failCount)),
+          duration: const Duration(seconds: 8),
           backgroundColor: const Color(0xFFEF4444),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          content: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.error_outline_rounded, color: Colors.white, size: 18),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(errorLines, style: const TextStyle(color: Colors.white, fontSize: 13)),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -1601,11 +1624,13 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
     widget.onDone?.call();
   }
 
-  /// Posts a single product via the cubit and returns true on success.
-  Future<bool> _postProduct(CreateInventoryProductRequestModel request) async {
-    await widget.inventoryProductsCubit.createProduct(request);
-    final s = widget.inventoryProductsCubit.state;
-    return s is InventoryProductCreated || s is InventoryProductsLoaded;
+  /// Posts a single product and returns the error message on failure, or null on success.
+  Future<String?> _postProduct(CreateInventoryProductRequestModel request) async {
+    final result = await widget.inventoryProductsCubit.createProduct(request);
+    return switch (result) {
+      Success() => null,
+      Failure(:final message) => message,
+    };
   }
 
   @override
@@ -1884,9 +1909,10 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
               itemBuilder: (_, listIdx) {
                 final idx = selectedList[listIdx];
                 final item = items[idx];
+                final rowError = _rowErrors[idx];
                 return Container(
                   decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    border: Border.all(color: rowError != null ? const Color(0xFFFECACA) : const Color(0xFFE2E8F0)),
                     borderRadius: BorderRadius.circular(12),
                     color: Colors.white,
                   ),
@@ -1947,6 +1973,29 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                           ],
                         ),
                       ),
+                      // ── API error banner (shown after a failed import attempt) ──
+                      if (rowError != null)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFFEF2F2),
+                            border: Border(bottom: BorderSide(color: Color(0xFFFECACA))),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.error_outline_rounded, size: 16, color: Color(0xFFEF4444)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  rowError,
+                                  style: const TextStyle(fontSize: 12, color: Color(0xFFB91C1C), fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       // Form fields
                       Padding(
                         padding: const EdgeInsets.all(14),
@@ -2739,35 +2788,32 @@ class _ProductDialogState extends State<_ProductDialog> {
 
     setState(() => _isSaving = true);
 
-    await widget.cubit.createProduct(request);
+    final result = await widget.cubit.createProduct(request);
 
     if (!mounted) return;
 
-    final newState = widget.cubit.state;
-
-    if (newState is InventoryProductCreated || newState is InventoryProductsLoaded) {
-      Navigator.of(context, rootNavigator: true).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.productSavedSuccess),
-          backgroundColor: const Color(0xFF22C55E),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-      );
-      widget.onCreated?.call();
-    } else if (newState is InventoryProductCreateError) {
-      setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.productSaveFailed(newState.message)),
-          backgroundColor: const Color(0xFFEF4444),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-      );
-    } else {
-      setState(() => _isSaving = false);
+    switch (result) {
+      case Success():
+        Navigator.of(context, rootNavigator: true).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.productSavedSuccess),
+            backgroundColor: const Color(0xFF22C55E),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+        widget.onCreated?.call();
+      case Failure(:final message):
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.productSaveFailed(message)),
+            backgroundColor: const Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
     }
   }
 
