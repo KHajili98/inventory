@@ -1,22 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:inventory/features/inventory_products/cubit/inventory_products_cubit.dart';
+import 'package:inventory/features/inventory_products/cubit/inventory_products_state.dart';
+import 'package:inventory/features/inventory_products/data/models/inventory_product_response_model.dart';
 import 'package:inventory/models/invoice_models.dart';
 import 'package:inventory/models/product_models.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 import 'package:inventory/core/utils/responsive.dart';
 
-class InventoryProductsPage extends StatefulWidget {
+class InventoryProductsPage extends StatelessWidget {
   const InventoryProductsPage({super.key});
 
   @override
-  State<InventoryProductsPage> createState() => _InventoryProductsPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(create: (_) => InventoryProductsCubit()..fetchProducts(), child: const _InventoryProductsView());
+  }
 }
 
-class _InventoryProductsPageState extends State<InventoryProductsPage> {
-  final List<Product> _allProducts = List.from(mockProducts);
-  List<Product> _filtered = List.from(mockProducts);
+class _InventoryProductsView extends StatefulWidget {
+  const _InventoryProductsView();
+
+  @override
+  State<_InventoryProductsView> createState() => _InventoryProductsViewState();
+}
+
+class _InventoryProductsViewState extends State<_InventoryProductsView> {
+  // Local-only state for search/filter/sort (applied client-side on top of API data)
+  List<InventoryProductItemModel> _filtered = [];
   final Set<String> _selectedIds = {};
   String _searchQuery = '';
-  ProductStatus? _statusFilter;
+  String? _statusFilter; // 'in_stock' | 'low_stock' | 'out_of_stock' | null
   String _sortColumn = 'sku';
   bool _sortAscending = true;
 
@@ -102,6 +115,115 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
     _hBarController.addListener(_onHBarScroll);
   }
 
+  List<InventoryProductItemModel> _applyFilterAndSort(List<InventoryProductItemModel> all) {
+    final q = _searchQuery.toLowerCase();
+    var result = all.where((p) {
+      final matchSearch =
+          q.isEmpty ||
+          (p.productGeneratedName?.toLowerCase().contains(q) ?? false) ||
+          (p.productName?.toLowerCase().contains(q) ?? false) ||
+          (p.modelCode?.toLowerCase().contains(q) ?? false) ||
+          (p.barcode?.toLowerCase().contains(q) ?? false) ||
+          (p.color?.toLowerCase().contains(q) ?? false) ||
+          _locationLabel(p).toLowerCase().contains(q) ||
+          (p.source?.toLowerCase().contains(q) ?? false);
+      final matchStatus = _statusFilter == null || _productStatus(p) == _statusFilter;
+      return matchSearch && matchStatus;
+    }).toList();
+
+    result.sort((a, b) {
+      int cmp;
+      switch (_sortColumn) {
+        case 'sku':
+          cmp = (a.productGeneratedName ?? '').compareTo(b.productGeneratedName ?? '');
+          break;
+        case 'color':
+          cmp = (a.color ?? '').compareTo(b.color ?? '');
+          break;
+        case 'qty':
+          cmp = (a.actualQuantity ?? 0).compareTo(b.actualQuantity ?? 0);
+          break;
+        case 'unit':
+          cmp = (a.invoiceUnitPriceUsd ?? 0).compareTo(b.invoiceUnitPriceUsd ?? 0);
+          break;
+        case 'total':
+          cmp = (a.actualTotalPrice ?? 0).compareTo(b.actualTotalPrice ?? 0);
+          break;
+        case 'barcode':
+          cmp = (a.barcode ?? '').compareTo(b.barcode ?? '');
+          break;
+        case 'coord':
+          cmp = _locationLabel(a).compareTo(_locationLabel(b));
+          break;
+        default:
+          cmp = 0;
+      }
+      return _sortAscending ? cmp : -cmp;
+    });
+    return result;
+  }
+
+  void _applyFilter() {
+    final loaded = context.read<InventoryProductsCubit>().state;
+    if (loaded is InventoryProductsLoaded) {
+      setState(() {
+        _filtered = _applyFilterAndSort(loaded.products);
+      });
+    }
+  }
+
+  void _onSort(String column) {
+    setState(() {
+      if (_sortColumn == column) {
+        _sortAscending = !_sortAscending;
+      } else {
+        _sortColumn = column;
+        _sortAscending = true;
+      }
+      _applyFilter();
+    });
+  }
+
+  void _deleteSelected() {
+    // Local removal — no delete API endpoint for products yet
+    final loaded = context.read<InventoryProductsCubit>().state;
+    if (loaded is InventoryProductsLoaded) {
+      final remaining = loaded.products.where((p) => !_selectedIds.contains(p.id)).toList();
+      setState(() {
+        _selectedIds.clear();
+        _filtered = _applyFilterAndSort(remaining);
+      });
+    }
+  }
+
+  // ── Derived stats from filtered/all list ──────────────────────────────────
+  List<InventoryProductItemModel> get _allProductsFromState {
+    final s = context.read<InventoryProductsCubit>().state;
+    return s is InventoryProductsLoaded ? s.products : [];
+  }
+
+  int get _totalQty => _allProductsFromState.fold(0, (s, p) => s + (p.actualQuantity ?? 0));
+  double get _totalValue => _allProductsFromState.fold(0.0, (s, p) => s + (p.actualTotalPrice ?? 0.0));
+  int get _inStockCount => _allProductsFromState.where((p) => _productStatus(p) == 'in_stock').length;
+  int get _lowStockCount => _allProductsFromState.where((p) => _productStatus(p) == 'low_stock').length;
+  int get _outCount => _allProductsFromState.where((p) => _productStatus(p) == 'out_of_stock').length;
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  String _productStatus(InventoryProductItemModel p) {
+    final qty = p.actualQuantity ?? 0;
+    if (qty == 0) return 'out_of_stock';
+    if (qty <= 10) return 'low_stock';
+    return 'in_stock';
+  }
+
+  String _locationLabel(InventoryProductItemModel p) {
+    final z = p.locationZone ?? '';
+    final r = p.locationRow ?? '';
+    final s = p.locationShelf ?? '';
+    if (z.isEmpty && r.isEmpty && s.isEmpty) return '—';
+    return '$z-$r-$s';
+  }
+
   @override
   void dispose() {
     _hScrollController.removeListener(_onHScroll);
@@ -113,99 +235,33 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
     super.dispose();
   }
 
-  void _applyFilter() {
-    setState(() {
-      _filtered = _allProducts.where((p) {
-        final q = _searchQuery.toLowerCase();
-        final matchSearch =
-            q.isEmpty ||
-            p.sku.toLowerCase().contains(q) ||
-            p.name.toLowerCase().contains(q) ||
-            p.barcode.contains(q) ||
-            p.color.toLowerCase().contains(q) ||
-            p.coordinate.label.toLowerCase().contains(q) ||
-            (p.sourceInvoiceNo?.toLowerCase().contains(q) ?? false);
-        final matchStatus = _statusFilter == null || p.status == _statusFilter;
-        return matchSearch && matchStatus;
-      }).toList();
-      _applySort();
-    });
-  }
-
-  void _applySort() {
-    _filtered.sort((a, b) {
-      int cmp;
-      switch (_sortColumn) {
-        case 'sku':
-          cmp = a.sku.compareTo(b.sku);
-          break;
-        case 'color':
-          cmp = a.color.compareTo(b.color);
-          break;
-        case 'qty':
-          cmp = a.quantity.compareTo(b.quantity);
-          break;
-        case 'unit':
-          cmp = a.unitPrice.compareTo(b.unitPrice);
-          break;
-        case 'total':
-          cmp = a.totalPrice.compareTo(b.totalPrice);
-          break;
-        case 'barcode':
-          cmp = a.barcode.compareTo(b.barcode);
-          break;
-        case 'coord':
-          cmp = a.coordinate.label.compareTo(b.coordinate.label);
-          break;
-        default:
-          cmp = 0;
-      }
-      return _sortAscending ? cmp : -cmp;
-    });
-  }
-
-  void _onSort(String column) {
-    setState(() {
-      if (_sortColumn == column) {
-        _sortAscending = !_sortAscending;
-      } else {
-        _sortColumn = column;
-        _sortAscending = true;
-      }
-      _applySort();
-    });
-  }
-
-  void _deleteSelected() {
-    setState(() {
-      _allProducts.removeWhere((p) => _selectedIds.contains(p.id));
-      _selectedIds.clear();
-      _applyFilter();
-    });
-  }
-
-  int get _totalQty => _allProducts.fold(0, (s, p) => s + p.quantity);
-  double get _totalValue => _allProducts.fold(0.0, (s, p) => s + p.totalPrice);
-  int get _inStockCount => _allProducts.where((p) => p.status == ProductStatus.inStock).length;
-  int get _lowStockCount => _allProducts.where((p) => p.status == ProductStatus.lowStock).length;
-  int get _outCount => _allProducts.where((p) => p.status == ProductStatus.outOfStock).length;
-
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: context.responsiveHorizontalPadding.add(EdgeInsets.symmetric(vertical: context.responsivePadding)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildTopBar(),
-          SizedBox(height: context.isMobile ? 16 : 20),
-          _buildStatsRow(),
-          SizedBox(height: context.isMobile ? 16 : 20),
-          _buildFilterBar(),
-          SizedBox(height: context.isMobile ? 12 : 16),
-          Expanded(child: _buildTable()),
-        ],
-      ),
+    return BlocConsumer<InventoryProductsCubit, InventoryProductsState>(
+      listener: (context, state) {
+        if (state is InventoryProductsLoaded) {
+          setState(() {
+            _filtered = _applyFilterAndSort(state.products);
+          });
+        }
+      },
+      builder: (context, state) {
+        return Padding(
+          padding: context.responsiveHorizontalPadding.add(EdgeInsets.symmetric(vertical: context.responsivePadding)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildTopBar(),
+              SizedBox(height: context.isMobile ? 16 : 20),
+              _buildStatsRow(),
+              SizedBox(height: context.isMobile ? 16 : 20),
+              _buildFilterBar(state),
+              SizedBox(height: context.isMobile ? 12 : 16),
+              Expanded(child: _buildTable(state)),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -279,7 +335,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
         if (_selectedIds.isNotEmpty) ...[
           Text(
             '${_selectedIds.length} ${l10n.selected}',
-            style: const TextStyle(fontSize: 13, color: const Color(0xFF6366F1), fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 13, color: Color(0xFF6366F1), fontWeight: FontWeight.w500),
           ),
           const SizedBox(width: 12),
           OutlinedButton.icon(
@@ -405,10 +461,8 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
       builder: (_) => _InvoiceRowsDialog(
         invoice: invoice,
         onImport: (products) {
-          setState(() {
-            _allProducts.addAll(products);
-            _applyFilter();
-          });
+          // Products imported from invoice; refresh from API to reflect server-side updates
+          context.read<InventoryProductsCubit>().refresh();
           final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -426,16 +480,12 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
   Widget _buildStatsRow() {
     final l10n = AppLocalizations.of(context)!;
     final isMobile = context.isMobile;
+    final allCount = _allProductsFromState.length;
 
     final stats = [
-      _StatCard(label: l10n.totalSKUs, value: '${_allProducts.length}', icon: Icons.inventory_2_outlined, color: const Color(0xFF6366F1)),
+      _StatCard(label: l10n.totalSKUs, value: '$allCount', icon: Icons.inventory_2_outlined, color: const Color(0xFF6366F1)),
       _StatCard(label: l10n.totalUnits, value: '$_totalQty ${l10n.pcs}', icon: Icons.layers_outlined, color: const Color(0xFF0EA5E9)),
-      _StatCard(
-        label: l10n.totalValue,
-        value: '\$${_totalValue.toStringAsFixed(2)}',
-        icon: Icons.payments_outlined,
-        color: const Color(0xFF22C55E),
-      ),
+      _StatCard(label: l10n.totalValue, value: '\$${_totalValue.toStringAsFixed(2)}', icon: Icons.payments_outlined, color: const Color(0xFF22C55E)),
       _StatCard(label: l10n.inStock, value: '$_inStockCount', icon: Icons.check_circle_outline_rounded, color: const Color(0xFF22C55E)),
       _StatCard(label: l10n.lowStock, value: '$_lowStockCount', icon: Icons.warning_amber_rounded, color: const Color(0xFFF59E0B)),
       _StatCard(label: l10n.outOfStock, value: '$_outCount', icon: Icons.remove_circle_outline_rounded, color: const Color(0xFFEF4444)),
@@ -446,10 +496,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: [
-            for (int i = 0; i < stats.length; i++) ...[
-              if (i > 0) const SizedBox(width: 12),
-              SizedBox(width: 140, child: stats[i]),
-            ],
+            for (int i = 0; i < stats.length; i++) ...[if (i > 0) const SizedBox(width: 12), SizedBox(width: 140, child: stats[i])],
           ],
         ),
       );
@@ -457,18 +504,16 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
 
     return Row(
       children: [
-        for (int i = 0; i < stats.length; i++) ...[
-          if (i > 0) const SizedBox(width: 16),
-          Expanded(child: stats[i]),
-        ],
+        for (int i = 0; i < stats.length; i++) ...[if (i > 0) const SizedBox(width: 16), Expanded(child: stats[i])],
       ],
     );
   }
 
-  Widget _buildFilterBar() {
+  Widget _buildFilterBar(InventoryProductsState state) {
     final l10n = AppLocalizations.of(context)!;
     final isMobile = context.isMobile;
     final searchWidth = isMobile ? MediaQuery.of(context).size.width - (context.responsivePadding * 2) : 300.0;
+    final allCount = state is InventoryProductsLoaded ? state.products.length : 0;
 
     return Column(
       children: [
@@ -520,35 +565,35 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
               const SizedBox(width: 8),
               _FilterChip(
                 label: l10n.inStock,
-                selected: _statusFilter == ProductStatus.inStock,
+                selected: _statusFilter == 'in_stock',
                 color: const Color(0xFF22C55E),
                 onTap: () {
-                  _statusFilter = ProductStatus.inStock;
+                  _statusFilter = 'in_stock';
                   _applyFilter();
                 },
               ),
               const SizedBox(width: 8),
               _FilterChip(
                 label: l10n.lowStock,
-                selected: _statusFilter == ProductStatus.lowStock,
+                selected: _statusFilter == 'low_stock',
                 color: const Color(0xFFF59E0B),
                 onTap: () {
-                  _statusFilter = ProductStatus.lowStock;
+                  _statusFilter = 'low_stock';
                   _applyFilter();
                 },
               ),
               const SizedBox(width: 8),
               _FilterChip(
                 label: l10n.outOfStock,
-                selected: _statusFilter == ProductStatus.outOfStock,
+                selected: _statusFilter == 'out_of_stock',
                 color: const Color(0xFFEF4444),
                 onTap: () {
-                  _statusFilter = ProductStatus.outOfStock;
+                  _statusFilter = 'out_of_stock';
                   _applyFilter();
                 },
               ),
               const SizedBox(width: 16),
-              Text(l10n.nOfMProducts(_filtered.length, _allProducts.length), style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8))),
+              Text(l10n.nOfMProducts(_filtered.length, allCount), style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8))),
             ],
           ),
         ),
@@ -567,7 +612,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
     _vScrollController.animateTo(target, duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
   }
 
-  Widget _buildTable() {
+  Widget _buildTable(InventoryProductsState state) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -588,38 +633,57 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
           ),
           // ── Scrollable body + right vertical scrollbar ────────────────────
           Expanded(
-            child: _filtered.isEmpty
-                ? Center(
-                    child: Text(AppLocalizations.of(context)!.noProductsMatchSearch, style: const TextStyle(fontSize: 14, color: Color(0xFF94A3B8))),
-                  )
-                : Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Table rows with horizontal scroll
-                      Expanded(
-                        child: SingleChildScrollView(
-                          controller: _hScrollController,
-                          scrollDirection: Axis.horizontal,
-                          child: SizedBox(
-                            width: _tableWidth,
-                            child: Scrollbar(
-                              controller: _vScrollController,
-                              thumbVisibility: true,
-                              trackVisibility: true,
-                              child: ListView.separated(
-                                controller: _vScrollController,
-                                itemCount: _filtered.length,
-                                separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                                itemBuilder: (_, i) => _buildProductRow(i, _filtered[i]),
-                              ),
-                            ),
+            child: switch (state) {
+              InventoryProductsLoading() => const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1))),
+              InventoryProductsError(:final message) => Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.error_outline_rounded, size: 40, color: Color(0xFFEF4444)),
+                    const SizedBox(height: 12),
+                    Text(message, style: const TextStyle(fontSize: 14, color: Color(0xFF64748B))),
+                    const SizedBox(height: 16),
+                    FilledButton.icon(
+                      onPressed: () => context.read<InventoryProductsCubit>().refresh(),
+                      icon: const Icon(Icons.refresh_rounded, size: 18),
+                      label: const Text('Retry'),
+                      style: FilledButton.styleFrom(backgroundColor: const Color(0xFF6366F1)),
+                    ),
+                  ],
+                ),
+              ),
+              _ when _filtered.isEmpty => Center(
+                child: Text(AppLocalizations.of(context)!.noProductsMatchSearch, style: const TextStyle(fontSize: 14, color: Color(0xFF94A3B8))),
+              ),
+              _ => Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Table rows with horizontal scroll
+                  Expanded(
+                    child: SingleChildScrollView(
+                      controller: _hScrollController,
+                      scrollDirection: Axis.horizontal,
+                      child: SizedBox(
+                        width: _tableWidth,
+                        child: Scrollbar(
+                          controller: _vScrollController,
+                          thumbVisibility: true,
+                          trackVisibility: true,
+                          child: ListView.separated(
+                            controller: _vScrollController,
+                            itemCount: _filtered.length,
+                            separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                            itemBuilder: (_, i) => _buildProductRow(i, _filtered[i]),
                           ),
                         ),
                       ),
-                      // ── Right-side vertical nav buttons ─────────────────
-                      _buildVNavBar(),
-                    ],
+                    ),
                   ),
+                  // ── Right-side vertical nav buttons ─────────────────
+                  _buildVNavBar(),
+                ],
+              ),
+            },
           ),
           // ── Bottom horizontal scrollbar + nav buttons ─────────────────────
           _buildHScrollBar(),
@@ -831,7 +895,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
     );
   }
 
-  Widget _buildProductRow(int index, Product product) {
+  Widget _buildProductRow(int index, InventoryProductItemModel product) {
     final l10n = AppLocalizations.of(context)!;
     final isSelected = _selectedIds.contains(product.id);
     final isOdd = index.isOdd;
@@ -840,10 +904,16 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
         : isOdd
         ? const Color(0xFFFAFAFA)
         : Colors.white;
-    final hasDiscrepancy = product.qtyDiscrepancy != null && product.qtyDiscrepancy != 0;
+    final status = _productStatus(product);
+    final actualQty = product.actualQuantity ?? 0;
+    final invoiceQty = product.invoiceQuantity;
+    final qtyDiscrepancy = invoiceQty != null ? actualQty - invoiceQty : null;
+    final hasDiscrepancy = qtyDiscrepancy != null && qtyDiscrepancy != 0;
+    final colorStr = product.color ?? '—';
+    final location = _locationLabel(product);
 
     return InkWell(
-      onTap: () => _showProductDialog(product: product),
+      onTap: () {},
       child: Container(
         color: rowBg,
         child: Row(
@@ -863,12 +933,14 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
               ),
             ),
             _cell('${index + 1}', _colIdx, style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+            // SKU / generated name
             _cell(
-              product.sku,
+              product.productGeneratedName ?? product.productName ?? '—',
               _colSku,
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
             ),
-            _cell(product.name, _colName, style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
+            // Model code
+            _cell(product.modelCode ?? '—', _colName, style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
             // Color
             SizedBox(
               width: _colColor,
@@ -878,12 +950,12 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (product.color != '—') ...[
+                    if (colorStr != '—') ...[
                       Container(
                         width: 10,
                         height: 10,
                         decoration: BoxDecoration(
-                          color: _colorDot(product.color),
+                          color: _colorDot(colorStr),
                           shape: BoxShape.circle,
                           border: Border.all(color: const Color(0xFFE2E8F0)),
                         ),
@@ -892,7 +964,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
                     ],
                     Flexible(
                       child: Text(
-                        product.color,
+                        colorStr,
                         style: const TextStyle(fontSize: 13, color: Color(0xFF475569)),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
@@ -913,13 +985,13 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
                   children: [
                     Flexible(
                       child: Text(
-                        '${product.quantity}',
+                        '$actualQty',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: product.status == ProductStatus.outOfStock
+                          color: status == 'out_of_stock'
                               ? const Color(0xFFEF4444)
-                              : product.status == ProductStatus.lowStock
+                              : status == 'low_stock'
                               ? const Color(0xFFF59E0B)
                               : const Color(0xFF1E293B),
                         ),
@@ -929,11 +1001,11 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
                     if (hasDiscrepancy) ...[
                       const SizedBox(width: 4),
                       Tooltip(
-                        message: l10n.discrepancyTooltip('${product.qtyDiscrepancy! > 0 ? '+' : ''}${product.qtyDiscrepancy}'),
+                        message: l10n.discrepancyTooltip('${qtyDiscrepancy > 0 ? '+' : ''}$qtyDiscrepancy'),
                         child: Icon(
-                          product.qtyDiscrepancy! > 0 ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                          qtyDiscrepancy > 0 ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
                           size: 13,
-                          color: product.qtyDiscrepancy! > 0 ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
+                          color: qtyDiscrepancy > 0 ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
                         ),
                       ),
                     ],
@@ -943,12 +1015,16 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
             ),
             // Invoice Qty
             _cell(
-              product.invoiceQty != null ? '${product.invoiceQty}' : '—',
+              invoiceQty != null ? '$invoiceQty' : '—',
               _colInvQty,
-              style: TextStyle(fontSize: 13, color: product.invoiceQty != null ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
+              style: TextStyle(fontSize: 13, color: invoiceQty != null ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
             ),
             // Unit price
-            _cell('\$${product.unitPrice.toStringAsFixed(4)}', _colUnit, style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
+            _cell(
+              product.invoiceUnitPriceUsd != null ? '\$${product.invoiceUnitPriceUsd!.toStringAsFixed(4)}' : '—',
+              _colUnit,
+              style: const TextStyle(fontSize: 13, color: Color(0xFF475569)),
+            ),
             // Invoice Total
             _cell(
               product.invoiceTotalPrice != null ? '\$${product.invoiceTotalPrice!.toStringAsFixed(2)}' : '—',
@@ -957,7 +1033,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
             ),
             // Actual Total
             _cell(
-              '\$${product.totalPrice.toStringAsFixed(2)}',
+              product.actualTotalPrice != null ? '\$${product.actualTotalPrice!.toStringAsFixed(2)}' : '—',
               _colActTotal,
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
             ),
@@ -974,7 +1050,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(
-                        product.barcode,
+                        product.barcode ?? '—',
                         style: const TextStyle(fontSize: 12, color: Color(0xFF64748B), fontFamily: 'monospace'),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
@@ -984,7 +1060,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
                 ),
               ),
             ),
-            // Coordinate
+            // Location
             SizedBox(
               width: _colCoord,
               height: 52,
@@ -998,9 +1074,12 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
                     children: [
                       const Icon(Icons.location_on_rounded, size: 13, color: Color(0xFF6366F1)),
                       const SizedBox(width: 4),
-                      Text(
-                        product.coordinate.label,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF6366F1)),
+                      Flexible(
+                        child: Text(
+                          location,
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF6366F1)),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
@@ -1013,7 +1092,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
               height: 52,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: product.sourceInvoiceNo != null
+                child: product.source != null && product.source!.isNotEmpty
                     ? Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(color: const Color(0xFFE0F2FE), borderRadius: BorderRadius.circular(6)),
@@ -1024,7 +1103,7 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
                             const SizedBox(width: 4),
                             Flexible(
                               child: Text(
-                                product.sourceInvoiceNo!,
+                                product.source!,
                                 style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF0284C7)),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -1041,30 +1120,27 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
               height: 52,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: _StatusBadge(status: product.status),
+                child: _ApiStatusBadge(status: status),
               ),
             ),
-            // Actions
+            // Actions (view-only for API records)
             SizedBox(
               width: _colActions,
               height: 52,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _IconBtn(
-                    icon: Icons.edit_outlined,
-                    tooltip: l10n.edit,
-                    onTap: () => _showProductDialog(product: product),
-                  ),
+                  _IconBtn(icon: Icons.visibility_outlined, tooltip: l10n.edit, onTap: () {}),
                   _IconBtn(
                     icon: Icons.delete_outline_rounded,
                     tooltip: l10n.delete,
                     color: const Color(0xFFEF4444),
-                    onTap: () => setState(() {
-                      _allProducts.removeWhere((p) => p.id == product.id);
-                      _selectedIds.remove(product.id);
-                      _applyFilter();
-                    }),
+                    onTap: () {
+                      setState(() {
+                        _filtered.removeWhere((p) => p.id == product.id);
+                        _selectedIds.remove(product.id);
+                      });
+                    },
                   ),
                 ],
               ),
@@ -1107,15 +1183,8 @@ class _InventoryProductsPageState extends State<InventoryProductsPage> {
       builder: (_) => _ProductDialog(
         product: product,
         onSave: (p) {
-          setState(() {
-            if (product == null) {
-              _allProducts.add(p);
-            } else {
-              final idx = _allProducts.indexWhere((x) => x.id == p.id);
-              if (idx != -1) _allProducts[idx] = p;
-            }
-            _applyFilter();
-          });
+          // Manual product saves don't affect API-backed data
+          _applyFilter();
         },
       ),
     );
@@ -2133,17 +2202,19 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-class _StatusBadge extends StatelessWidget {
-  final ProductStatus status;
-  const _StatusBadge({required this.status});
+// ── Status badge backed by API string ────────────────────────────────────────
+class _ApiStatusBadge extends StatelessWidget {
+  /// 'in_stock' | 'low_stock' | 'out_of_stock'
+  final String status;
+  const _ApiStatusBadge({required this.status});
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final (label, bg, fg) = switch (status) {
-      ProductStatus.inStock => (l10n.inStock, const Color(0xFFDCFCE7), const Color(0xFF15803D)),
-      ProductStatus.lowStock => (l10n.lowStock, const Color(0xFFFEF3C7), const Color(0xFFB45309)),
-      ProductStatus.outOfStock => (l10n.outOfStock, const Color(0xFFFEE2E2), const Color(0xFFDC2626)),
+      'in_stock' => (l10n.inStock, const Color(0xFFDCFCE7), const Color(0xFF15803D)),
+      'low_stock' => (l10n.lowStock, const Color(0xFFFEF3C7), const Color(0xFFB45309)),
+      _ => (l10n.outOfStock, const Color(0xFFFEE2E2), const Color(0xFFDC2626)),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),

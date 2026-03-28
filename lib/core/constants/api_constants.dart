@@ -16,6 +16,9 @@ abstract class ApiConstants {
   /// Delete an invoice by UUID.
   static String invoiceDelete(String id) => '/api/invoices-list/$id';
 
+  // ── Inventory Products ───────────────────────────────────────────────────────
+  static const String inventoryProducts = '/api/inventory-products/';
+
   // ── Timeouts ────────────────────────────────────────────────────────────────
   static const Duration connectTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(minutes: 3); // OCR can take ~75 s
