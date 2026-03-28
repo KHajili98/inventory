@@ -207,6 +207,9 @@ class AppLocalizationsAz extends AppLocalizations {
   String get productName => 'Məhsul Adı';
 
   @override
+  String get generatedName => 'Yaradılmış Ad';
+
+  @override
   String get colorCode => 'Rəng Kodu';
 
   @override

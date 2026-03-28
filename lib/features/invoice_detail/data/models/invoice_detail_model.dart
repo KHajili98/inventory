@@ -15,6 +15,7 @@ class InvoiceDetailItemModel {
   final double? cartonCount;
   final double? grossWeightKg;
   final double? totalWeightKg;
+  final String? productGeneratedName;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -32,6 +33,7 @@ class InvoiceDetailItemModel {
     this.cartonCount,
     this.grossWeightKg,
     this.totalWeightKg,
+    this.productGeneratedName,
     this.createdAt,
     this.updatedAt,
   });
@@ -50,6 +52,7 @@ class InvoiceDetailItemModel {
     cartonCount: (json['carton_count'] as num?)?.toDouble(),
     grossWeightKg: (json['gross_weight_kg'] as num?)?.toDouble(),
     totalWeightKg: (json['total_weight_kg'] as num?)?.toDouble(),
+    productGeneratedName: json['product_generated_name'] as String?,
     createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'] as String) : null,
     updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at'] as String) : null,
   );

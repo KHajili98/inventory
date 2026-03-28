@@ -482,6 +482,12 @@ abstract class AppLocalizations {
   /// **'Product Name'**
   String get productName;
 
+  /// AI-generated product name column header
+  ///
+  /// In en, this message translates to:
+  /// **'Generated Name'**
+  String get generatedName;
+
   /// Color code column header
   ///
   /// In en, this message translates to:

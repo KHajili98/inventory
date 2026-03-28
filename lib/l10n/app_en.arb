@@ -325,6 +325,11 @@
     "description": "Product name column header"
   },
 
+  "generatedName": "Generated Name",
+  "@generatedName": {
+    "description": "AI-generated product name column header"
+  },
+
   "colorCode": "Color Code",
   "@colorCode": {
     "description": "Color code column header"

@@ -204,6 +204,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productName => 'Product Name';
 
   @override
+  String get generatedName => 'Generated Name';
+
+  @override
   String get colorCode => 'Color Code';
 
   @override

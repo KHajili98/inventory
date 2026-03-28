@@ -92,7 +92,8 @@ class _InvoiceDetailContent extends StatelessWidget {
   const _InvoiceDetailContent({required this.invoice});
 
   static const double _colIdx = 44;
-  static const double _colProduct = 200;
+  static const double _colProduct = 180;
+  static const double _colGenName = 180;
   static const double _colModel = 100;
   static const double _colSize = 70;
   static const double _colColor = 70;
@@ -309,6 +310,7 @@ class _InvoiceDetailContent extends StatelessWidget {
                 children: [
                   _headerCell('#', _colIdx, style),
                   _headerCell(l10n.productName, _colProduct, style),
+                  _headerCell(l10n.generatedName, _colGenName, style),
                   _headerCell(l10n.model, _colModel, style),
                   _headerCell(l10n.size, _colSize, style),
                   _headerCell(l10n.color, _colColor, style),
@@ -354,6 +356,7 @@ class _InvoiceDetailContent extends StatelessWidget {
         children: [
           _cell('${index + 1}', _colIdx, style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
           _cell(item.productName ?? '–', _colProduct, bold: true),
+          _cell(item.productGeneratedName ?? '–', _colGenName),
           _cell(item.modelCode ?? '–', _colModel),
           _cell(item.size ?? '–', _colSize),
           _cell(item.color ?? '–', _colColor),
