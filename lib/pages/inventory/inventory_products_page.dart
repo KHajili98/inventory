@@ -1261,7 +1261,6 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _IconBtn(icon: Icons.print_rounded, tooltip: 'Print', color: const Color(0xFF6366F1), onTap: () => _showPrintDialog(product)),
-                  _IconBtn(icon: Icons.visibility_outlined, tooltip: l10n.edit, onTap: () {}),
                   _IconBtn(
                     icon: Icons.delete_outline_rounded,
                     tooltip: l10n.delete,
