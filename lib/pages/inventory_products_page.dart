@@ -30,7 +30,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
   final Set<String> _selectedIds = {};
   String _searchQuery = '';
   String? _statusFilter; // 'in_stock' | 'low_stock' | 'out_of_stock' | null
-  String _sortColumn = 'sku';
+  String _sortColumn = 'name';
   bool _sortAscending = true;
 
   // Primary horizontal scroll controller (drives the body rows)
@@ -76,8 +76,9 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
   static double get _tableWidth =>
       _colCheck +
       _colIdx +
-      _colSku +
-      _colName +
+      _colProductName +
+      _colGeneratedName +
+      _colModelCode +
       _colColor +
       _colActQty +
       _colInvQty +
@@ -93,8 +94,9 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
   // ── Column widths ────────────────────────────────────────────────────────────
   static const double _colCheck = 48;
   static const double _colIdx = 48;
-  static const double _colSku = 150;
-  static const double _colName = 100;
+  static const double _colProductName = 160;
+  static const double _colGeneratedName = 180;
+  static const double _colModelCode = 120;
   static const double _colColor = 120;
   static const double _colActQty = 100;
   static const double _colInvQty = 100;
@@ -134,7 +136,10 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
     result.sort((a, b) {
       int cmp;
       switch (_sortColumn) {
-        case 'sku':
+        case 'name':
+          cmp = (a.productName ?? '').compareTo(b.productName ?? '');
+          break;
+        case 'generatedName':
           cmp = (a.productGeneratedName ?? '').compareTo(b.productGeneratedName ?? '');
           break;
         case 'color':
@@ -835,8 +840,9 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
             ),
           ),
           _headerCell('#', _colIdx, null),
-          _headerCell(l10n.sku, _colSku, 'sku'),
-          _headerCell(l10n.model, _colName, null),
+          _headerCell(l10n.productName, _colProductName, 'name'),
+          _headerCell(l10n.generatedName, _colGeneratedName, 'generatedName'),
+          _headerCell(l10n.model, _colModelCode, null),
           _headerCell(l10n.color, _colColor, 'color'),
           _headerCell(l10n.actualQty, _colActQty, 'qty'),
           _headerCell(l10n.invoiceQty, _colInvQty, null),
@@ -933,14 +939,16 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
               ),
             ),
             _cell('${index + 1}', _colIdx, style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
-            // SKU / generated name
+            // Product name
             _cell(
-              product.productGeneratedName ?? product.productName ?? '—',
-              _colSku,
+              product.productName ?? '—',
+              _colProductName,
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
             ),
+            // Generated name
+            _cell(product.productGeneratedName ?? '—', _colGeneratedName, style: const TextStyle(fontSize: 13, color: Color(0xFF6366F1))),
             // Model code
-            _cell(product.modelCode ?? '—', _colName, style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
+            _cell(product.modelCode ?? '—', _colModelCode, style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
             // Color
             SizedBox(
               width: _colColor,
