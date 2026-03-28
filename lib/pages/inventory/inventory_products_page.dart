@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:inventory/features/inventory_products/cubit/inventory_products_cubit.dart';
 import 'package:inventory/features/inventory_products/cubit/inventory_products_state.dart';
+import 'package:inventory/features/inventory_products/data/models/create_inventory_product_request_model.dart';
 import 'package:inventory/features/inventory_products/data/models/inventory_product_response_model.dart';
 import 'package:inventory/models/invoice_models.dart';
 import 'package:inventory/models/product_models.dart';
@@ -1190,9 +1191,9 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
       context: context,
       builder: (_) => _ProductDialog(
         product: product,
-        onSave: (p) {
-          // Manual product saves don't affect API-backed data
-          _applyFilter();
+        cubit: context.read<InventoryProductsCubit>(),
+        onCreated: () {
+          // List is refreshed inside the cubit after creation
         },
       ),
     );
@@ -2312,13 +2313,15 @@ class _NavBtn extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// Manual Add / Edit Product Dialog
+// Manual Add / Edit Product Dialog  (API-integrated)
 // ═══════════════════════════════════════════════════════════════════════════════
 class _ProductDialog extends StatefulWidget {
+  /// Pass an existing product to pre-fill the form (edit mode, local only).
   final Product? product;
-  final ValueChanged<Product> onSave;
+  final InventoryProductsCubit cubit;
+  final VoidCallback? onCreated;
 
-  const _ProductDialog({this.product, required this.onSave});
+  const _ProductDialog({this.product, required this.cubit, this.onCreated});
 
   @override
   State<_ProductDialog> createState() => _ProductDialogState();
@@ -2326,13 +2329,20 @@ class _ProductDialog extends StatefulWidget {
 
 class _ProductDialogState extends State<_ProductDialog> {
   final _formKey = GlobalKey<FormState>();
+  bool _isSaving = false;
 
-  late final TextEditingController _sku;
-  late final TextEditingController _name;
-  late final TextEditingController _color;
-  late final TextEditingController _qty;
-  late final TextEditingController _price;
-  late final TextEditingController _barcode;
+  // ── Product info ────────────────────────────────────────────────────────────
+  late final TextEditingController _productName; // product_name
+  late final TextEditingController _modelCode; // model_code
+  late final TextEditingController _color; // color
+  late final TextEditingController _colorCode; // color_code
+  late final TextEditingController _size; // size
+  late final TextEditingController _barcode; // barcode
+  late final TextEditingController _actualQty; // actual_quantity
+  // ── Packaging ───────────────────────────────────────────────────────────────
+  late final TextEditingController _actualPcsPerCarton; // actual_pieces_per_carton
+  late final TextEditingController _actualCartonCount; // actual_carton_count
+  // ── Location ─────────────────────────────────────────────────────────────────
   late final TextEditingController _zone;
   late final TextEditingController _row;
   late final TextEditingController _shelf;
@@ -2341,208 +2351,313 @@ class _ProductDialogState extends State<_ProductDialog> {
   void initState() {
     super.initState();
     final p = widget.product;
-    _sku = TextEditingController(text: p?.sku ?? '');
-    _name = TextEditingController(text: p?.name ?? '');
-    _color = TextEditingController(text: p?.color ?? '');
-    _qty = TextEditingController(text: p?.quantity.toString() ?? '');
-    _price = TextEditingController(text: p?.unitPrice.toString() ?? '');
+    _productName = TextEditingController(text: p?.sku ?? '');
+    _modelCode = TextEditingController(text: p?.name ?? '');
+    _color = TextEditingController(text: (p?.color == '—' ? '' : p?.color) ?? '');
+    _colorCode = TextEditingController();
+    _size = TextEditingController();
     _barcode = TextEditingController(text: p?.barcode ?? '');
+    _actualQty = TextEditingController(text: p != null ? '${p.quantity}' : '');
+    _actualPcsPerCarton = TextEditingController();
+    _actualCartonCount = TextEditingController();
     _zone = TextEditingController(text: p?.coordinate.zone ?? '');
-    _row = TextEditingController(text: p?.coordinate.row.toString() ?? '');
-    _shelf = TextEditingController(text: p?.coordinate.shelf.toString() ?? '');
+    _row = TextEditingController(text: p != null ? '${p.coordinate.row}' : '');
+    _shelf = TextEditingController(text: p != null ? '${p.coordinate.shelf}' : '');
   }
 
   @override
   void dispose() {
-    for (final c in [_sku, _name, _color, _qty, _price, _barcode, _zone, _row, _shelf]) c.dispose();
+    for (final c in [
+      _productName,
+      _modelCode,
+      _color,
+      _colorCode,
+      _size,
+      _barcode,
+      _actualQty,
+      _actualPcsPerCarton,
+      _actualCartonCount,
+      _zone,
+      _row,
+      _shelf,
+    ]) {
+      c.dispose();
+    }
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
-    final qty = int.tryParse(_qty.text) ?? 0;
-    final price = double.tryParse(_price.text) ?? 0;
-    final product = Product(
-      id: widget.product?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-      sku: _sku.text.trim(),
-      name: _name.text.trim(),
-      color: _color.text.trim().isEmpty ? '—' : _color.text.trim(),
-      quantity: qty,
-      unitPrice: price,
+
+    final l10n = AppLocalizations.of(context)!;
+    final actualQty = int.tryParse(_actualQty.text.trim()) ?? 0;
+    final actualPcs = int.tryParse(_actualPcsPerCarton.text.trim()) ?? 0;
+    final actualCartons = int.tryParse(_actualCartonCount.text.trim()) ?? 0;
+    final actualTotalPrice = 0.0; // manual entries have no unit price → total is 0
+
+    final request = CreateInventoryProductRequestModel(
+      productName: _productName.text.trim(),
+      modelCode: _modelCode.text.trim(),
+      color: _color.text.trim(),
+      colorCode: _colorCode.text.trim(),
+      size: _size.text.trim(),
       barcode: _barcode.text.trim(),
-      coordinate: WarehouseCoordinate(
-        zone: _zone.text.trim().toUpperCase(),
-        row: int.tryParse(_row.text) ?? 1,
-        shelf: int.tryParse(_shelf.text) ?? 1,
-      ),
-      status: Product.statusFromQty(qty),
-      invoiceQty: widget.product?.invoiceQty,
-      invoiceTotalPrice: widget.product?.invoiceTotalPrice,
-      actualTotalPrice: qty * price,
-      sourceInvoiceId: widget.product?.sourceInvoiceId,
-      sourceInvoiceNo: widget.product?.sourceInvoiceNo,
+      actualQuantity: actualQty,
+      actualTotalPrice: actualTotalPrice,
+      actualPiecesPerCarton: actualPcs,
+      actualCartonCount: actualCartons,
+      locationZone: _zone.text.trim().toUpperCase(),
+      locationRow: _row.text.trim(),
+      locationShelf: _shelf.text.trim(),
+      // manual source defaults
+      source: 'manual',
+      invoice: '',
+      invoiceUnitPriceUsd: 0,
+      invoiceQuantity: 0,
+      invoiceTotalPrice: 0,
+      invoicePiecesPerCarton: 0,
+      invoiceCartonCount: 0,
     );
-    widget.onSave(product);
-    Navigator.of(context, rootNavigator: true).pop();
+
+    setState(() => _isSaving = true);
+
+    await widget.cubit.createProduct(request);
+
+    if (!mounted) return;
+
+    final newState = widget.cubit.state;
+
+    if (newState is InventoryProductCreated || newState is InventoryProductsLoaded) {
+      Navigator.of(context, rootNavigator: true).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.productSavedSuccess),
+          backgroundColor: const Color(0xFF22C55E),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+      widget.onCreated?.call();
+    } else if (newState is InventoryProductCreateError) {
+      setState(() => _isSaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.productSaveFailed(newState.message)),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    } else {
+      setState(() => _isSaving = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isEdit = widget.product != null;
     final l10n = AppLocalizations.of(context)!;
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: SizedBox(
-        width: 520,
+        width: 600,
         child: Padding(
           padding: const EdgeInsets.all(28),
           child: Form(
             key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(10)),
-                      child: Icon(isEdit ? Icons.edit_rounded : Icons.add_box_rounded, color: const Color(0xFF6366F1), size: 20),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      isEdit ? l10n.editProduct : l10n.addNewProduct,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-                      icon: const Icon(Icons.close_rounded, size: 20, color: Color(0xFF94A3B8)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                const Divider(color: Color(0xFFE2E8F0)),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(child: _field(_sku, l10n.skuField, 'e.g. X-1-500', required: true)),
-                    const SizedBox(width: 16),
-                    Expanded(child: _field(_name, l10n.modelField, 'e.g. X-1', required: true)),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(child: _field(_color, l10n.colorField, 'e.g. GD Gold')),
-                    const SizedBox(width: 16),
-                    Expanded(child: _field(_barcode, l10n.barcodeField, 'e.g. 6901234500010', required: true)),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(child: _field(_qty, l10n.quantityField, '0', isNumber: true, required: true)),
-                    const SizedBox(width: 16),
-                    Expanded(child: _field(_price, l10n.unitPriceUSD, '0.0000', isDecimal: true, required: true)),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Header ────────────────────────────────────────────────────
+                  Row(
                     children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.location_on_rounded, size: 16, color: Color(0xFF6366F1)),
-                          const SizedBox(width: 6),
-                          Text(
-                            l10n.warehouseLocation,
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
-                          ),
-                        ],
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(10)),
+                        child: const Icon(Icons.add_box_rounded, color: Color(0xFF6366F1), size: 20),
                       ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(child: _field(_zone, l10n.zone, 'A', required: true, hint: l10n.zoneLetter)),
-                          const SizedBox(width: 12),
-                          Expanded(child: _field(_row, l10n.row, '1', isNumber: true, required: true)),
-                          const SizedBox(width: 12),
-                          Expanded(child: _field(_shelf, l10n.shelf, '1', isNumber: true, required: true)),
-                        ],
+                      const SizedBox(width: 12),
+                      Text(
+                        l10n.addNewProduct,
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
                       ),
-                      const SizedBox(height: 8),
-                      ValueListenableBuilder(
-                        valueListenable: _zone,
-                        builder: (_, __, ___) => ValueListenableBuilder(
-                          valueListenable: _row,
+                      const Spacer(),
+                      IconButton(
+                        onPressed: _isSaving ? null : () => Navigator.of(context, rootNavigator: true).pop(),
+                        icon: const Icon(Icons.close_rounded, size: 20, color: Color(0xFF94A3B8)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  const Divider(color: Color(0xFFE2E8F0)),
+                  const SizedBox(height: 20),
+
+                  // ── Section: Product Info ─────────────────────────────────────
+                  _sectionHeader(Icons.inventory_2_outlined, l10n.productInfoSection),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: _field(_productName, l10n.productName, 'e.g. X-1-black', required: true)),
+                      const SizedBox(width: 16),
+                      Expanded(child: _field(_modelCode, l10n.modelField, 'e.g. X-1', required: true)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: _field(_color, l10n.colorField, 'e.g. Black')),
+                      const SizedBox(width: 16),
+                      Expanded(child: _field(_colorCode, l10n.colorCodeField, 'e.g. BL')),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: _field(_size, l10n.sizeField, 'e.g. M / 42')),
+                      const SizedBox(width: 16),
+                      Expanded(child: _field(_barcode, l10n.barcodeField, 'e.g. 1234500001', required: true)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: _field(_actualQty, l10n.actualQtyReceived, '0', isNumber: true, required: true)),
+                      const SizedBox(width: 16),
+                      const Expanded(child: SizedBox()),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ── Section: Packaging ────────────────────────────────────────
+                  _sectionHeader(Icons.inventory_outlined, l10n.packagingSection),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: _field(_actualPcsPerCarton, l10n.actualPcsPerCarton, '0', isNumber: true)),
+                      const SizedBox(width: 16),
+                      Expanded(child: _field(_actualCartonCount, l10n.actualCartonCount, '0', isNumber: true)),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ── Section: Warehouse Location ───────────────────────────────
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on_rounded, size: 16, color: Color(0xFF6366F1)),
+                            const SizedBox(width: 6),
+                            Text(
+                              l10n.warehouseLocation,
+                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(child: _field(_zone, l10n.zone, 'A', required: true, hint: l10n.zoneLetter)),
+                            const SizedBox(width: 12),
+                            Expanded(child: _field(_row, l10n.row, '1', isNumber: true, required: true)),
+                            const SizedBox(width: 12),
+                            Expanded(child: _field(_shelf, l10n.shelf, '1', isNumber: true, required: true)),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        ValueListenableBuilder(
+                          valueListenable: _zone,
                           builder: (_, __, ___) => ValueListenableBuilder(
-                            valueListenable: _shelf,
-                            builder: (_, __, ___) {
-                              final z = _zone.text.toUpperCase();
-                              final r = _row.text;
-                              final s = _shelf.text;
-                              if (z.isEmpty || r.isEmpty || s.isEmpty) return const SizedBox.shrink();
-                              return Row(
-                                children: [
-                                  const Icon(Icons.info_outline_rounded, size: 14, color: Color(0xFF94A3B8)),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    l10n.locationCode('$z-$r-$s'),
-                                    style: const TextStyle(fontSize: 12, color: Color(0xFF6366F1), fontWeight: FontWeight.w500),
-                                  ),
-                                ],
-                              );
-                            },
+                            valueListenable: _row,
+                            builder: (_, __, ___) => ValueListenableBuilder(
+                              valueListenable: _shelf,
+                              builder: (_, __, ___) {
+                                final z = _zone.text.toUpperCase();
+                                final r = _row.text;
+                                final s = _shelf.text;
+                                if (z.isEmpty || r.isEmpty || s.isEmpty) return const SizedBox.shrink();
+                                return Row(
+                                  children: [
+                                    const Icon(Icons.info_outline_rounded, size: 14, color: Color(0xFF94A3B8)),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      l10n.locationCode('$z-$r-$s'),
+                                      style: const TextStyle(fontSize: 12, color: Color(0xFF6366F1), fontWeight: FontWeight.w500),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // ── Footer buttons ────────────────────────────────────────────
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _isSaving ? null : () => Navigator.of(context, rootNavigator: true).pop(),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFFCBD5E1)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF475569))),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: FilledButton.icon(
+                          onPressed: _isSaving ? null : _save,
+                          icon: _isSaving
+                              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                              : const Icon(Icons.add_rounded, size: 16),
+                          label: Text(_isSaving ? l10n.savingProduct : l10n.addProduct),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFF6366F1),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
                         ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFFCBD5E1)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF475569))),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      flex: 2,
-                      child: FilledButton.icon(
-                        onPressed: _save,
-                        icon: Icon(isEdit ? Icons.save_rounded : Icons.add_rounded, size: 16),
-                        label: Text(isEdit ? l10n.saveChanges : l10n.addProduct),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF6366F1),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _sectionHeader(IconData icon, String label) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: const Color(0xFF6366F1)),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+        ),
+      ],
     );
   }
 
@@ -2570,6 +2685,7 @@ class _ProductDialogState extends State<_ProductDialog> {
         const SizedBox(height: 6),
         TextFormField(
           controller: ctrl,
+          enabled: !_isSaving,
           keyboardType: isDecimal
               ? const TextInputType.numberWithOptions(decimal: true)
               : isNumber

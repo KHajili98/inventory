@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:inventory/core/network/api_result.dart';
 import 'package:inventory/features/inventory_products/cubit/inventory_products_state.dart';
+import 'package:inventory/features/inventory_products/data/models/create_inventory_product_request_model.dart';
 import 'package:inventory/features/inventory_products/data/repositories/inventory_products_repository.dart';
 
 class InventoryProductsCubit extends Cubit<InventoryProductsState> {
@@ -56,4 +57,29 @@ class InventoryProductsCubit extends Cubit<InventoryProductsState> {
 
   /// Refresh — re-fetches the first page.
   Future<void> refresh() => fetchProducts();
+
+  /// Creates a new product via POST /api/inventory-products/
+  /// Emits [InventoryProductCreating] → [InventoryProductCreated] or [InventoryProductCreateError].
+  /// On success, the list is refreshed so the new item appears.
+  Future<void> createProduct(CreateInventoryProductRequestModel request) async {
+    // Keep a snapshot of the current loaded state so we can restore it on error.
+    final previousState = state;
+
+    emit(const InventoryProductCreating());
+
+    final result = await _repository.createProduct(request);
+
+    switch (result) {
+      case Success(:final data):
+        emit(InventoryProductCreated(data));
+        // Refresh the list to include the newly created product.
+        await refresh();
+      case Failure(:final message):
+        emit(InventoryProductCreateError(message));
+        // Restore previous state so the table still shows data.
+        if (previousState is InventoryProductsLoaded) {
+          emit(previousState);
+        }
+    }
+  }
 }

@@ -515,4 +515,33 @@ class AppLocalizationsAz extends AppLocalizations {
   String discrepancyTooltip(String diff) {
     return 'Uyğunsuzluq: $diff qaiməyə nisbətən';
   }
+
+  @override
+  String get colorCodeField => 'Rəng Kodu';
+
+  @override
+  String get sizeField => 'Ölçü';
+
+  @override
+  String get actualPcsPerCarton => 'Faktiki Əd/Karton';
+
+  @override
+  String get actualCartonCount => 'Faktiki Karton Sayı';
+
+  @override
+  String get productInfoSection => 'Məhsul Məlumatları';
+
+  @override
+  String get packagingSection => 'Qablaşdırma';
+
+  @override
+  String get savingProduct => 'Məhsul saxlanılır…';
+
+  @override
+  String get productSavedSuccess => 'Məhsul uğurla əlavə edildi!';
+
+  @override
+  String productSaveFailed(String error) {
+    return 'Məhsulu saxlamaq mümkün olmadı: $error';
+  }
 }

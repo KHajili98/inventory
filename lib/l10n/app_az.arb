@@ -316,5 +316,23 @@
 
   "required": "Tələb olunur",
 
-  "discrepancyTooltip": "Uyğunsuzluq: {diff} qaiməyə nisbətən"
+  "discrepancyTooltip": "Uyğunsuzluq: {diff} qaiməyə nisbətən",
+
+  "colorCodeField": "Rəng Kodu",
+
+  "sizeField": "Ölçü",
+
+  "actualPcsPerCarton": "Faktiki Əd/Karton",
+
+  "actualCartonCount": "Faktiki Karton Sayı",
+
+  "productInfoSection": "Məhsul Məlumatları",
+
+  "packagingSection": "Qablaşdırma",
+
+  "savingProduct": "Məhsul saxlanılır…",
+
+  "productSavedSuccess": "Məhsul uğurla əlavə edildi!",
+
+  "productSaveFailed": "Məhsulu saxlamaq mümkün olmadı: {error}"
 }

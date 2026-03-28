@@ -50,3 +50,20 @@ final class InventoryProductsError extends InventoryProductsState {
   final String message;
   const InventoryProductsError(this.message);
 }
+
+/// A product create request is in-flight.
+final class InventoryProductCreating extends InventoryProductsState {
+  const InventoryProductCreating();
+}
+
+/// A product was created successfully.
+final class InventoryProductCreated extends InventoryProductsState {
+  final InventoryProductItemModel product;
+  const InventoryProductCreated(this.product);
+}
+
+/// Creating a product failed.
+final class InventoryProductCreateError extends InventoryProductsState {
+  final String message;
+  const InventoryProductCreateError(this.message);
+}

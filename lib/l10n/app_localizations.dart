@@ -1051,6 +1051,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Discrepancy: {diff} vs invoice'**
   String discrepancyTooltip(String diff);
+
+  /// Color code field label in dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Color Code'**
+  String get colorCodeField;
+
+  /// Size field label in dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Size'**
+  String get sizeField;
+
+  /// Actual pieces per carton field label
+  ///
+  /// In en, this message translates to:
+  /// **'Actual Pcs/Carton'**
+  String get actualPcsPerCarton;
+
+  /// Actual carton count field label
+  ///
+  /// In en, this message translates to:
+  /// **'Actual Carton Count'**
+  String get actualCartonCount;
+
+  /// Product info section header in dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Product Info'**
+  String get productInfoSection;
+
+  /// Packaging section header in dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Packaging'**
+  String get packagingSection;
+
+  /// Saving product progress message
+  ///
+  /// In en, this message translates to:
+  /// **'Saving product…'**
+  String get savingProduct;
+
+  /// Snackbar message on successful product creation
+  ///
+  /// In en, this message translates to:
+  /// **'Product added successfully!'**
+  String get productSavedSuccess;
+
+  /// Snackbar message on failed product creation
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save product: {error}'**
+  String productSaveFailed(String error);
 }
 
 class _AppLocalizationsDelegate

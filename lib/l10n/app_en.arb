@@ -834,5 +834,53 @@
     "placeholders": {
       "diff": { "type": "String" }
     }
+  },
+
+  "colorCodeField": "Color Code",
+  "@colorCodeField": {
+    "description": "Color code field label in dialog"
+  },
+
+  "sizeField": "Size",
+  "@sizeField": {
+    "description": "Size field label in dialog"
+  },
+
+  "actualPcsPerCarton": "Actual Pcs/Carton",
+  "@actualPcsPerCarton": {
+    "description": "Actual pieces per carton field label"
+  },
+
+  "actualCartonCount": "Actual Carton Count",
+  "@actualCartonCount": {
+    "description": "Actual carton count field label"
+  },
+
+  "productInfoSection": "Product Info",
+  "@productInfoSection": {
+    "description": "Product info section header in dialog"
+  },
+
+  "packagingSection": "Packaging",
+  "@packagingSection": {
+    "description": "Packaging section header in dialog"
+  },
+
+  "savingProduct": "Saving product…",
+  "@savingProduct": {
+    "description": "Saving product progress message"
+  },
+
+  "productSavedSuccess": "Product added successfully!",
+  "@productSavedSuccess": {
+    "description": "Snackbar message on successful product creation"
+  },
+
+  "productSaveFailed": "Failed to save product: {error}",
+  "@productSaveFailed": {
+    "description": "Snackbar message on failed product creation",
+    "placeholders": {
+      "error": { "type": "String" }
+    }
   }
 }

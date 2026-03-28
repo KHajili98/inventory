@@ -510,4 +510,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String discrepancyTooltip(String diff) {
     return 'Discrepancy: $diff vs invoice';
   }
+
+  @override
+  String get colorCodeField => 'Color Code';
+
+  @override
+  String get sizeField => 'Size';
+
+  @override
+  String get actualPcsPerCarton => 'Actual Pcs/Carton';
+
+  @override
+  String get actualCartonCount => 'Actual Carton Count';
+
+  @override
+  String get productInfoSection => 'Product Info';
+
+  @override
+  String get packagingSection => 'Packaging';
+
+  @override
+  String get savingProduct => 'Saving product…';
+
+  @override
+  String get productSavedSuccess => 'Product added successfully!';
+
+  @override
+  String productSaveFailed(String error) {
+    return 'Failed to save product: $error';
+  }
 }
