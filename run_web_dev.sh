@@ -5,3 +5,6 @@ flutter run \
   -d chrome \
   --web-browser-flag "--disable-web-security" \
   --web-browser-flag "--user-data-dir=/tmp/flutter-chrome-dev"
+
+# ── Release build (output → build/web) ──────────────────────────────────────
+# flutter build web --release
