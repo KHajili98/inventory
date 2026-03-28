@@ -945,18 +945,6 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (colorStr != '—') ...[
-                      Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: _colorDot(colorStr),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                    ],
                     Flexible(
                       child: Text(
                         colorStr,
@@ -1067,8 +1055,6 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.location_on_rounded, size: 13, color: Color(0xFF6366F1)),
-                      const SizedBox(width: 4),
                       Flexible(
                         child: Text(
                           location,
