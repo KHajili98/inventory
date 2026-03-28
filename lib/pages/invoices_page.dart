@@ -541,9 +541,11 @@ class _InvoicesPageState extends State<InvoicesPage> {
   }
 
   String _formatDateTime(DateTime dt) {
+    // Convert to local time if the DateTime is in UTC
+    final local = dt.isUtc ? dt.toLocal() : dt;
     // Format: yyyy-MM-dd | HH:mm:ss
-    return '${dt.year.toString().padLeft(4, '0')}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} | '
-        '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:${dt.second.toString().padLeft(2, '0')}';
+    return '${local.year.toString().padLeft(4, '0')}-${local.month.toString().padLeft(2, '0')}-${local.day.toString().padLeft(2, '0')} | '
+        '${local.hour.toString().padLeft(2, '0')}:${local.minute.toString().padLeft(2, '0')}:${local.second.toString().padLeft(2, '0')}';
   }
 }
 
