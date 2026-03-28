@@ -584,4 +584,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String importFailedN(int n) {
     return '$n product(s) failed to import.';
   }
+
+  @override
+  String estimatedTotalPrice(String total, String unitPrice) {
+    return 'Est. Total: \$$total  (qty × \$$unitPrice/unit)';
+  }
 }

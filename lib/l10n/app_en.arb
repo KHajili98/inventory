@@ -956,5 +956,14 @@
     "placeholders": {
       "n": { "type": "int" }
     }
+  },
+
+  "estimatedTotalPrice": "Est. Total: ${total}  (qty × ${unitPrice}/unit)",
+  "@estimatedTotalPrice": {
+    "description": "Live preview of estimated actual total price (actual_qty × invoice_unit_price)",
+    "placeholders": {
+      "total": { "type": "String" },
+      "unitPrice": { "type": "String" }
+    }
   }
 }

@@ -1466,16 +1466,15 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
   }
 
   void _initControllersForSelected() {
-    final items = _detail!.items;
     for (final idx in _selected) {
-      final item = items[idx];
+      // actual_* fields start EMPTY — user must fill them manually
       _barcodeCtrl.putIfAbsent(idx, () => TextEditingController());
-      _actualQtyCtrl.putIfAbsent(idx, () => TextEditingController(text: '${item.quantity ?? 0}'));
-      _actPcsCtrl.putIfAbsent(idx, () => TextEditingController(text: '${item.piecesPerCarton ?? 0}'));
-      _actCartonsCtrl.putIfAbsent(idx, () => TextEditingController(text: '${(item.cartonCount ?? 0).toInt()}'));
+      _actualQtyCtrl.putIfAbsent(idx, () => TextEditingController());
+      _actPcsCtrl.putIfAbsent(idx, () => TextEditingController());
+      _actCartonsCtrl.putIfAbsent(idx, () => TextEditingController());
       _zoneCtrl.putIfAbsent(idx, () => TextEditingController());
-      _rowCtrl.putIfAbsent(idx, () => TextEditingController(text: '1'));
-      _shelfCtrl.putIfAbsent(idx, () => TextEditingController(text: '1'));
+      _rowCtrl.putIfAbsent(idx, () => TextEditingController());
+      _shelfCtrl.putIfAbsent(idx, () => TextEditingController());
     }
   }
 
@@ -1518,14 +1517,17 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
     for (int i = 0; i < selectedList.length; i++) {
       final idx = selectedList[i];
       final item = items[idx];
-      final actualQty = int.tryParse(_actualQtyCtrl[idx]!.text.trim()) ?? (item.quantity ?? 0);
-      final actPcs = int.tryParse(_actPcsCtrl[idx]!.text.trim()) ?? (item.piecesPerCarton ?? 0);
+      // actual_* fields come entirely from user input (form validates they're non-empty)
+      final actualQty = int.tryParse(_actualQtyCtrl[idx]!.text.trim()) ?? 0;
+      final actPcs = int.tryParse(_actPcsCtrl[idx]!.text.trim()) ?? 0;
       final actCartons = int.tryParse(_actCartonsCtrl[idx]!.text.trim()) ?? 0;
+      // invoice_* fields come purely from the API response (item from _detail)
       final unitPrice = item.unitPriceUsd ?? 0.0;
       final invQty = item.quantity ?? 0;
       final invPcs = item.piecesPerCarton ?? 0;
       final invCartons = (item.cartonCount ?? 0).toInt();
       final invTotal = item.totalPrice ?? 0.0;
+      // actual_total_price = actual_quantity × invoice_unit_price_usd
       final actualTotal = actualQty * unitPrice;
 
       final request = CreateInventoryProductRequestModel(
@@ -1552,10 +1554,8 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
         invoiceCartonCount: invCartons,
       );
 
-      final result = await InvoiceDetailRepository.instance.fetchInvoiceDetail(widget.invoice.id).then((_) async {
-        // We already have detail; directly create the product
-        return await _postProduct(request);
-      });
+      // Post the product directly (no need to re-fetch invoice detail)
+      final result = await _postProduct(request);
 
       if (!mounted) return;
 
@@ -1978,7 +1978,8 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                                     suffixWidget: ValueListenableBuilder(
                                       valueListenable: _actualQtyCtrl[idx]!,
                                       builder: (_, __, ___) {
-                                        final actual = int.tryParse(_actualQtyCtrl[idx]!.text) ?? (item.quantity ?? 0);
+                                        final actual = int.tryParse(_actualQtyCtrl[idx]!.text);
+                                        if (actual == null) return const SizedBox.shrink();
                                         final diff = actual - (item.quantity ?? 0);
                                         if (diff == 0) return const SizedBox.shrink();
                                         return Padding(
@@ -2007,6 +2008,41 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                                   ),
                                 ),
                               ],
+                            ),
+                            // ── Live actual_total_price preview ────────────────
+                            ValueListenableBuilder(
+                              valueListenable: _actualQtyCtrl[idx]!,
+                              builder: (_, __, ___) {
+                                final unitPrice = item.unitPriceUsd ?? 0.0;
+                                final qty = int.tryParse(_actualQtyCtrl[idx]!.text.trim());
+                                final total = qty != null ? qty * unitPrice : null;
+                                return AnimatedSize(
+                                  duration: const Duration(milliseconds: 200),
+                                  child: total == null
+                                      ? const SizedBox.shrink()
+                                      : Container(
+                                          margin: const EdgeInsets.only(top: 8),
+                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFF0FDF4),
+                                            borderRadius: BorderRadius.circular(8),
+                                            border: Border.all(color: const Color(0xFFBBF7D0)),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              const Icon(Icons.calculate_rounded, size: 14, color: Color(0xFF15803D)),
+                                              const SizedBox(width: 6),
+                                              Expanded(
+                                                child: Text(
+                                                  l10n.estimatedTotalPrice(total.toStringAsFixed(2), unitPrice.toStringAsFixed(4)),
+                                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF15803D)),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                );
+                              },
                             ),
                             const SizedBox(height: 10),
                             // Row 2: actual pcs/carton + actual carton count

@@ -356,5 +356,14 @@
 
   "importSuccessN": "{n} məhsul uğurla idxal edildi!",
 
-  "importFailedN": "{n} məhsul idxal edilə bilmədi."
+  "importFailedN": "{n} məhsul idxal edilə bilmədi.",
+
+  "estimatedTotalPrice": "Təxmini cəm: ${total}  (miq. × ${unitPrice}/vahid)",
+  "@estimatedTotalPrice": {
+    "description": "Faktiki ümumi qiymət önizləməsi (faktiki miq. × faktura vahid qiyməti)",
+    "placeholders": {
+      "total": { "type": "String" },
+      "unitPrice": { "type": "String" }
+    }
+  }
 }

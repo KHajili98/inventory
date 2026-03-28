@@ -1171,6 +1171,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{n} product(s) failed to import.'**
   String importFailedN(int n);
+
+  /// Live preview of estimated actual total price (actual_qty × invoice_unit_price)
+  ///
+  /// In en, this message translates to:
+  /// **'Est. Total: \${total}  (qty × \${unitPrice}/unit)'**
+  String estimatedTotalPrice(String total, String unitPrice);
 }
 
 class _AppLocalizationsDelegate

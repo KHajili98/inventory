@@ -589,4 +589,9 @@ class AppLocalizationsAz extends AppLocalizations {
   String importFailedN(int n) {
     return '$n məhsul idxal edilə bilmədi.';
   }
+
+  @override
+  String estimatedTotalPrice(String total, String unitPrice) {
+    return 'Təxmini cəm: \$$total  (miq. × \$$unitPrice/vahid)';
+  }
 }
