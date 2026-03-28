@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dio/dio.dart';
 import 'package:inventory/core/network/api_result.dart';
+import 'package:inventory/core/network/dio_client.dart';
 import 'package:inventory/core/utils/responsive.dart';
 import 'package:inventory/features/barcode/data/repositories/barcode_repository.dart';
 import 'package:inventory/features/inventory_products/cubit/inventory_products_cubit.dart';
@@ -113,7 +115,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
   static const double _colCoord = 120;
   static const double _colSource = 130;
   static const double _colStatus = 120;
-  static const double _colActions = 80;
+  static const double _colActions = 116;
 
   // ── Filtering & Sorting ──────────────────────────────────────────────────────
   @override
@@ -1123,6 +1125,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  _IconBtn(icon: Icons.print_rounded, tooltip: 'Print', color: const Color(0xFF6366F1), onTap: () => _showPrintDialog(product)),
                   _IconBtn(icon: Icons.visibility_outlined, tooltip: l10n.edit, onTap: () {}),
                   _IconBtn(
                     icon: Icons.delete_outline_rounded,
@@ -1168,6 +1171,131 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
     if (color.contains('Silver') || color.contains('SL')) return const Color(0xFF94A3B8);
     if (color.contains('White') || color.contains('WH')) return const Color(0xFFE2E8F0);
     return const Color(0xFF6366F1);
+  }
+
+  // ── Print barcode ────────────────────────────────────────────────────────────
+  void _showPrintDialog(InventoryProductItemModel product) {
+    final countCtrl = TextEditingController(text: '${product.actualQuantity ?? 1}');
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(10)),
+                child: const Icon(Icons.print_rounded, color: Color(0xFF6366F1), size: 18),
+              ),
+              const SizedBox(width: 10),
+              const Text(
+                'Print Barcode',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _PrintInfoRow(label: 'Barcode', value: product.barcode ?? '—'),
+              const SizedBox(height: 6),
+              _PrintInfoRow(label: 'Product', value: product.productGeneratedName ?? product.productName ?? '—'),
+              const SizedBox(height: 16),
+              const Text(
+                'Count',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
+              ),
+              const SizedBox(height: 6),
+              TextField(
+                controller: countCtrl,
+                keyboardType: TextInputType.number,
+                autofocus: true,
+                style: const TextStyle(fontSize: 14, color: Color(0xFF1E293B)),
+                decoration: InputDecoration(
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel', style: TextStyle(color: Color(0xFF94A3B8))),
+            ),
+            FilledButton.icon(
+              onPressed: () {
+                final count = int.tryParse(countCtrl.text.trim()) ?? 1;
+                Navigator.of(ctx).pop();
+                _printProduct(product, count);
+              },
+              icon: const Icon(Icons.print_rounded, size: 16),
+              label: const Text('Print'),
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF6366F1),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _printProduct(InventoryProductItemModel product, int count) async {
+    try {
+      final Dio dio = DioClient.instance;
+      await dio.post(
+        'http://localhost:3000/print-barcode',
+        data: {'barcode': product.barcode ?? '', 'productName': product.productGeneratedName ?? product.productName ?? '', 'count': count},
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Printed $count label${count == 1 ? '' : 's'} for ${product.productGeneratedName ?? product.productName ?? ''}'),
+          backgroundColor: const Color(0xFF22C55E),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    } on DioException catch (e) {
+      if (!mounted) return;
+      final msg = e.response?.data?.toString() ?? e.message ?? 'Printer error';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.print_disabled_rounded, color: Colors.white, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text('Print failed: $msg', style: const TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    }
   }
 
   void _showProductDialog({Product? product}) {
@@ -3121,6 +3249,36 @@ class _ProductDialogState extends State<_ProductDialog> {
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: Color(0xFFEF4444)),
             ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Small label+value row used inside the print dialog ──────────────────────
+class _PrintInfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+  const _PrintInfoRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 68,
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(fontSize: 12, color: Color(0xFF1E293B)),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
