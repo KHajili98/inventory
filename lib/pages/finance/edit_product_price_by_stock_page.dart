@@ -225,16 +225,22 @@ class _EditProductPriceByStockPageState extends State<EditProductPriceByStockPag
                           pctCtrl: costPctCtrl,
                           amtCtrl: costAmtCtrl,
                           accentColor: const Color(0xFF6366F1),
-                          onChanged: () {
+                          onChanged: (isPctChanged) {
                             setDialogState(() {
-                              final pct = double.tryParse(costPctCtrl.text);
-                              final amt = double.tryParse(costAmtCtrl.text);
-                              if (pct != null && product.invoicePrice != null && product.invoicePrice! > 0) {
-                                final newAmt = product.invoicePrice! * pct / 100;
-                                costAmtCtrl.text = newAmt.toStringAsFixed(2);
-                              } else if (amt != null && product.invoicePrice != null && product.invoicePrice! > 0) {
-                                final newPct = (amt / product.invoicePrice!) * 100;
-                                costPctCtrl.text = newPct.toStringAsFixed(2);
+                              if (isPctChanged) {
+                                // Faiz dəyişdikdə qiyməti hesabla
+                                final pct = double.tryParse(costPctCtrl.text);
+                                if (pct != null && product.invoicePrice != null && product.invoicePrice! > 0) {
+                                  final newAmt = product.invoicePrice! * pct / 100;
+                                  costAmtCtrl.text = newAmt.toStringAsFixed(2);
+                                }
+                              } else {
+                                // Qiymət dəyişdikdə faizi hesabla
+                                final amt = double.tryParse(costAmtCtrl.text);
+                                if (amt != null && product.invoicePrice != null && product.invoicePrice! > 0) {
+                                  final newPct = (amt / product.invoicePrice!) * 100;
+                                  costPctCtrl.text = newPct.toStringAsFixed(2);
+                                }
                               }
                             });
                           },
@@ -247,16 +253,22 @@ class _EditProductPriceByStockPageState extends State<EditProductPriceByStockPag
                           pctCtrl: wholePctCtrl,
                           amtCtrl: wholeAmtCtrl,
                           accentColor: const Color(0xFF0EA5E9),
-                          onChanged: () {
+                          onChanged: (isPctChanged) {
                             setDialogState(() {
-                              final pct = double.tryParse(wholePctCtrl.text);
-                              final amt = double.tryParse(wholeAmtCtrl.text);
-                              if (pct != null && product.costPrice != null && product.costPrice! > 0) {
-                                final newAmt = product.costPrice! * pct / 100;
-                                wholeAmtCtrl.text = newAmt.toStringAsFixed(2);
-                              } else if (amt != null && product.costPrice != null && product.costPrice! > 0) {
-                                final newPct = (amt / product.costPrice!) * 100;
-                                wholePctCtrl.text = newPct.toStringAsFixed(2);
+                              if (isPctChanged) {
+                                // Faiz dəyişdikdə qiyməti hesabla
+                                final pct = double.tryParse(wholePctCtrl.text);
+                                if (pct != null && product.costPrice != null && product.costPrice! > 0) {
+                                  final newAmt = product.costPrice! * pct / 100;
+                                  wholeAmtCtrl.text = newAmt.toStringAsFixed(2);
+                                }
+                              } else {
+                                // Qiymət dəyişdikdə faizi hesabla
+                                final amt = double.tryParse(wholeAmtCtrl.text);
+                                if (amt != null && product.costPrice != null && product.costPrice! > 0) {
+                                  final newPct = (amt / product.costPrice!) * 100;
+                                  wholePctCtrl.text = newPct.toStringAsFixed(2);
+                                }
                               }
                             });
                           },
@@ -269,16 +281,22 @@ class _EditProductPriceByStockPageState extends State<EditProductPriceByStockPag
                           pctCtrl: retailPctCtrl,
                           amtCtrl: retailAmtCtrl,
                           accentColor: const Color(0xFF10B981),
-                          onChanged: () {
+                          onChanged: (isPctChanged) {
                             setDialogState(() {
-                              final pct = double.tryParse(retailPctCtrl.text);
-                              final amt = double.tryParse(retailAmtCtrl.text);
-                              if (pct != null && product.costPrice != null && product.costPrice! > 0) {
-                                final newAmt = product.costPrice! * pct / 100;
-                                retailAmtCtrl.text = newAmt.toStringAsFixed(2);
-                              } else if (amt != null && product.costPrice != null && product.costPrice! > 0) {
-                                final newPct = (amt / product.costPrice!) * 100;
-                                retailPctCtrl.text = newPct.toStringAsFixed(2);
+                              if (isPctChanged) {
+                                // Faiz dəyişdikdə qiyməti hesabla
+                                final pct = double.tryParse(retailPctCtrl.text);
+                                if (pct != null && product.costPrice != null && product.costPrice! > 0) {
+                                  final newAmt = product.costPrice! * pct / 100;
+                                  retailAmtCtrl.text = newAmt.toStringAsFixed(2);
+                                }
+                              } else {
+                                // Qiymət dəyişdikdə faizi hesabla
+                                final amt = double.tryParse(retailAmtCtrl.text);
+                                if (amt != null && product.costPrice != null && product.costPrice! > 0) {
+                                  final newPct = (amt / product.costPrice!) * 100;
+                                  retailPctCtrl.text = newPct.toStringAsFixed(2);
+                                }
                               }
                             });
                           },
@@ -369,7 +387,7 @@ class _EditProductPriceByStockPageState extends State<EditProductPriceByStockPag
     required TextEditingController pctCtrl,
     required TextEditingController amtCtrl,
     required Color accentColor,
-    required VoidCallback onChanged,
+    required Function(bool isPctChanged) onChanged,
   }) {
     final amt = double.tryParse(amtCtrl.text);
     final result = amt != null ? basePrice + amt : null;
@@ -416,7 +434,7 @@ class _EditProductPriceByStockPageState extends State<EditProductPriceByStockPag
                   controller: pctCtrl,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))],
-                  onChanged: (_) => onChanged(),
+                  onChanged: (_) => onChanged(true),
                   style: const TextStyle(fontSize: 13),
                   decoration: InputDecoration(
                     suffixText: '%',
@@ -447,7 +465,7 @@ class _EditProductPriceByStockPageState extends State<EditProductPriceByStockPag
                   controller: amtCtrl,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))],
-                  onChanged: (_) => onChanged(),
+                  onChanged: (_) => onChanged(false),
                   style: const TextStyle(fontSize: 13),
                   decoration: InputDecoration(
                     suffixText: '₼',
