@@ -9,6 +9,7 @@ class CreateInventoryProductRequestModel {
   final String color;
   final String colorCode;
   final double invoiceUnitPriceUsd;
+  final double invoiceUnitPriceAzn;
   final int invoiceQuantity;
   final double invoiceTotalPrice;
   final int actualQuantity;
@@ -34,6 +35,7 @@ class CreateInventoryProductRequestModel {
     required this.color,
     required this.colorCode,
     this.invoiceUnitPriceUsd = 0,
+    this.invoiceUnitPriceAzn = 0,
     this.invoiceQuantity = 0,
     this.invoiceTotalPrice = 0,
     required this.actualQuantity,
@@ -51,17 +53,23 @@ class CreateInventoryProductRequestModel {
     this.source = 'manual',
   });
 
+  /// Helper method to round double to max 10 decimal places
+  double _roundToMaxDecimals(double value) {
+    return double.parse(value.toStringAsFixed(10));
+  }
+
   Map<String, dynamic> toJson() => {
     'model_code': modelCode,
     'product_name': productName,
     'size': size,
     'color': color,
     'color_code': colorCode,
-    'invoice_unit_price_usd': invoiceUnitPriceUsd,
+    'invoice_unit_price_usd': _roundToMaxDecimals(invoiceUnitPriceUsd),
+    'invoice_unit_price_azn': _roundToMaxDecimals(invoiceUnitPriceAzn),
     'invoice_quantity': invoiceQuantity,
-    'invoice_total_price': invoiceTotalPrice,
+    'invoice_total_price': _roundToMaxDecimals(invoiceTotalPrice),
     'actual_quantity': actualQuantity,
-    'actual_total_price': actualTotalPrice,
+    'actual_total_price': _roundToMaxDecimals(actualTotalPrice),
     'invoice_pieces_per_carton': invoicePiecesPerCarton,
     'invoice_carton_count': invoiceCartonCount,
     'actual_pieces_per_carton': actualPiecesPerCarton,

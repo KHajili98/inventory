@@ -1798,6 +1798,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
   final Map<int, TextEditingController> _zoneCtrl = {};
   final Map<int, TextEditingController> _rowCtrl = {};
   final Map<int, TextEditingController> _shelfCtrl = {};
+  final Map<int, TextEditingController> _exchangeRateCtrl = {};
   // Tracks whether the barcode for each row was API-generated ('generated') or typed ('preprinted')
   final Map<int, String> _barcodeTypeMap = {};
 
@@ -1855,6 +1856,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
       _zoneCtrl.putIfAbsent(idx, () => TextEditingController());
       _rowCtrl.putIfAbsent(idx, () => TextEditingController());
       _shelfCtrl.putIfAbsent(idx, () => TextEditingController());
+      _exchangeRateCtrl.putIfAbsent(idx, () => TextEditingController(text: '1.70')); // Default USD to AZN rate
       _barcodeTypeMap.putIfAbsent(idx, () => 'preprinted');
     }
   }
@@ -1869,6 +1871,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
       ..._zoneCtrl.values,
       ..._rowCtrl.values,
       ..._shelfCtrl.values,
+      ..._exchangeRateCtrl.values,
     ]) {
       c.dispose();
     }
@@ -1904,13 +1907,16 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
       final actPcs = int.tryParse(_actPcsCtrl[idx]!.text.trim()) ?? 0;
       final actCartons = int.tryParse(_actCartonsCtrl[idx]!.text.trim()) ?? 0;
       // invoice_* fields come purely from the API response (item from _detail)
-      final unitPrice = item.unitPriceUsd ?? 0.0;
+      final unitPriceUsd = item.unitPriceUsd ?? 0.0;
+      final exchangeRate = double.tryParse(_exchangeRateCtrl[idx]!.text.trim()) ?? 1.70;
+      // invoice_unit_price_azn = invoice_unit_price_usd × exchange_rate
+      final unitPriceAzn = unitPriceUsd * exchangeRate;
       final invQty = item.quantity ?? 0;
       final invPcs = item.piecesPerCarton ?? 0;
       final invCartons = (item.cartonCount ?? 0).toInt();
       final invTotal = item.totalPrice ?? 0.0;
-      // actual_total_price = actual_quantity × invoice_unit_price_usd
-      final actualTotal = actualQty * unitPrice;
+      // actual_total_price = invoice_unit_price_azn × actual_quantity
+      final actualTotal = unitPriceAzn * actualQty;
 
       final request = CreateInventoryProductRequestModel(
         productName: item.productName ?? '',
@@ -1930,7 +1936,8 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
         // invoice-sourced fields — source is the invoice number (e.g. "INV-2024-001")
         source: widget.invoice.invoiceNumber ?? widget.invoice.id,
         invoice: widget.invoice.id,
-        invoiceUnitPriceUsd: unitPrice,
+        invoiceUnitPriceUsd: unitPriceUsd,
+        invoiceUnitPriceAzn: unitPriceAzn,
         invoiceQuantity: invQty,
         invoiceTotalPrice: invTotal,
         invoicePiecesPerCarton: invPcs,
@@ -2448,40 +2455,152 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                                 ),
                               ],
                             ),
+                            // ── Price calculation with exchange rate ──────────
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                const Icon(Icons.attach_money_rounded, size: 15, color: Color(0xFF0EA5E9)),
+                                const SizedBox(width: 6),
+                                const Text(
+                                  'Price Calculation',
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Unit Price (USD)',
+                                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Container(
+                                        height: 36,
+                                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFF8FAFC),
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            const Icon(Icons.lock_outline_rounded, size: 14, color: Color(0xFF94A3B8)),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              '\$${(item.unitPriceUsd ?? 0.0).toStringAsFixed(4)}',
+                                              style: const TextStyle(fontSize: 13, color: Color(0xFF475569), fontWeight: FontWeight.w600),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 20),
+                                  child: Icon(Icons.close_rounded, size: 16, color: Color(0xFF94A3B8)),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  flex: 2,
+                                  child: _DetailField(
+                                    ctrl: _exchangeRateCtrl[idx]!,
+                                    label: 'Exchange Rate',
+                                    hint: '1.70',
+                                    isDecimal: true,
+                                    icon: Icons.currency_exchange_rounded,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 20),
+                                  child: Icon(Icons.arrow_forward_rounded, size: 16, color: Color(0xFF6366F1)),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  flex: 2,
+                                  child: ValueListenableBuilder(
+                                    valueListenable: _exchangeRateCtrl[idx]!,
+                                    builder: (_, __, ___) {
+                                      final unitPriceUsd = item.unitPriceUsd ?? 0.0;
+                                      final exchangeRate = double.tryParse(_exchangeRateCtrl[idx]!.text.trim()) ?? 1.70;
+                                      final unitPriceAzn = unitPriceUsd * exchangeRate;
+                                      return Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Unit Price (AZN)',
+                                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Container(
+                                            height: 36,
+                                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFEEF2FF),
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(color: const Color(0xFF6366F1)),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                '₼${unitPriceAzn.toStringAsFixed(4)}',
+                                                style: const TextStyle(fontSize: 13, color: Color(0xFF6366F1), fontWeight: FontWeight.w700),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
                             // ── Live actual_total_price preview ────────────────
                             ValueListenableBuilder(
                               valueListenable: _actualQtyCtrl[idx]!,
-                              builder: (_, __, ___) {
-                                final unitPrice = item.unitPriceUsd ?? 0.0;
-                                final qty = int.tryParse(_actualQtyCtrl[idx]!.text.trim());
-                                final total = qty != null ? qty * unitPrice : null;
-                                return AnimatedSize(
-                                  duration: const Duration(milliseconds: 200),
-                                  child: total == null
-                                      ? const SizedBox.shrink()
-                                      : Container(
-                                          margin: const EdgeInsets.only(top: 8),
-                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFF0FDF4),
-                                            borderRadius: BorderRadius.circular(8),
-                                            border: Border.all(color: const Color(0xFFBBF7D0)),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              const Icon(Icons.calculate_rounded, size: 14, color: Color(0xFF15803D)),
-                                              const SizedBox(width: 6),
-                                              Expanded(
-                                                child: Text(
-                                                  l10n.estimatedTotalPrice(total.toStringAsFixed(2), unitPrice.toStringAsFixed(4)),
-                                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF15803D)),
+                              builder: (_, __, ___) => ValueListenableBuilder(
+                                valueListenable: _exchangeRateCtrl[idx]!,
+                                builder: (_, __, ___) {
+                                  final unitPriceUsd = item.unitPriceUsd ?? 0.0;
+                                  final exchangeRate = double.tryParse(_exchangeRateCtrl[idx]!.text.trim()) ?? 1.70;
+                                  final unitPriceAzn = unitPriceUsd * exchangeRate;
+                                  final qty = int.tryParse(_actualQtyCtrl[idx]!.text.trim());
+                                  final total = qty != null ? qty * unitPriceAzn : null;
+                                  return AnimatedSize(
+                                    duration: const Duration(milliseconds: 200),
+                                    child: total == null
+                                        ? const SizedBox.shrink()
+                                        : Container(
+                                            margin: const EdgeInsets.only(top: 8),
+                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFF0FDF4),
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(color: const Color(0xFFBBF7D0)),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                const Icon(Icons.calculate_rounded, size: 14, color: Color(0xFF15803D)),
+                                                const SizedBox(width: 6),
+                                                Expanded(
+                                                  child: Text(
+                                                    'Total: ₼${total.toStringAsFixed(2)} ($qty × ₼${unitPriceAzn.toStringAsFixed(4)})',
+                                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF15803D)),
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                );
-                              },
+                                  );
+                                },
+                              ),
                             ),
                             const SizedBox(height: 10),
                             // Row 2: actual pcs/carton + actual carton count
@@ -2699,6 +2818,7 @@ class _DetailField extends StatelessWidget {
   final String hint;
   final bool required;
   final bool isNumber;
+  final bool isDecimal;
   final IconData? icon;
   final Widget? suffixWidget;
 
@@ -2708,6 +2828,7 @@ class _DetailField extends StatelessWidget {
     required this.hint,
     this.required = false,
     this.isNumber = false,
+    this.isDecimal = false,
     this.icon,
     this.suffixWidget,
   });
@@ -2730,7 +2851,11 @@ class _DetailField extends StatelessWidget {
         const SizedBox(height: 5),
         TextFormField(
           controller: ctrl,
-          keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+          keyboardType: isDecimal
+              ? const TextInputType.numberWithOptions(decimal: true)
+              : isNumber
+              ? TextInputType.number
+              : TextInputType.text,
           validator: required ? (v) => (v == null || v.trim().isEmpty) ? AppLocalizations.of(context)!.required : null : null,
           style: const TextStyle(fontSize: 13, color: Color(0xFF1E293B)),
           decoration: InputDecoration(
@@ -3097,6 +3222,7 @@ class _ProductDialogState extends State<_ProductDialog> {
   late final TextEditingController _size; // size
   late final TextEditingController _barcode; // barcode
   late final TextEditingController _actualQty; // actual_quantity
+  late final TextEditingController _unitPriceAzn; // invoice_unit_price_azn
   // ── Packaging ───────────────────────────────────────────────────────────────
   late final TextEditingController _actualPcsPerCarton; // actual_pieces_per_carton
   late final TextEditingController _actualCartonCount; // actual_carton_count
@@ -3122,6 +3248,7 @@ class _ProductDialogState extends State<_ProductDialog> {
       }
     });
     _actualQty = TextEditingController(text: p != null ? '${p.quantity}' : '');
+    _unitPriceAzn = TextEditingController();
     _actualPcsPerCarton = TextEditingController();
     _actualCartonCount = TextEditingController();
     _zone = TextEditingController(text: p?.coordinate.zone ?? '');
@@ -3139,6 +3266,7 @@ class _ProductDialogState extends State<_ProductDialog> {
       _size,
       _barcode,
       _actualQty,
+      _unitPriceAzn,
       _actualPcsPerCarton,
       _actualCartonCount,
       _zone,
@@ -3157,7 +3285,9 @@ class _ProductDialogState extends State<_ProductDialog> {
     final actualQty = int.tryParse(_actualQty.text.trim()) ?? 0;
     final actualPcs = int.tryParse(_actualPcsPerCarton.text.trim()) ?? 0;
     final actualCartons = int.tryParse(_actualCartonCount.text.trim()) ?? 0;
-    final actualTotalPrice = 0.0; // manual entries have no unit price → total is 0
+    final unitPriceAzn = double.tryParse(_unitPriceAzn.text.trim()) ?? 0.0;
+    // actual_total_price = invoice_unit_price_azn × actual_quantity
+    final actualTotalPrice = unitPriceAzn * actualQty;
 
     final request = CreateInventoryProductRequestModel(
       productName: _productName.text.trim(),
@@ -3178,6 +3308,7 @@ class _ProductDialogState extends State<_ProductDialog> {
       source: 'manual',
       invoice: '',
       invoiceUnitPriceUsd: 0,
+      invoiceUnitPriceAzn: unitPriceAzn,
       invoiceQuantity: 0,
       invoiceTotalPrice: 0,
       invoicePiecesPerCarton: 0,
@@ -3296,8 +3427,46 @@ class _ProductDialogState extends State<_ProductDialog> {
                     children: [
                       Expanded(child: _field(_actualQty, l10n.actualQtyReceived, '0', isNumber: true, required: true)),
                       const SizedBox(width: 16),
-                      const Expanded(child: SizedBox()),
+                      Expanded(child: _field(_unitPriceAzn, 'Unit Price (AZN)', '0.00', isDecimal: true)),
                     ],
+                  ),
+                  // ── Live total price preview for manual entry ──
+                  ValueListenableBuilder(
+                    valueListenable: _actualQty,
+                    builder: (_, __, ___) => ValueListenableBuilder(
+                      valueListenable: _unitPriceAzn,
+                      builder: (_, __, ___) {
+                        final qty = int.tryParse(_actualQty.text.trim());
+                        final unitPrice = double.tryParse(_unitPriceAzn.text.trim());
+                        final total = (qty != null && unitPrice != null) ? qty * unitPrice : null;
+                        return AnimatedSize(
+                          duration: const Duration(milliseconds: 200),
+                          child: total == null
+                              ? const SizedBox.shrink()
+                              : Container(
+                                  margin: const EdgeInsets.only(top: 8),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF0FDF4),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: const Color(0xFFBBF7D0)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.calculate_rounded, size: 14, color: Color(0xFF15803D)),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          'Total Price: ₼${total.toStringAsFixed(2)}',
+                                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF15803D)),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                        );
+                      },
+                    ),
                   ),
 
                   const SizedBox(height: 20),
