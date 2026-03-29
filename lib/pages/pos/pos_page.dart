@@ -33,11 +33,11 @@ class _PosPageState extends State<PosPage> {
   final String _currentDate = DateFormat('dd.MM.yyyy').format(DateTime.now());
 
   final List<_Product> _products = [
-    _Product(id: '1', name: 'iPhone 15 Pro, Qara', retailPrice: 2350, wholesalePrice: 2200, barcode: '123456789'),
-    _Product(id: '2', name: 'Nike Air Max, 43', retailPrice: 120, wholesalePrice: 100, barcode: '987654321'),
-    _Product(id: '3', name: 'T-shirt, Ağ, M', retailPrice: 25, wholesalePrice: 20, barcode: '456789123'),
-    _Product(id: '4', name: 'Samsung Galaxy S24', retailPrice: 1800, wholesalePrice: 1650, barcode: '111222333'),
-    _Product(id: '5', name: 'Adidas Sneakers, 42', retailPrice: 150, wholesalePrice: 130, barcode: '444555666'),
+    _Product(id: '1', name: 'iPhone 15 Pro, Qara', retailPrice: 2350, wholesalePrice: 2200, costPrice: 2000, barcode: '123456789'),
+    _Product(id: '2', name: 'Nike Air Max, 43', retailPrice: 120, wholesalePrice: 100, costPrice: 80, barcode: '987654321'),
+    _Product(id: '3', name: 'T-shirt, Ağ, M', retailPrice: 25, wholesalePrice: 20, costPrice: 15, barcode: '456789123'),
+    _Product(id: '4', name: 'Samsung Galaxy S24', retailPrice: 1800, wholesalePrice: 1650, costPrice: 1500, barcode: '111222333'),
+    _Product(id: '5', name: 'Adidas Sneakers, 42', retailPrice: 150, wholesalePrice: 130, costPrice: 110, barcode: '444555666'),
   ];
 
   @override
@@ -646,6 +646,10 @@ class _PosPageState extends State<PosPage> {
                     itemBuilder: (context, index) {
                       final item = _cartItems[index];
                       final unitPrice = _getCurrentPrice(item.product);
+                      final costPrice = item.product.costPrice;
+                      final maxDiscountAmount = unitPrice - costPrice; // Max discount to not go below cost
+                      final maxDiscountPercent = unitPrice > 0 ? (maxDiscountAmount / unitPrice * 100) : 0.0;
+
                       final discountAmount = unitPrice * item.discountPercent / 100;
                       final priceAfterDiscount = unitPrice - discountAmount;
                       final total = priceAfterDiscount * item.quantity;
@@ -715,9 +719,21 @@ class _PosPageState extends State<PosPage> {
                                       ),
                                       onChanged: (value) {
                                         final percent = double.tryParse(value) ?? 0.0;
+                                        // Limit to max discount percent
+                                        final limitedPercent = percent > maxDiscountPercent ? maxDiscountPercent : percent;
                                         setState(() {
-                                          _cartItems[index].discountPercent = percent;
+                                          _cartItems[index].discountPercent = limitedPercent;
                                         });
+                                        // Show warning if exceeded
+                                        if (percent > maxDiscountPercent) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Endirim maya dəyərindən (${costPrice.toStringAsFixed(2)} ₼) aşağı düşə bilməz!'),
+                                              backgroundColor: Colors.orange,
+                                              duration: const Duration(seconds: 2),
+                                            ),
+                                          );
+                                        }
                                       },
                                     ),
                                   ),
@@ -745,10 +761,24 @@ class _PosPageState extends State<PosPage> {
                                       ),
                                       onChanged: (value) {
                                         final amount = double.tryParse(value) ?? 0.0;
-                                        final percent = unitPrice > 0 ? (amount / unitPrice * 100) : 0.0;
+                                        // Limit to max discount amount
+                                        final limitedAmount = amount > maxDiscountAmount ? maxDiscountAmount : amount;
+                                        final percent = unitPrice > 0 ? (limitedAmount / unitPrice * 100) : 0.0;
                                         setState(() {
                                           _cartItems[index].discountPercent = percent;
                                         });
+                                        // Show warning if exceeded
+                                        if (amount > maxDiscountAmount) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Maksimum endirim: ${maxDiscountAmount.toStringAsFixed(2)} ₼ (Maya: ${costPrice.toStringAsFixed(2)} ₼)',
+                                              ),
+                                              backgroundColor: Colors.orange,
+                                              duration: const Duration(seconds: 2),
+                                            ),
+                                          );
+                                        }
                                       },
                                     ),
                                   ),
@@ -1127,7 +1157,7 @@ class _PosPageState extends State<PosPage> {
     return InkWell(
       onTap: () => setState(() => _selectedPaymentMethod = method),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 4),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF90CAF9) : Colors.white,
           border: Border.all(color: isSelected ? const Color(0xFF2196F3) : const Color(0xFFB0BEC5)),
@@ -1157,9 +1187,17 @@ class _Product {
   final String name;
   final double retailPrice;
   final double wholesalePrice;
+  final double costPrice;
   final String barcode;
 
-  _Product({required this.id, required this.name, required this.retailPrice, required this.wholesalePrice, required this.barcode});
+  _Product({
+    required this.id,
+    required this.name,
+    required this.retailPrice,
+    required this.wholesalePrice,
+    required this.costPrice,
+    required this.barcode,
+  });
 }
 
 class _CartItem {
