@@ -1017,5 +1017,11 @@
   "addFirstExpense": "Press the button to add your first expense",
   "totalExpenses": "Total Expenses",
   "expenseCount": "Expense Count",
-  "save": "Save"
+  "save": "Save",
+  "expenseFilterByDate": "Filter by date",
+  "expenseClearFilter": "Clear filter",
+  "expenseNoResults": "No expenses found in selected date range",
+  "expenseEditTitle": "Edit Expense",
+  "expenseDeleteTitle": "Delete Expense",
+  "expenseDeleteConfirm": "Are you sure you want to delete this expense?"
 }

@@ -1369,6 +1369,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save'**
   String get save;
+
+  /// No description provided for @expenseFilterByDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by date'**
+  String get expenseFilterByDate;
+
+  /// No description provided for @expenseClearFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filter'**
+  String get expenseClearFilter;
+
+  /// No description provided for @expenseNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No expenses found in selected date range'**
+  String get expenseNoResults;
+
+  /// No description provided for @expenseEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Expense'**
+  String get expenseEditTitle;
+
+  /// No description provided for @expenseDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Expense'**
+  String get expenseDeleteTitle;
+
+  /// No description provided for @expenseDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this expense?'**
+  String get expenseDeleteConfirm;
 }
 
 class _AppLocalizationsDelegate

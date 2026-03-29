@@ -689,4 +689,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get save => 'Save';
+
+  @override
+  String get expenseFilterByDate => 'Filter by date';
+
+  @override
+  String get expenseClearFilter => 'Clear filter';
+
+  @override
+  String get expenseNoResults => 'No expenses found in selected date range';
+
+  @override
+  String get expenseEditTitle => 'Edit Expense';
+
+  @override
+  String get expenseDeleteTitle => 'Delete Expense';
+
+  @override
+  String get expenseDeleteConfirm =>
+      'Are you sure you want to delete this expense?';
 }

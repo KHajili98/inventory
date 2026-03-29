@@ -694,4 +694,22 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get save => 'Saxla';
+
+  @override
+  String get expenseFilterByDate => 'Tarixə görə filter';
+
+  @override
+  String get expenseClearFilter => 'Filtri təmizlə';
+
+  @override
+  String get expenseNoResults => 'Seçilmiş tarix aralığında xərc tapılmadı';
+
+  @override
+  String get expenseEditTitle => 'Xərci Redaktə Et';
+
+  @override
+  String get expenseDeleteTitle => 'Xərci Sil';
+
+  @override
+  String get expenseDeleteConfirm => 'Bu xərci silmək istədiyinizə əminsiniz?';
 }

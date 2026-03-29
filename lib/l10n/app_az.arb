@@ -417,5 +417,11 @@
   "addFirstExpense": "İlk xərci əlavə etmək üçün düyməni basın",
   "totalExpenses": "Ümumi Xərclər",
   "expenseCount": "Xərc sayı",
-  "save": "Saxla"
+  "save": "Saxla",
+  "expenseFilterByDate": "Tarixə görə filter",
+  "expenseClearFilter": "Filtri təmizlə",
+  "expenseNoResults": "Seçilmiş tarix aralığında xərc tapılmadı",
+  "expenseEditTitle": "Xərci Redaktə Et",
+  "expenseDeleteTitle": "Xərci Sil",
+  "expenseDeleteConfirm": "Bu xərci silmək istədiyinizə əminsiniz?"
 }

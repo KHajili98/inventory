@@ -33,6 +33,28 @@ class ExpenseEntry {
     this.documentBytes,
     required this.note,
   });
+
+  ExpenseEntry copyWith({
+    ExpenseCategory? category,
+    ExpensePaymentType? paymentType,
+    double? amount,
+    DateTime? date,
+    String? documentName,
+    Uint8List? documentBytes,
+    bool clearDocument = false,
+    String? note,
+  }) {
+    return ExpenseEntry(
+      id: id,
+      category: category ?? this.category,
+      paymentType: paymentType ?? this.paymentType,
+      amount: amount ?? this.amount,
+      date: date ?? this.date,
+      documentName: clearDocument ? null : (documentName ?? this.documentName),
+      documentBytes: clearDocument ? null : (documentBytes ?? this.documentBytes),
+      note: note ?? this.note,
+    );
+  }
 }
 
 // ── Page ─────────────────────────────────────────────────────────────────────
@@ -47,11 +69,66 @@ class ExpenseTrackingPage extends StatefulWidget {
 class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
   final List<ExpenseEntry> _expenses = [];
 
-  void _openAddDialog() async {
-    final entry = await showDialog<ExpenseEntry>(context: context, barrierDismissible: false, builder: (ctx) => const _AddExpenseDialog());
-    if (entry != null) {
-      setState(() => _expenses.insert(0, entry));
+  // ── Date range filter ─────────────────────────────────────────────────────
+  DateTime? _filterFrom;
+  DateTime? _filterTo;
+
+  List<ExpenseEntry> get _filtered {
+    return _expenses.where((e) {
+      if (_filterFrom != null && e.date.isBefore(_filterFrom!)) return false;
+      if (_filterTo != null && e.date.isAfter(_filterTo!.add(const Duration(days: 1)))) {
+        return false;
+      }
+      return true;
+    }).toList();
+  }
+
+  Future<void> _pickDateRange() async {
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+      initialDateRange: (_filterFrom != null && _filterTo != null) ? DateTimeRange(start: _filterFrom!, end: _filterTo!) : null,
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(colorScheme: const ColorScheme.light(primary: Color(0xFF6366F1))),
+        child: child!,
+      ),
+    );
+    if (picked != null) {
+      setState(() {
+        _filterFrom = picked.start;
+        _filterTo = picked.end;
+      });
     }
+  }
+
+  void _clearFilter() => setState(() {
+    _filterFrom = null;
+    _filterTo = null;
+  });
+
+  // ── Dialogs ────────────────────────────────────────────────────────────────
+  void _openAddDialog() async {
+    final entry = await showDialog<ExpenseEntry>(context: context, barrierDismissible: false, builder: (ctx) => const _ExpenseFormDialog());
+    if (entry != null) setState(() => _expenses.insert(0, entry));
+  }
+
+  void _openEditDialog(ExpenseEntry existing) async {
+    final result = await showDialog<_EditResult>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => _ExpenseFormDialog(existing: existing),
+    );
+    if (result == null) return;
+    setState(() {
+      final idx = _expenses.indexWhere((e) => e.id == existing.id);
+      if (idx == -1) return;
+      if (result.deleted) {
+        _expenses.removeAt(idx);
+      } else if (result.updated != null) {
+        _expenses[idx] = result.updated!;
+      }
+    });
   }
 
   String _categoryLabel(ExpenseCategory cat, AppLocalizations l10n) {
@@ -107,7 +184,8 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isMobile = context.isMobile;
-    final totalAmount = _expenses.fold(0.0, (s, e) => s + e.amount);
+    final filtered = _filtered;
+    final totalAmount = filtered.fold(0.0, (s, e) => s + e.amount);
     final fmt = NumberFormat('#,##0.00');
 
     return Padding(
@@ -118,8 +196,10 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
           _buildTopBar(l10n, isMobile),
           SizedBox(height: isMobile ? 16 : 20),
           _buildStats(l10n, isMobile, totalAmount, fmt),
-          SizedBox(height: isMobile ? 16 : 24),
-          Expanded(child: _buildTable(l10n, isMobile, fmt)),
+          SizedBox(height: isMobile ? 12 : 16),
+          _buildFilterBar(l10n),
+          SizedBox(height: isMobile ? 12 : 16),
+          Expanded(child: _buildTable(l10n, isMobile, fmt, filtered)),
         ],
       ),
     );
@@ -176,7 +256,7 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
         icon: Icons.account_balance_wallet_outlined,
         color: const Color(0xFF6366F1),
       ),
-      _StatCard(label: l10n.expenseCount, value: '${_expenses.length}', icon: Icons.receipt_long_rounded, color: const Color(0xFF0EA5E9)),
+      _StatCard(label: l10n.expenseCount, value: '${_filtered.length}', icon: Icons.receipt_long_rounded, color: const Color(0xFF0EA5E9)),
     ];
 
     if (isMobile) {
@@ -197,11 +277,91 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
     );
   }
 
+  // ── Filter bar ─────────────────────────────────────────────────────────────
+
+  Widget _buildFilterBar(AppLocalizations l10n) {
+    final hasFilter = _filterFrom != null || _filterTo != null;
+    final dateFmt = DateFormat('dd.MM.yyyy');
+    final String label;
+    if (_filterFrom != null && _filterTo != null) {
+      label = '${dateFmt.format(_filterFrom!)}  –  ${dateFmt.format(_filterTo!)}';
+    } else if (_filterFrom != null) {
+      label = '${dateFmt.format(_filterFrom!)} –';
+    } else if (_filterTo != null) {
+      label = '– ${dateFmt.format(_filterTo!)}';
+    } else {
+      label = l10n.expenseFilterByDate;
+    }
+
+    return Row(
+      children: [
+        InkWell(
+          onTap: _pickDateRange,
+          borderRadius: BorderRadius.circular(10),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            decoration: BoxDecoration(
+              color: hasFilter ? const Color(0xFFEEF2FF) : Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: hasFilter ? const Color(0xFF6366F1) : const Color(0xFFE2E8F0)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.date_range_rounded, size: 16, color: hasFilter ? const Color(0xFF6366F1) : const Color(0xFF94A3B8)),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: hasFilter ? FontWeight.w600 : FontWeight.w400,
+                    color: hasFilter ? const Color(0xFF6366F1) : const Color(0xFF64748B),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (hasFilter) ...[
+          const SizedBox(width: 8),
+          InkWell(
+            onTap: _clearFilter,
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(color: const Color(0xFFFEE2E2), borderRadius: BorderRadius.circular(8)),
+              child: const Icon(Icons.close_rounded, size: 14, color: Color(0xFFDC2626)),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
   // ── Table ─────────────────────────────────────────────────────────────────────
 
-  Widget _buildTable(AppLocalizations l10n, bool isMobile, NumberFormat fmt) {
-    if (_expenses.isEmpty) {
-      return _buildEmptyState(l10n);
+  Widget _buildTable(AppLocalizations l10n, bool isMobile, NumberFormat fmt, List<ExpenseEntry> filtered) {
+    if (_expenses.isEmpty) return _buildEmptyState(l10n);
+
+    if (filtered.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.search_off_rounded, size: 48, color: Color(0xFFCBD5E1)),
+            const SizedBox(height: 12),
+            Text(l10n.expenseNoResults, style: const TextStyle(fontSize: 14, color: Color(0xFF64748B))),
+            const SizedBox(height: 12),
+            TextButton.icon(
+              onPressed: _clearFilter,
+              icon: const Icon(Icons.close_rounded, size: 16),
+              label: Text(l10n.expenseClearFilter),
+              style: TextButton.styleFrom(foregroundColor: const Color(0xFF6366F1)),
+            ),
+          ],
+        ),
+      );
     }
 
     return Container(
@@ -216,12 +376,15 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
           if (!isMobile) _buildTableHeader(l10n),
           Expanded(
             child: ListView.separated(
-              itemCount: _expenses.length,
+              itemCount: filtered.length,
               separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
               itemBuilder: (ctx, i) {
-                final e = _expenses[i];
-                if (isMobile) return _buildMobileRow(e, l10n, fmt);
-                return _buildDesktopRow(e, l10n, fmt);
+                final e = filtered[i];
+                return InkWell(
+                  onTap: () => _openEditDialog(e),
+                  hoverColor: const Color(0xFFF8FAFF),
+                  child: isMobile ? _buildMobileRow(e, l10n, fmt) : _buildDesktopRow(e, l10n, fmt),
+                );
               },
             ),
           ),
@@ -317,18 +480,20 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
               ],
             ),
           ),
-          // Payment type
+          // Payment type — badge sized to text only
           Expanded(
             flex: 2,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(color: payColor.withOpacity(0.10), borderRadius: BorderRadius.circular(20)),
-              child: Text(
-                payLabel,
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: payColor),
-                textAlign: TextAlign.center,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(color: payColor.withOpacity(0.10), borderRadius: BorderRadius.circular(20)),
+                child: Text(
+                  payLabel,
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: payColor),
+                ),
               ),
-            ).andConstrainWidth(120),
+            ),
           ),
           // Amount
           Expanded(
@@ -506,33 +671,48 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-// ── Helper extension ──────────────────────────────────────────────────────────
+// ── Edit result ───────────────────────────────────────────────────────────────
 
-extension _WidgetConstraint on Widget {
-  Widget andConstrainWidth(double max) => ConstrainedBox(
-    constraints: BoxConstraints(maxWidth: max),
-    child: this,
-  );
+class _EditResult {
+  final ExpenseEntry? updated;
+  final bool deleted;
+  const _EditResult({this.updated, this.deleted = false});
 }
 
-// ── Add Expense Dialog ────────────────────────────────────────────────────────
+// ── Unified Expense Form Dialog (Add + Edit) ──────────────────────────────────
 
-class _AddExpenseDialog extends StatefulWidget {
-  const _AddExpenseDialog();
+class _ExpenseFormDialog extends StatefulWidget {
+  final ExpenseEntry? existing;
+  const _ExpenseFormDialog({this.existing});
 
   @override
-  State<_AddExpenseDialog> createState() => _AddExpenseDialogState();
+  State<_ExpenseFormDialog> createState() => _ExpenseFormDialogState();
 }
 
-class _AddExpenseDialogState extends State<_AddExpenseDialog> {
-  ExpenseCategory? _category;
-  ExpensePaymentType? _paymentType;
-  final _amountCtrl = TextEditingController();
-  DateTime _date = DateTime.now();
+class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
+  late ExpenseCategory? _category;
+  late ExpensePaymentType? _paymentType;
+  late final TextEditingController _amountCtrl;
+  late DateTime _date;
   String? _documentName;
   Uint8List? _documentBytes;
-  final _noteCtrl = TextEditingController();
+  late final TextEditingController _noteCtrl;
   final _formKey = GlobalKey<FormState>();
+
+  bool get _isEdit => widget.existing != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final e = widget.existing;
+    _category = e?.category;
+    _paymentType = e?.paymentType;
+    _amountCtrl = TextEditingController(text: e != null ? e.amount.toStringAsFixed(2) : '');
+    _date = e?.date ?? DateTime.now();
+    _documentName = e?.documentName;
+    _documentBytes = e?.documentBytes;
+    _noteCtrl = TextEditingController(text: e?.note ?? '');
+  }
 
   @override
   void dispose() {
@@ -570,7 +750,7 @@ class _AddExpenseDialogState extends State<_AddExpenseDialog> {
     if (_category == null || _paymentType == null) return;
 
     final entry = ExpenseEntry(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: widget.existing?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
       category: _category!,
       paymentType: _paymentType!,
       amount: double.parse(_amountCtrl.text.replaceAll(',', '.')),
@@ -580,7 +760,47 @@ class _AddExpenseDialogState extends State<_AddExpenseDialog> {
       note: _noteCtrl.text.trim(),
     );
 
-    Navigator.of(context).pop(entry);
+    if (_isEdit) {
+      Navigator.of(context).pop(_EditResult(updated: entry));
+    } else {
+      Navigator.of(context).pop(entry);
+    }
+  }
+
+  void _confirmDelete() {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(l10n.expenseDeleteTitle, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
+        content: Text(l10n.expenseDeleteConfirm, style: const TextStyle(fontSize: 14, color: Color(0xFF475569))),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        actions: [
+          OutlinedButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Color(0xFFE2E8F0)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            ),
+            child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF475569))),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              Navigator.of(context).pop(const _EditResult(deleted: true));
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            ),
+            child: Text(l10n.delete, style: const TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -640,21 +860,35 @@ class _AddExpenseDialogState extends State<_AddExpenseDialog> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title
+                  // ── Title row ────────────────────────────────────────────
                   Row(
                     children: [
                       Container(
                         width: 36,
                         height: 36,
-                        decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(10)),
-                        child: const Icon(Icons.add_rounded, color: Color(0xFF6366F1), size: 20),
+                        decoration: BoxDecoration(
+                          color: _isEdit ? const Color(0xFFFFF7ED) : const Color(0xFFEEF2FF),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          _isEdit ? Icons.edit_rounded : Icons.add_rounded,
+                          color: _isEdit ? const Color(0xFFF97316) : const Color(0xFF6366F1),
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        l10n.addExpense,
+                        _isEdit ? l10n.expenseEditTitle : l10n.addExpense,
                         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
                       ),
                       const Spacer(),
+                      if (_isEdit)
+                        IconButton(
+                          onPressed: _confirmDelete,
+                          icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444)),
+                          tooltip: l10n.delete,
+                          style: IconButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                        ),
                       IconButton(
                         onPressed: () => Navigator.of(context).pop(),
                         icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
