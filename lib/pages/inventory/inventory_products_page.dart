@@ -4309,7 +4309,7 @@ class _InventoryDropdownState extends State<_InventoryDropdown> {
     switch (result) {
       case Success(:final data):
         setState(() {
-          _inventories = data.results;
+          _inventories = data.results.where((inv) => !inv.isStock).toList();
           _loading = false;
         });
       case Failure(:final message):
@@ -4377,7 +4377,7 @@ class _InventoryDropdownState extends State<_InventoryDropdown> {
           )
         else
           DropdownButtonFormField<String>(
-            initialValue: widget.selectedId,
+            initialValue: _inventories.any((inv) => inv.id == widget.selectedId) ? widget.selectedId : null,
             isExpanded: true,
             decoration: InputDecoration(
               isDense: true,
