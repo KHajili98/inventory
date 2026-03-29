@@ -405,7 +405,6 @@ class _PosPageState extends State<PosPage> {
         backgroundColor: const Color(0xFFF5F7FA),
         body: Column(
           children: [
-            _buildTopBar(),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(24),
@@ -416,6 +415,9 @@ class _PosPageState extends State<PosPage> {
                       flex: 3,
                       child: Column(
                         children: [
+                          _buildTopBar(),
+                          const SizedBox(height: 16),
+
                           _buildSearchBar(),
                           const SizedBox(height: 16),
                           Expanded(child: _buildProductTable()),
@@ -441,7 +443,8 @@ class _PosPageState extends State<PosPage> {
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 2))],
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 4))],
       ),
       child: SafeArea(
         bottom: false,
@@ -456,60 +459,29 @@ class _PosPageState extends State<PosPage> {
               child: const Icon(Icons.point_of_sale, color: Colors.white, size: 28),
             ),
             const SizedBox(width: 16),
-            const Column(
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'POS - Nizami Filialı Kassa',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
                 ),
-                SizedBox(height: 2),
-                Text('Satış Nöqtəsi', style: TextStyle(fontSize: 13, color: Color(0xFF718096))),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(Icons.person_outline, size: 14, color: Color(0xFF667EEA)),
+                    const SizedBox(width: 4),
+                    Text(_currentUser, style: const TextStyle(fontSize: 13, color: Color(0xFF718096))),
+                    const SizedBox(width: 16),
+                    const Icon(Icons.calendar_today, size: 14, color: Color(0xFF667EEA)),
+                    const SizedBox(width: 4),
+                    Text(_currentDate, style: const TextStyle(fontSize: 13, color: Color(0xFF718096))),
+                  ],
+                ),
               ],
-            ),
-            const Spacer(),
-            _buildTopBarInfo(Icons.person_outline, 'Satıcı', _currentUser),
-            const SizedBox(width: 24),
-            _buildTopBarInfo(Icons.calendar_today, 'Tarix', _currentDate),
-            const SizedBox(width: 24),
-            ElevatedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.logout, size: 18),
-              label: const Text('Çıxış'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF7FAFC),
-                foregroundColor: const Color(0xFF4A5568),
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildTopBarInfo(IconData icon, String label, String value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(color: const Color(0xFFF7FAFC), borderRadius: BorderRadius.circular(8)),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: const Color(0xFF667EEA)),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF718096))),
-              Text(
-                value,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }
@@ -524,7 +496,7 @@ class _PosPageState extends State<PosPage> {
           }).toList();
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -533,12 +505,12 @@ class _PosPageState extends State<PosPage> {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               gradient: const LinearGradient(colors: [Color(0xFF667EEA), Color(0xFF764BA2)], begin: Alignment.topLeft, end: Alignment.bottomRight),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.search, color: Colors.white, size: 22),
+            child: const Icon(Icons.search, color: Colors.white, size: 18),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -1036,7 +1008,7 @@ class _PosPageState extends State<PosPage> {
         children: [
           // Price Type
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1089,9 +1061,39 @@ class _PosPageState extends State<PosPage> {
             ),
           ),
           Container(height: 1, color: const Color(0xFFE2E8F0)),
+          // Payment
+          Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Row(
+                  children: [
+                    Icon(Icons.payment, size: 18, color: Color(0xFF667EEA)),
+                    SizedBox(width: 8),
+                    Text(
+                      'Ödəniş Metodu',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(child: _buildPaymentMethodButton(PaymentMethod.cash, Icons.money, 'Nağd')),
+                    const SizedBox(width: 8),
+                    Expanded(child: _buildPaymentMethodButton(PaymentMethod.card, Icons.credit_card, 'Kart')),
+                    const SizedBox(width: 8),
+                    Expanded(child: _buildPaymentMethodButton(PaymentMethod.transfer, Icons.account_balance, 'Köçürmə')),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Container(height: 1, color: const Color(0xFFE2E8F0)),
           // Discount
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1208,7 +1210,7 @@ class _PosPageState extends State<PosPage> {
           Container(height: 1, color: const Color(0xFFE2E8F0)),
           // Summary
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Column(
               children: [
                 _buildSummaryRow('Ara Cəmi:', '${subtotal.toStringAsFixed(2)} ₼'),
@@ -1222,7 +1224,7 @@ class _PosPageState extends State<PosPage> {
                   ),
                 const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
@@ -1234,13 +1236,13 @@ class _PosPageState extends State<PosPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
+                      const Text(
                         'Ödəniləcək:',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                       Text(
                         '${total.toStringAsFixed(2)} ₼',
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                     ],
                   ),
@@ -1249,38 +1251,9 @@ class _PosPageState extends State<PosPage> {
             ),
           ),
           Container(height: 1, color: const Color(0xFFE2E8F0)),
-          // Payment
-          Container(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Row(
-                  children: [
-                    Icon(Icons.payment, size: 18, color: Color(0xFF667EEA)),
-                    SizedBox(width: 8),
-                    Text(
-                      'Ödəniş Metodu',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(child: _buildPaymentMethodButton(PaymentMethod.cash, Icons.money, 'Nağd')),
-                    const SizedBox(width: 8),
-                    Expanded(child: _buildPaymentMethodButton(PaymentMethod.card, Icons.credit_card, 'Kart')),
-                    const SizedBox(width: 8),
-                    Expanded(child: _buildPaymentMethodButton(PaymentMethod.transfer, Icons.account_balance, 'Köçürmə')),
-                  ],
-                ),
-              ],
-            ),
-          ),
           // Buttons
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Column(
               children: [
                 SizedBox(
@@ -1292,7 +1265,7 @@ class _PosPageState extends State<PosPage> {
                       foregroundColor: Colors.white,
                       disabledBackgroundColor: const Color(0xFFE2E8F0),
                       disabledForegroundColor: const Color(0xFFA0AEC0),
-                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       elevation: 0,
                     ),
@@ -1319,7 +1292,7 @@ class _PosPageState extends State<PosPage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _selectedCustomer != null ? const Color(0xFF9F7AEA) : const Color(0xFFF7FAFC),
                       foregroundColor: _selectedCustomer != null ? Colors.white : const Color(0xFF718096),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       elevation: 0,
                     ),
@@ -1383,7 +1356,7 @@ class _PosPageState extends State<PosPage> {
       onTap: () => setState(() => _selectedPaymentMethod = method),
       borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           gradient: isSelected
               ? const LinearGradient(colors: [Color(0xFF667EEA), Color(0xFF764BA2)], begin: Alignment.topLeft, end: Alignment.bottomRight)
