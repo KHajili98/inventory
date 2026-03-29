@@ -31,11 +31,12 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
     _NavItem(
       labelKey: 'finance',
       icon: Icons.account_balance_wallet_rounded,
-      path: '/finance',
+      path: '/finance/analytics',
       subItems: [
+        _SubNavItem(labelKey: 'analytics', path: '/finance/analytics'),
+
         _SubNavItem(labelKey: 'priceCalculation', path: '/finance/price-calculation'),
         _SubNavItem(labelKey: 'expenseTracking', path: '/finance/expense-tracking'),
-        _SubNavItem(labelKey: 'analytics', path: '/finance/analytics'),
       ],
     ),
   ];
