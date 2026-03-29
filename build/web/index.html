@@ -32,6 +32,14 @@
 
   <title>inventory</title>
   <link rel="manifest" href="manifest.json">
+  <style>
+    /* Prevent browser swipe-to-navigate (back/forward) on horizontal overscroll */
+    html, body {
+      overscroll-behavior-x: none;
+      overscroll-behavior-y: none;
+      overflow: hidden;
+    }
+  </style>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
