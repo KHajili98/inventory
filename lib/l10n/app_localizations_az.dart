@@ -802,4 +802,49 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get exportError => 'İxrac xətası';
+
+  @override
+  String get stock => 'Stok';
+
+  @override
+  String get activeStockAmount => 'Aktiv Stok Miqdarı';
+
+  @override
+  String get activeProducts => 'Aktiv Məhsullar';
+
+  @override
+  String get pricePending => 'Qiymət Gözlənilir';
+
+  @override
+  String get allInventories => 'Bütün İnventarlar';
+
+  @override
+  String get searchStock => 'Məhsul, model, barkod axtar…';
+
+  @override
+  String get modelCode => 'Model Kodu';
+
+  @override
+  String get productCode => 'Məhsul Kodu';
+
+  @override
+  String get quantity => 'Miqdar';
+
+  @override
+  String get sourceInventory => 'Mənbə İnventar';
+
+  @override
+  String get invoicePriceUsd => 'Qaimə Qiyməti (USD)';
+
+  @override
+  String get costPrice => 'Maya Qiyməti';
+
+  @override
+  String get wholesalePrice => 'Topdan Qiymət';
+
+  @override
+  String get retailPrice => 'Pərakəndə Qiymət';
+
+  @override
+  String get activeStatus => 'Aktiv';
 }

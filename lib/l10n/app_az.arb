@@ -455,5 +455,21 @@
   "exportToPdf": "PDF olaraq İxrac Et",
   "exportToExcel": "Excel olaraq İxrac Et",
   "exportSuccess": "Uğurla ixrac edildi",
-  "exportError": "İxrac xətası"
+  "exportError": "İxrac xətası",
+
+  "stock": "Stok",
+  "activeStockAmount": "Aktiv Stok Miqdarı",
+  "activeProducts": "Aktiv Məhsullar",
+  "pricePending": "Qiymət Gözlənilir",
+  "allInventories": "Bütün İnventarlar",
+  "searchStock": "Məhsul, model, barkod axtar…",
+  "modelCode": "Model Kodu",
+  "productCode": "Məhsul Kodu",
+  "quantity": "Miqdar",
+  "sourceInventory": "Mənbə İnventar",
+  "invoicePriceUsd": "Qaimə Qiyməti (USD)",
+  "costPrice": "Maya Qiyməti",
+  "wholesalePrice": "Topdan Qiymət",
+  "retailPrice": "Pərakəndə Qiymət",
+  "activeStatus": "Aktiv"
 }

@@ -798,4 +798,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportError => 'Export error';
+
+  @override
+  String get stock => 'Stock';
+
+  @override
+  String get activeStockAmount => 'Active Stock Amount';
+
+  @override
+  String get activeProducts => 'Active Products';
+
+  @override
+  String get pricePending => 'Price Pending';
+
+  @override
+  String get allInventories => 'All Inventories';
+
+  @override
+  String get searchStock => 'Search product, model, barcode…';
+
+  @override
+  String get modelCode => 'Model Code';
+
+  @override
+  String get productCode => 'Product Code';
+
+  @override
+  String get quantity => 'Quantity';
+
+  @override
+  String get sourceInventory => 'Source Inventory';
+
+  @override
+  String get invoicePriceUsd => 'Invoice Price (USD)';
+
+  @override
+  String get costPrice => 'Cost Price';
+
+  @override
+  String get wholesalePrice => 'Wholesale Price';
+
+  @override
+  String get retailPrice => 'Retail Price';
+
+  @override
+  String get activeStatus => 'Active';
 }

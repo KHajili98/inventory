@@ -1585,6 +1585,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Export error'**
   String get exportError;
+
+  /// Stock navigation label
+  ///
+  /// In en, this message translates to:
+  /// **'Stock'**
+  String get stock;
+
+  /// Active stock amount stat label
+  ///
+  /// In en, this message translates to:
+  /// **'Active Stock Amount'**
+  String get activeStockAmount;
+
+  /// Active products stat label
+  ///
+  /// In en, this message translates to:
+  /// **'Active Products'**
+  String get activeProducts;
+
+  /// Price pending status label
+  ///
+  /// In en, this message translates to:
+  /// **'Price Pending'**
+  String get pricePending;
+
+  /// All inventories filter option
+  ///
+  /// In en, this message translates to:
+  /// **'All Inventories'**
+  String get allInventories;
+
+  /// Search stock placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Search product, model, barcode…'**
+  String get searchStock;
+
+  /// Model code column header
+  ///
+  /// In en, this message translates to:
+  /// **'Model Code'**
+  String get modelCode;
+
+  /// Product code column header
+  ///
+  /// In en, this message translates to:
+  /// **'Product Code'**
+  String get productCode;
+
+  /// Quantity column header
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get quantity;
+
+  /// Source inventory column header
+  ///
+  /// In en, this message translates to:
+  /// **'Source Inventory'**
+  String get sourceInventory;
+
+  /// Invoice price USD column header
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice Price (USD)'**
+  String get invoicePriceUsd;
+
+  /// Cost price column header
+  ///
+  /// In en, this message translates to:
+  /// **'Cost Price'**
+  String get costPrice;
+
+  /// Wholesale price column header
+  ///
+  /// In en, this message translates to:
+  /// **'Wholesale Price'**
+  String get wholesalePrice;
+
+  /// Retail price column header
+  ///
+  /// In en, this message translates to:
+  /// **'Retail Price'**
+  String get retailPrice;
+
+  /// Active status label
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get activeStatus;
 }
 
 class _AppLocalizationsDelegate

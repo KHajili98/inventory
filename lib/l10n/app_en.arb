@@ -1055,5 +1055,80 @@
   "exportToPdf": "Export as PDF",
   "exportToExcel": "Export as Excel",
   "exportSuccess": "Exported successfully",
-  "exportError": "Export error"
+  "exportError": "Export error",
+
+  "stock": "Stock",
+  "@stock": {
+    "description": "Stock navigation label"
+  },
+
+  "activeStockAmount": "Active Stock Amount",
+  "@activeStockAmount": {
+    "description": "Active stock amount stat label"
+  },
+
+  "activeProducts": "Active Products",
+  "@activeProducts": {
+    "description": "Active products stat label"
+  },
+
+  "pricePending": "Price Pending",
+  "@pricePending": {
+    "description": "Price pending status label"
+  },
+
+  "allInventories": "All Inventories",
+  "@allInventories": {
+    "description": "All inventories filter option"
+  },
+
+  "searchStock": "Search product, model, barcode…",
+  "@searchStock": {
+    "description": "Search stock placeholder"
+  },
+
+  "modelCode": "Model Code",
+  "@modelCode": {
+    "description": "Model code column header"
+  },
+
+  "productCode": "Product Code",
+  "@productCode": {
+    "description": "Product code column header"
+  },
+
+  "quantity": "Quantity",
+  "@quantity": {
+    "description": "Quantity column header"
+  },
+
+  "sourceInventory": "Source Inventory",
+  "@sourceInventory": {
+    "description": "Source inventory column header"
+  },
+
+  "invoicePriceUsd": "Invoice Price (USD)",
+  "@invoicePriceUsd": {
+    "description": "Invoice price USD column header"
+  },
+
+  "costPrice": "Cost Price",
+  "@costPrice": {
+    "description": "Cost price column header"
+  },
+
+  "wholesalePrice": "Wholesale Price",
+  "@wholesalePrice": {
+    "description": "Wholesale price column header"
+  },
+
+  "retailPrice": "Retail Price",
+  "@retailPrice": {
+    "description": "Retail price column header"
+  },
+
+  "activeStatus": "Active",
+  "@activeStatus": {
+    "description": "Active status label"
+  }
 }
