@@ -18,10 +18,13 @@ class _PosPageState extends State<PosPage> {
   final List<_FrozenOrder> _frozenOrders = [];
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _discountController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
 
   bool _discountEnabled = false;
   double _globalDiscountPercent = 0.0;
   int? _selectedDiscountBadge;
+  bool _showSearchDropdown = false;
+  List<_Product> _filteredProducts = [];
 
   PriceType _priceType = PriceType.retail;
   _Customer? _selectedCustomer;
@@ -42,7 +45,70 @@ class _PosPageState extends State<PosPage> {
   void dispose() {
     _searchController.dispose();
     _discountController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Auto-focus search field after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _searchFocusNode.requestFocus();
+    });
+  }
+
+  void _onSearchChanged(String value) {
+    setState(() {
+      if (value.isEmpty) {
+        _showSearchDropdown = false;
+        _filteredProducts = [];
+      } else {
+        _filteredProducts = _products.where((product) {
+          final searchLower = value.toLowerCase();
+          return product.name.toLowerCase().contains(searchLower) || product.barcode.contains(value);
+        }).toList();
+        _showSearchDropdown = _filteredProducts.isNotEmpty;
+      }
+    });
+  }
+
+  void _onSearchSubmitted(String value) {
+    if (value.isEmpty) return;
+
+    // Try to find exact barcode match
+    final product = _products.cast<_Product?>().firstWhere((p) => p?.barcode == value, orElse: () => null);
+
+    if (product != null) {
+      _addToCart(product);
+      _searchController.clear();
+      setState(() {
+        _showSearchDropdown = false;
+        _filteredProducts = [];
+      });
+      // Keep focus on search
+      _searchFocusNode.requestFocus();
+    } else if (_filteredProducts.length == 1) {
+      // If only one product matches, add it
+      _addToCart(_filteredProducts[0]);
+      _searchController.clear();
+      setState(() {
+        _showSearchDropdown = false;
+        _filteredProducts = [];
+      });
+      _searchFocusNode.requestFocus();
+    }
+  }
+
+  void _selectProductFromDropdown(_Product product) {
+    _addToCart(product);
+    _searchController.clear();
+    setState(() {
+      _showSearchDropdown = false;
+      _filteredProducts = [];
+    });
+    // Keep focus on search for next scan
+    _searchFocusNode.requestFocus();
   }
 
   double _getCurrentPrice(_Product product) {
@@ -64,6 +130,8 @@ class _PosPageState extends State<PosPage> {
     setState(() {
       _cartItems.removeAt(index);
     });
+    // Keep focus on search after removing item
+    Future.microtask(() => _searchFocusNode.requestFocus());
   }
 
   void _updateQuantity(int index, int quantity) {
@@ -74,6 +142,8 @@ class _PosPageState extends State<PosPage> {
         _cartItems[index].quantity = quantity;
       }
     });
+    // Keep focus on search after quantity update
+    Future.microtask(() => _searchFocusNode.requestFocus());
   }
 
   void _onDiscountEnabledChanged(bool? value) {
@@ -146,6 +216,8 @@ class _PosPageState extends State<PosPage> {
     setState(() {
       _cartItems.clear();
     });
+    // Keep focus on search after clearing cart
+    Future.microtask(() => _searchFocusNode.requestFocus());
   }
 
   void _freezeOrder() {
@@ -177,6 +249,9 @@ class _PosPageState extends State<PosPage> {
         duration: const Duration(seconds: 2),
       ),
     );
+
+    // Keep focus on search after freezing order
+    Future.microtask(() => _searchFocusNode.requestFocus());
   }
 
   void _showFrozenOrdersDialog() {
@@ -232,6 +307,9 @@ class _PosPageState extends State<PosPage> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sifariş bərpa edildi'), backgroundColor: Color(0xFF4CAF50)));
+
+    // Keep focus on search after restoring order
+    Future.microtask(() => _searchFocusNode.requestFocus());
   }
 
   void _completeSale() {
@@ -249,6 +327,8 @@ class _PosPageState extends State<PosPage> {
               setState(() {
                 _selectedCustomer = null;
               });
+              // Keep focus on search after completing sale
+              Future.microtask(() => _searchFocusNode.requestFocus());
             },
             child: const Text('OK'),
           ),
@@ -314,7 +394,13 @@ class _PosPageState extends State<PosPage> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Ləğv et')),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Future.microtask(() => _searchFocusNode.requestFocus());
+              },
+              child: const Text('Ləğv et'),
+            ),
             ElevatedButton(
               onPressed: tempCustomer != null
                   ? () {
@@ -322,6 +408,7 @@ class _PosPageState extends State<PosPage> {
                         _selectedCustomer = tempCustomer;
                       });
                       Navigator.pop(context);
+                      Future.microtask(() => _searchFocusNode.requestFocus());
                     }
                   : null,
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4CAF50), foregroundColor: Colors.white),
@@ -335,38 +422,42 @@ class _PosPageState extends State<PosPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF4A6C8F),
-      body: Column(
-        children: [
-          _buildTopBar(),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: Column(
-                      children: [
-                        _buildSearchBar(),
-                        const SizedBox(height: 12),
-                        _buildQuickProductSelect(),
-                        const SizedBox(height: 12),
-                        Expanded(child: _buildProductTable()),
-                        const SizedBox(height: 12),
-                        _buildBottomButtons(),
-                      ],
+    return GestureDetector(
+      onTap: () {
+        // Re-focus search when clicking anywhere in the POS area
+        _searchFocusNode.requestFocus();
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFF4A6C8F),
+        body: Column(
+          children: [
+            _buildTopBar(),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: Column(
+                        children: [
+                          _buildSearchBar(),
+                          const SizedBox(height: 12),
+                          Expanded(child: _buildProductTable()),
+                          const SizedBox(height: 12),
+                          _buildBottomButtons(),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  SizedBox(width: 360, child: _buildSummaryPanel()),
-                ],
+                    const SizedBox(width: 16),
+                    SizedBox(width: 360, child: _buildSummaryPanel()),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -400,103 +491,106 @@ class _PosPageState extends State<PosPage> {
   }
 
   Widget _buildSearchBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFB0BEC5)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.search, color: Color(0xFF607D8B)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Barkod oxut və ya axtar...',
-                hintStyle: TextStyle(color: Colors.grey[400]),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
+    return Stack(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFB0BEC5)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.search, color: Color(0xFF607D8B)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: _searchController,
+                  focusNode: _searchFocusNode,
+                  decoration: InputDecoration(
+                    hintText: 'Barkod oxut və ya axtar...',
+                    hintStyle: TextStyle(color: Colors.grey[400]),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  onChanged: _onSearchChanged,
+                  onSubmitted: _onSearchSubmitted,
+                ),
               ),
-              onSubmitted: (value) {
-                // Try to find product by barcode
-                final product = _products.cast<_Product?>().firstWhere((p) => p?.barcode == value, orElse: () => null);
-                if (product != null) {
-                  _addToCart(product);
-                  _searchController.clear();
-                }
-              },
-            ),
+              if (_searchController.text.isNotEmpty)
+                IconButton(
+                  icon: const Icon(Icons.clear, size: 20),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() {
+                      _showSearchDropdown = false;
+                      _filteredProducts = [];
+                    });
+                    _searchFocusNode.requestFocus();
+                  },
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickProductSelect() {
-    return Container(
-      height: 100,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFB0BEC5)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Tez Seçim',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF607D8B)),
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: _products.length,
-              itemBuilder: (context, index) {
-                final product = _products[index];
-                final price = _getCurrentPrice(product);
-                return Container(
-                  width: 140,
-                  margin: const EdgeInsets.only(right: 8),
-                  child: Material(
-                    color: const Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(6),
-                    child: InkWell(
-                      onTap: () => _addToCart(product),
-                      borderRadius: BorderRadius.circular(6),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
+        ),
+        // Dropdown with search results
+        if (_showSearchDropdown && _filteredProducts.isNotEmpty)
+          Positioned(
+            top: 50,
+            left: 0,
+            right: 0,
+            child: Material(
+              elevation: 8,
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                constraints: const BoxConstraints(maxHeight: 300),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFB0BEC5)),
+                ),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: _filteredProducts.length,
+                  itemBuilder: (context, index) {
+                    final product = _filteredProducts[index];
+                    final price = _getCurrentPrice(product);
+                    return InkWell(
+                      onTap: () => _selectProductFromDropdown(product),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          border: index < _filteredProducts.length - 1 ? const Border(bottom: BorderSide(color: Color(0xFFE0E0E0))) : null,
+                        ),
+                        child: Row(
                           children: [
-                            Text(
-                              product.name,
-                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(product.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                                  const SizedBox(height: 4),
+                                  Text('Barkod: ${product.barcode}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                                ],
+                              ),
                             ),
-                            const Spacer(),
                             Text(
                               '${price.toStringAsFixed(0)} ₼',
-                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF4CAF50)),
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF4CAF50)),
                             ),
                           ],
                         ),
                       ),
-                    ),
-                  ),
-                );
-              },
+                    );
+                  },
+                ),
+              ),
             ),
           ),
-        ],
-      ),
+      ],
     );
   }
 
