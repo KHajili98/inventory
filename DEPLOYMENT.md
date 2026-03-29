@@ -114,6 +114,8 @@ After deployment, check:
 ### 7. Git Workflow
 
 ```bash
+
+flutter clean && flutter build web --release && git add -f build/web/ && git commit -m "Build: Update web build for deployment" && git push origin main
 # Build the app
 flutter build web --release
 
