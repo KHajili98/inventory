@@ -1003,266 +1003,272 @@ class _PosPageState extends State<PosPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 4))],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Price Type
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Qiymət Növü',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(child: _buildPriceTypeButton(PriceType.retail, 'Pərakəndə')),
-                    const SizedBox(width: 8),
-                    Expanded(child: _buildPriceTypeButton(PriceType.wholesale, 'Topdan')),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Container(height: 1, color: const Color(0xFFE2E8F0)),
-          // Payment
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Ödəniş Metodu',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(child: _buildPaymentMethodButton(PaymentMethod.cash, 'Nağd')),
-                    const SizedBox(width: 6),
-                    Expanded(child: _buildPaymentMethodButton(PaymentMethod.card, 'Kart')),
-                    const SizedBox(width: 6),
-                    Expanded(child: _buildPaymentMethodButton(PaymentMethod.transfer, 'Köçürmə')),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Container(height: 1, color: const Color(0xFFE2E8F0)),
-          // Discount
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.local_offer, size: 18, color: Color(0xFF667EEA)),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Endirim',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
-                    ),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(color: const Color(0xFFFED7D7), borderRadius: BorderRadius.circular(6)),
-                      child: Text(
-                        '${_globalDiscountPercent.toStringAsFixed(0)}%',
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFFC53030)),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: _discountEnabled ? const Color(0xFF667EEA) : const Color(0xFFE2E8F0),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: Checkbox(
-                          value: _discountEnabled,
-                          onChanged: _onDiscountEnabledChanged,
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          fillColor: WidgetStateProperty.all(Colors.transparent),
-                          checkColor: Colors.white,
-                          side: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextField(
-                        controller: _discountController,
-                        enabled: _discountEnabled,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: _discountEnabled ? const Color(0xFFF7FAFC) : const Color(0xFFFAFAFA),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Color(0xFF667EEA), width: 2),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          isDense: true,
-                        ),
-                        onChanged: _onDiscountFieldChanged,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF7FAFC),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        '%',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF718096)),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF7FAFC),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        '₼',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF718096)),
-                      ),
-                    ),
-                  ],
-                ),
-                if (_discountEnabled) ...[
-                  const SizedBox(height: 12),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Price Type
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Qiymət Növü',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
+                  ),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
-                      Expanded(child: _buildPercentBadgeButton(5)),
+                      Expanded(child: _buildPriceTypeButton(PriceType.retail, 'Pərakəndə')),
                       const SizedBox(width: 8),
-                      Expanded(child: _buildPercentBadgeButton(10)),
+                      Expanded(child: _buildPriceTypeButton(PriceType.wholesale, 'Topdan')),
                     ],
                   ),
                 ],
-              ],
+              ),
             ),
-          ),
-          Container(height: 1, color: const Color(0xFFE2E8F0)),
-          // Summary
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                _buildSummaryRow('Ara Cəmi:', '${subtotal.toStringAsFixed(2)} ₼'),
-                if (discount > 0)
-                  _buildSummaryRow('Endirim (${_globalDiscountPercent.toStringAsFixed(0)}%):', '${discount.toStringAsFixed(2)} ₼', isDiscount: true),
-                if (customerDiscount > 0 && _selectedCustomer != null)
-                  _buildSummaryRow(
-                    'Müştəri Endirimi (${_selectedCustomer!.discountPercent}%):',
-                    '${customerDiscount.toStringAsFixed(2)} ₼',
-                    isDiscount: true,
+            Container(height: 1, color: const Color(0xFFE2E8F0)),
+            // Payment
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Ödəniş Metodu',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
                   ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  const SizedBox(height: 8),
+                  Row(
                     children: [
+                      Expanded(child: _buildPaymentMethodButton(PaymentMethod.cash, 'Nağd')),
+                      const SizedBox(width: 6),
+                      Expanded(child: _buildPaymentMethodButton(PaymentMethod.card, 'Kart')),
+                      const SizedBox(width: 6),
+                      Expanded(child: _buildPaymentMethodButton(PaymentMethod.transfer, 'Köçürmə')),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Container(height: 1, color: const Color(0xFFE2E8F0)),
+            // Discount
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.local_offer, size: 18, color: Color(0xFF667EEA)),
+                      const SizedBox(width: 8),
                       const Text(
-                        'Ödəniləcək:',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                        'Endirim',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
                       ),
-                      Text(
-                        '${total.toStringAsFixed(2)} ₼',
-                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(color: const Color(0xFFFED7D7), borderRadius: BorderRadius.circular(6)),
+                        child: Text(
+                          '${_globalDiscountPercent.toStringAsFixed(0)}%',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFFC53030)),
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ],
-            ),
-          ),
-          Container(height: 1, color: const Color(0xFFE2E8F0)),
-          // Buttons
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _cartItems.isEmpty ? null : _completeSale,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF48BB78),
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor: const Color(0xFFE2E8F0),
-                      disabledForegroundColor: const Color(0xFFA0AEC0),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 0,
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: _discountEnabled ? const Color(0xFF667EEA) : const Color(0xFFE2E8F0),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: Checkbox(
+                            value: _discountEnabled,
+                            onChanged: _onDiscountEnabledChanged,
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            fillColor: WidgetStateProperty.all(Colors.transparent),
+                            checkColor: Colors.white,
+                            side: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: _discountController,
+                          enabled: _discountEnabled,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: _discountEnabled ? const Color(0xFFF7FAFC) : const Color(0xFFFAFAFA),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(color: Color(0xFF667EEA), width: 2),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            isDense: true,
+                          ),
+                          onChanged: _onDiscountFieldChanged,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF7FAFC),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          '%',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF718096)),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF7FAFC),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          '₼',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF718096)),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (_discountEnabled) ...[
+                    const SizedBox(height: 12),
+                    Row(
                       children: [
-                        Icon(Icons.print, size: 22),
-                        SizedBox(width: 12),
-                        Text('SATIŞI TAMAMLA (F12)', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                        Expanded(child: _buildPercentBadgeButton(5)),
+                        const SizedBox(width: 8),
+                        Expanded(child: _buildPercentBadgeButton(10)),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Container(height: 1, color: const Color(0xFFE2E8F0)),
+            // Summary
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  _buildSummaryRow('Ara Cəmi:', '${subtotal.toStringAsFixed(2)} ₼'),
+                  if (discount > 0)
+                    _buildSummaryRow(
+                      'Endirim (${_globalDiscountPercent.toStringAsFixed(0)}%):',
+                      '${discount.toStringAsFixed(2)} ₼',
+                      isDiscount: true,
+                    ),
+                  if (customerDiscount > 0 && _selectedCustomer != null)
+                    _buildSummaryRow(
+                      'Müştəri Endirimi (${_selectedCustomer!.discountPercent}%):',
+                      '${customerDiscount.toStringAsFixed(2)} ₼',
+                      isDiscount: true,
+                    ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Ödəniləcək:',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                        Text(
+                          '${total.toStringAsFixed(2)} ₼',
+                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
                       ],
                     ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _showCustomerDialog,
-                    icon: Icon(_selectedCustomer != null ? Icons.person : Icons.person_add_outlined, size: 20),
-                    label: Text(
-                      _selectedCustomer != null ? 'Müştəri: ${_selectedCustomer!.name}' : 'Müştəri Seç',
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _selectedCustomer != null ? const Color(0xFF9F7AEA) : const Color(0xFFF7FAFC),
-                      foregroundColor: _selectedCustomer != null ? Colors.white : const Color(0xFF718096),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 0,
+                ],
+              ),
+            ),
+            Container(height: 1, color: const Color(0xFFE2E8F0)),
+            // Buttons
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _cartItems.isEmpty ? null : _completeSale,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF48BB78),
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor: const Color(0xFFE2E8F0),
+                        disabledForegroundColor: const Color(0xFFA0AEC0),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.print, size: 22),
+                          SizedBox(width: 12),
+                          Text('SATIŞI TAMAMLA (F12)', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _showCustomerDialog,
+                      icon: Icon(_selectedCustomer != null ? Icons.person : Icons.person_add_outlined, size: 20),
+                      label: Text(
+                        _selectedCustomer != null ? 'Müştəri: ${_selectedCustomer!.name}' : 'Müştəri Seç',
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _selectedCustomer != null ? const Color(0xFF9F7AEA) : const Color(0xFFF7FAFC),
+                        foregroundColor: _selectedCustomer != null ? Colors.white : const Color(0xFF718096),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
