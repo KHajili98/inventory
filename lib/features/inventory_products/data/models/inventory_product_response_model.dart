@@ -37,6 +37,8 @@ class InventoryProductItemModel {
   final int? actualPiecesPerCarton;
   final int? actualCartonCount;
   final String? invoice;
+  final String? inventory;
+  final String? inventoryName;
   final String? barcode;
 
   /// `'preprinted'` or `'generated'`
@@ -69,6 +71,8 @@ class InventoryProductItemModel {
     this.actualPiecesPerCarton,
     this.actualCartonCount,
     this.invoice,
+    this.inventory,
+    this.inventoryName,
     this.barcode,
     this.barcodeType,
     this.barcodePrinted,
@@ -100,6 +104,8 @@ class InventoryProductItemModel {
     actualPiecesPerCarton: json['actual_pieces_per_carton'] != null ? (json['actual_pieces_per_carton'] as num).toInt() : null,
     actualCartonCount: json['actual_carton_count'] != null ? (json['actual_carton_count'] as num).toInt() : null,
     invoice: json['invoice'] as String?,
+    inventory: json['inventory'] as String?,
+    inventoryName: json['inventory_name'] as String?,
     barcode: json['barcode'] as String?,
     barcodeType: json['barcode_type'] as String?,
     barcodePrinted: json['barcode_printed'] as bool?,
@@ -131,6 +137,8 @@ class InventoryProductItemModel {
     'actual_pieces_per_carton': actualPiecesPerCarton,
     'actual_carton_count': actualCartonCount,
     'invoice': invoice,
+    'inventory': inventory,
+    'inventory_name': inventoryName,
     'barcode': barcode,
     'barcode_type': barcodeType,
     'barcode_printed': barcodePrinted,

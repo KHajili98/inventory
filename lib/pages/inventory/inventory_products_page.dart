@@ -77,6 +77,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
       _colBarcode +
       _colCoord +
       _colSource +
+      _colInventory +
       _colStatus +
       _colActions;
 
@@ -96,6 +97,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
   static const double _colBarcode = 150;
   static const double _colCoord = 120;
   static const double _colSource = 130;
+  static const double _colInventory = 150;
   static const double _colStatus = 120;
   static const double _colActions = 116;
 
@@ -850,6 +852,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
           _headerCell(l10n.barcode, _colBarcode),
           _headerCell(l10n.location, _colCoord),
           _headerCell(l10n.source, _colSource),
+          _headerCell(l10n.sourceInventory, _colInventory),
           _headerCell(l10n.status, _colStatus),
           SizedBox(width: _colActions),
         ],
@@ -1083,6 +1086,34 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                               child: Text(
                                 product.source!,
                                 style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF0284C7)),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : const Text('—', style: TextStyle(fontSize: 13, color: Color(0xFFCBD5E1))),
+              ),
+            ),
+            // Inventory
+            SizedBox(
+              width: _colInventory,
+              height: 52,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: product.inventoryName != null && product.inventoryName!.isNotEmpty
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(color: const Color(0xFFF0FDF4), borderRadius: BorderRadius.circular(6)),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.warehouse_outlined, size: 12, color: Color(0xFF16A34A)),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                product.inventoryName!,
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF16A34A)),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
