@@ -80,10 +80,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   void initState() {
     super.initState();
     final today = DateTime.now();
-    _range = DateTimeRange(
-      start: today.subtract(const Duration(days: 6)),
-      end: today,
-    );
+    _range = DateTimeRange(start: today.subtract(const Duration(days: 6)), end: today);
   }
 
   // ─── Computed ─────────────────────────────────────────────────────────────
@@ -96,20 +93,22 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // ─── Date picker ──────────────────────────────────────────────────────────
 
   Future<void> _pickDateRange() async {
-    final picked = await showDateRangePicker(
+    final picked = await showDialog<DateTimeRange>(
       context: context,
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
-      initialDateRange: _range,
-      builder: (ctx, child) => Theme(
-        data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.light(
-            primary: _kPrimary,
-            onPrimary: Colors.white,
-            surface: Colors.white,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        clipBehavior: Clip.antiAlias,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480, maxHeight: 580),
+          child: Theme(
+            data: Theme.of(ctx).copyWith(
+              colorScheme: const ColorScheme.light(primary: _kPrimary),
+              datePickerTheme: const DatePickerThemeData(headerBackgroundColor: _kPrimary, headerForegroundColor: Colors.white),
+            ),
+            child: _AnalyticsDateRangePickerDialog(initialDateRange: _range, firstDate: DateTime(2020), lastDate: DateTime.now()),
           ),
         ),
-        child: child!,
       ),
     );
     if (picked != null) setState(() => _range = picked);
@@ -133,24 +132,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           const SizedBox(height: 20),
 
           // ── Date range picker ────────────────────────────────────────────
-          _DateRangeBar(
-            range: _range,
-            fmt: fmt,
-            l10n: l10n,
-            onTap: _pickDateRange,
-            isMobile: isMobile,
-          ),
+          _DateRangeBar(range: _range, fmt: fmt, l10n: l10n, onTap: _pickDateRange, isMobile: isMobile),
           const SizedBox(height: 24),
 
           // ── Summary cards ────────────────────────────────────────────────
-          _SummaryCards(
-            revenue: _revenue,
-            totalExpenses: _totalExpenses,
-            tax: _tax,
-            netProfit: _netProfit,
-            l10n: l10n,
-            isMobile: isMobile,
-          ),
+          _SummaryCards(revenue: _revenue, totalExpenses: _totalExpenses, tax: _tax, netProfit: _netProfit, l10n: l10n, isMobile: isMobile),
           const SizedBox(height: 28),
 
           // ── Charts row (bar + pie) ───────────────────────────────────────
@@ -165,9 +151,15 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(flex: 5, child: _BarChartCard(range: _range, l10n: l10n)),
+                  Expanded(
+                    flex: 5,
+                    child: _BarChartCard(range: _range, l10n: l10n),
+                  ),
                   const SizedBox(width: 20),
-                  Expanded(flex: 4, child: _PieChartCard(range: _range, l10n: l10n)),
+                  Expanded(
+                    flex: 4,
+                    child: _PieChartCard(range: _range, l10n: l10n),
+                  ),
                 ],
               ),
             ),
@@ -195,18 +187,10 @@ class _PageHeader extends StatelessWidget {
       children: [
         Text(
           l10n.analytics,
-          style: TextStyle(
-            fontSize: isMobile ? 22 : 28,
-            fontWeight: FontWeight.w800,
-            color: const Color(0xFF0F172A),
-            letterSpacing: -0.5,
-          ),
+          style: TextStyle(fontSize: isMobile ? 22 : 28, fontWeight: FontWeight.w800, color: const Color(0xFF0F172A), letterSpacing: -0.5),
         ),
         const SizedBox(height: 4),
-        Text(
-          l10n.analyticsSubtitle,
-          style: const TextStyle(fontSize: 14, color: Color(0xFF64748B)),
-        ),
+        Text(l10n.analyticsSubtitle, style: const TextStyle(fontSize: 14, color: Color(0xFF64748B))),
       ],
     );
   }
@@ -221,13 +205,7 @@ class _DateRangeBar extends StatelessWidget {
   final VoidCallback onTap;
   final bool isMobile;
 
-  const _DateRangeBar({
-    required this.range,
-    required this.fmt,
-    required this.l10n,
-    required this.onTap,
-    required this.isMobile,
-  });
+  const _DateRangeBar({required this.range, required this.fmt, required this.l10n, required this.onTap, required this.isMobile});
 
   @override
   Widget build(BuildContext context) {
@@ -250,24 +228,14 @@ class _DateRangeBar extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: const Color(0xFFE2E8F0)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6, offset: const Offset(0, 2))],
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     '${fmt.format(range.start)} – ${fmt.format(range.end)}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF1E293B),
-                    ),
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF1E293B)),
                   ),
                   const SizedBox(width: 8),
                   const Icon(Icons.expand_more_rounded, size: 18, color: Color(0xFF94A3B8)),
@@ -303,13 +271,7 @@ class _SummaryCards extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cards = [
-      _CardData(
-        label: l10n.revenue,
-        value: revenue,
-        icon: Icons.trending_up_rounded,
-        color: _kPrimary,
-        bgColor: const Color(0xFFEEF2FF),
-      ),
+      _CardData(label: l10n.revenue, value: revenue, icon: Icons.trending_up_rounded, color: _kPrimary, bgColor: const Color(0xFFEEF2FF)),
       _CardData(
         label: l10n.totalExpensesCard,
         value: totalExpenses,
@@ -317,48 +279,42 @@ class _SummaryCards extends StatelessWidget {
         color: _kDanger,
         bgColor: const Color(0xFFFFF1F2),
       ),
-      _CardData(
-        label: l10n.tax,
-        value: tax,
-        icon: Icons.account_balance_rounded,
-        color: _kWarning,
-        bgColor: const Color(0xFFFFFBEB),
-      ),
-      _CardData(
-        label: l10n.netProfit,
-        value: netProfit,
-        icon: Icons.savings_rounded,
-        color: _kSuccess,
-        bgColor: const Color(0xFFECFDF5),
-      ),
+      _CardData(label: l10n.tax, value: tax, icon: Icons.account_balance_rounded, color: _kWarning, bgColor: const Color(0xFFFFFBEB)),
+      _CardData(label: l10n.netProfit, value: netProfit, icon: Icons.savings_rounded, color: _kSuccess, bgColor: const Color(0xFFECFDF5)),
     ];
 
     if (isMobile) {
       return Column(
         children: [
-          Row(children: [
-            Expanded(child: _SummaryCard(data: cards[0])),
-            const SizedBox(width: 12),
-            Expanded(child: _SummaryCard(data: cards[1])),
-          ]),
+          Row(
+            children: [
+              Expanded(child: _SummaryCard(data: cards[0])),
+              const SizedBox(width: 12),
+              Expanded(child: _SummaryCard(data: cards[1])),
+            ],
+          ),
           const SizedBox(height: 12),
-          Row(children: [
-            Expanded(child: _SummaryCard(data: cards[2])),
-            const SizedBox(width: 12),
-            Expanded(child: _SummaryCard(data: cards[3])),
-          ]),
+          Row(
+            children: [
+              Expanded(child: _SummaryCard(data: cards[2])),
+              const SizedBox(width: 12),
+              Expanded(child: _SummaryCard(data: cards[3])),
+            ],
+          ),
         ],
       );
     }
 
     return Row(
       children: cards
-          .map((c) => Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(right: c == cards.last ? 0 : 16),
-                  child: _SummaryCard(data: c),
-                ),
-              ))
+          .map(
+            (c) => Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(right: c == cards.last ? 0 : 16),
+                child: _SummaryCard(data: c),
+              ),
+            ),
+          )
           .toList(),
     );
   }
@@ -370,13 +326,7 @@ class _CardData {
   final IconData icon;
   final Color color;
   final Color bgColor;
-  const _CardData({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-    required this.bgColor,
-  });
+  const _CardData({required this.label, required this.value, required this.icon, required this.color, required this.bgColor});
 }
 
 class _SummaryCard extends StatelessWidget {
@@ -392,13 +342,7 @@ class _SummaryCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -408,10 +352,7 @@ class _SummaryCard extends StatelessWidget {
               Container(
                 width: 38,
                 height: 38,
-                decoration: BoxDecoration(
-                  color: data.bgColor,
-                  borderRadius: BorderRadius.circular(10),
-                ),
+                decoration: BoxDecoration(color: data.bgColor, borderRadius: BorderRadius.circular(10)),
                 child: Icon(data.icon, color: data.color, size: 20),
               ),
               const Spacer(),
@@ -425,12 +366,7 @@ class _SummaryCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             '₼ ${fmtNum.format(data.value)}',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: data.color,
-              letterSpacing: -0.3,
-            ),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: data.color, letterSpacing: -0.3),
           ),
         ],
       ),
@@ -453,24 +389,14 @@ class _ChartCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 2))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF0F172A),
-            ),
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF0F172A)),
           ),
           const SizedBox(height: 20),
           chart,
@@ -567,10 +493,8 @@ class _BarChartCardState extends State<_BarChartCard> {
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 60,
-                      getTitlesWidget: (value, meta) => Text(
-                        '₼${fmtNum.format(value)}',
-                        style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
-                      ),
+                      getTitlesWidget: (value, meta) =>
+                          Text('₼${fmtNum.format(value)}', style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8))),
                     ),
                   ),
                   topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -579,16 +503,10 @@ class _BarChartCardState extends State<_BarChartCard> {
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
-                  getDrawingHorizontalLine: (v) => FlLine(
-                    color: const Color(0xFFF1F5F9),
-                    strokeWidth: 1,
-                  ),
+                  getDrawingHorizontalLine: (v) => FlLine(color: const Color(0xFFF1F5F9), strokeWidth: 1),
                 ),
                 borderData: FlBorderData(show: false),
-                barGroups: [
-                  _makeBarGroup(0, sederek, _kPrimary, _touchedIndex == 0),
-                  _makeBarGroup(1, abseron, _kSecondary, _touchedIndex == 1),
-                ],
+                barGroups: [_makeBarGroup(0, sederek, _kPrimary, _touchedIndex == 0), _makeBarGroup(1, abseron, _kSecondary, _touchedIndex == 1)],
               ),
             ),
           ),
@@ -614,11 +532,7 @@ class _BarChartCardState extends State<_BarChartCard> {
           width: 52,
           color: isTouched ? color.withValues(alpha: 0.75) : color,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-          backDrawRodData: BackgroundBarChartRodData(
-            show: true,
-            toY: (y * 1.25).ceilToDouble(),
-            color: const Color(0xFFF8FAFC),
-          ),
+          backDrawRodData: BackgroundBarChartRodData(show: true, toY: (y * 1.25).ceilToDouble(), color: const Color(0xFFF8FAFC)),
         ),
       ],
     );
@@ -732,10 +646,7 @@ class _PieChartCardState extends State<_PieChartCard> {
                     Container(
                       width: 10,
                       height: 10,
-                      decoration: BoxDecoration(
-                        color: _kCategoryColors[i],
-                        shape: BoxShape.circle,
-                      ),
+                      decoration: BoxDecoration(color: _kCategoryColors[i], shape: BoxShape.circle),
                     ),
                     const SizedBox(width: 6),
                     Text(
@@ -808,10 +719,7 @@ class _LineChartCard extends StatelessWidget {
                 sideTitles: SideTitles(
                   showTitles: true,
                   reservedSize: 60,
-                  getTitlesWidget: (v, meta) => Text(
-                    '₼${fmtNum.format(v)}',
-                    style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
-                  ),
+                  getTitlesWidget: (v, meta) => Text('₼${fmtNum.format(v)}', style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8))),
                 ),
               ),
               bottomTitles: AxisTitles(
@@ -824,10 +732,7 @@ class _LineChartCard extends StatelessWidget {
                     if (idx < 0 || idx >= dailyProfits.length) return const SizedBox.shrink();
                     return Padding(
                       padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        dateFmt.format(dailyProfits[idx].date),
-                        style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
-                      ),
+                      child: Text(dateFmt.format(dailyProfits[idx].date), style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8))),
                     );
                   },
                 ),
@@ -845,20 +750,13 @@ class _LineChartCard extends StatelessWidget {
                 isStrokeCapRound: true,
                 dotData: FlDotData(
                   show: dailyProfits.length <= 14,
-                  getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
-                    radius: 4,
-                    color: Colors.white,
-                    strokeWidth: 2,
-                    strokeColor: _kSuccess,
-                  ),
+                  getDotPainter: (spot, percent, bar, index) =>
+                      FlDotCirclePainter(radius: 4, color: Colors.white, strokeWidth: 2, strokeColor: _kSuccess),
                 ),
                 belowBarData: BarAreaData(
                   show: true,
                   gradient: LinearGradient(
-                    colors: [
-                      _kSuccess.withValues(alpha: 0.25),
-                      _kSuccess.withValues(alpha: 0.0),
-                    ],
+                    colors: [_kSuccess.withValues(alpha: 0.25), _kSuccess.withValues(alpha: 0.0)],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
@@ -884,7 +782,11 @@ class _LegendDot extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
         const SizedBox(width: 6),
         Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF475569))),
       ],
@@ -904,8 +806,280 @@ class _ValueBadge extends StatelessWidget {
       children: [
         Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
         const SizedBox(height: 2),
-        Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: color)),
+        Text(
+          value,
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: color),
+        ),
       ],
+    );
+  }
+}
+
+// ── Date Range Picker Dialog ──────────────────────────────────────────────────
+
+class _AnalyticsDateRangePickerDialog extends StatefulWidget {
+  final DateTimeRange initialDateRange;
+  final DateTime firstDate;
+  final DateTime lastDate;
+
+  const _AnalyticsDateRangePickerDialog({required this.initialDateRange, required this.firstDate, required this.lastDate});
+
+  @override
+  State<_AnalyticsDateRangePickerDialog> createState() => _AnalyticsDateRangePickerDialogState();
+}
+
+class _AnalyticsDateRangePickerDialogState extends State<_AnalyticsDateRangePickerDialog> {
+  late DateTime? _start;
+  late DateTime? _end;
+  // 0 = picking start, 1 = picking end
+  int _step = 0;
+  late DateTime _focusedMonth;
+
+  @override
+  void initState() {
+    super.initState();
+    _start = widget.initialDateRange.start;
+    _end = widget.initialDateRange.end;
+    _focusedMonth = _start ?? DateTime.now();
+    _step = 1;
+  }
+
+  void _onDayTap(DateTime day) {
+    setState(() {
+      if (_step == 0) {
+        _start = day;
+        _end = null;
+        _step = 1;
+      } else {
+        if (day.isBefore(_start!)) {
+          _end = _start;
+          _start = day;
+        } else {
+          _end = day;
+        }
+        _step = 0;
+      }
+    });
+  }
+
+  void _prevMonth() => setState(() => _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month - 1));
+  void _nextMonth() => setState(() => _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month + 1));
+
+  bool _isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final dateFmt = DateFormat('dd.MM.yyyy');
+    final monthFmt = DateFormat('MMMM yyyy');
+    final canConfirm = _start != null && _end != null;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // ── Header ────────────────────────────────────────────────────────
+        Container(
+          width: double.infinity,
+          color: _kPrimary,
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.dateRange,
+                style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  _DateChip(
+                    label: _start != null ? dateFmt.format(_start!) : '—',
+                    isActive: _step == 0,
+                    onTap: () => setState(() {
+                      _step = 0;
+                      _end = null;
+                    }),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: Icon(Icons.arrow_forward_rounded, color: Colors.white70, size: 16),
+                  ),
+                  _DateChip(
+                    label: _end != null ? dateFmt.format(_end!) : '—',
+                    isActive: _step == 1,
+                    onTap: _start != null ? () => setState(() => _step = 1) : null,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        // ── Month navigation ──────────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Row(
+            children: [
+              IconButton(onPressed: _prevMonth, icon: const Icon(Icons.chevron_left_rounded), iconSize: 20, color: const Color(0xFF475569)),
+              Expanded(
+                child: Text(
+                  monthFmt.format(_focusedMonth),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                ),
+              ),
+              IconButton(onPressed: _nextMonth, icon: const Icon(Icons.chevron_right_rounded), iconSize: 20, color: const Color(0xFF475569)),
+            ],
+          ),
+        ),
+
+        // ── Day-of-week headers ───────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Row(
+            children: ['B', 'T', 'Ç', 'T', 'C', 'Ş', 'B']
+                .map(
+                  (d) => Expanded(
+                    child: Center(
+                      child: Text(
+                        d,
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF94A3B8)),
+                      ),
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+        ),
+        const SizedBox(height: 4),
+
+        // ── Calendar grid ─────────────────────────────────────────────────
+        Padding(padding: const EdgeInsets.symmetric(horizontal: 12), child: _buildGrid()),
+        const SizedBox(height: 8),
+
+        // ── Actions ───────────────────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xFFE2E8F0)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: Text(
+                    l10n.cancel,
+                    style: const TextStyle(color: Color(0xFF475569), fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  onPressed: canConfirm ? () => Navigator.of(context).pop(DateTimeRange(start: _start!, end: _end!)) : null,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _kPrimary,
+                    disabledBackgroundColor: const Color(0xFFE2E8F0),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: Text(l10n.expenseFilterApply, style: const TextStyle(fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGrid() {
+    final firstDay = DateTime(_focusedMonth.year, _focusedMonth.month, 1);
+    final startOffset = firstDay.weekday - 1;
+    final daysInMonth = DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0).day;
+    final rows = ((startOffset + daysInMonth) / 7).ceil();
+
+    return Column(
+      children: List.generate(rows, (row) {
+        return Row(
+          children: List.generate(7, (col) {
+            final index = row * 7 + col;
+            final dayNum = index - startOffset + 1;
+            if (dayNum < 1 || dayNum > daysInMonth) {
+              return const Expanded(child: SizedBox(height: 36));
+            }
+            final day = DateTime(_focusedMonth.year, _focusedMonth.month, dayNum);
+            final isStart = _start != null && _isSameDay(day, _start!);
+            final isEnd = _end != null && _isSameDay(day, _end!);
+            final inRange = _start != null && _end != null && day.isAfter(_start!) && day.isBefore(_end!);
+            final isSelected = isStart || isEnd;
+
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => _onDayTap(day),
+                child: Container(
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? _kPrimary
+                        : inRange
+                        ? const Color(0xFFEEF2FF)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$dayNum',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+                        color: isSelected
+                            ? Colors.white
+                            : inRange
+                            ? _kPrimary
+                            : const Color(0xFF1E293B),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+        );
+      }),
+    );
+  }
+}
+
+// ── Date chip (header) ────────────────────────────────────────────────────────
+
+class _DateChip extends StatelessWidget {
+  final String label;
+  final bool isActive;
+  final VoidCallback? onTap;
+
+  const _DateChip({required this.label, required this.isActive, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isActive ? Colors.white.withValues(alpha: 0.25) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: isActive ? Colors.white : Colors.white38),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(color: isActive ? Colors.white : Colors.white70, fontSize: 14, fontWeight: isActive ? FontWeight.w700 : FontWeight.w400),
+        ),
+      ),
     );
   }
 }
