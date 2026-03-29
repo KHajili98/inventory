@@ -45,8 +45,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
   final ScrollController _hScrollController = ScrollController();
   // Mirror controllers kept in sync via listener (header + bottom scrollbar)
   final ScrollController _hHeaderController = ScrollController();
-  final ScrollController _hBarController = ScrollController();
-  // Vertical scroll controller for rows
+
   final ScrollController _vScrollController = ScrollController();
 
   static const double _hScrollStep = 200.0;
@@ -58,22 +57,6 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
     if (_hSyncing) return;
     _hSyncing = true;
     final offset = _hScrollController.offset;
-    if (_hHeaderController.hasClients && _hHeaderController.offset != offset) {
-      _hHeaderController.jumpTo(offset);
-    }
-    if (_hBarController.hasClients && _hBarController.offset != offset) {
-      _hBarController.jumpTo(offset);
-    }
-    _hSyncing = false;
-  }
-
-  void _onHBarScroll() {
-    if (_hSyncing) return;
-    _hSyncing = true;
-    final offset = _hBarController.offset;
-    if (_hScrollController.hasClients && _hScrollController.offset != offset) {
-      _hScrollController.jumpTo(offset);
-    }
     if (_hHeaderController.hasClients && _hHeaderController.offset != offset) {
       _hHeaderController.jumpTo(offset);
     }
@@ -124,7 +107,6 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
   void initState() {
     super.initState();
     _hScrollController.addListener(_onHScroll);
-    _hBarController.addListener(_onHBarScroll);
   }
 
   List<InventoryProductItemModel> _applyFilterAndSort(List<InventoryProductItemModel> all) {
@@ -395,10 +377,8 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
   @override
   void dispose() {
     _hScrollController.removeListener(_onHScroll);
-    _hBarController.removeListener(_onHBarScroll);
     _hScrollController.dispose();
     _hHeaderController.dispose();
-    _hBarController.dispose();
     _vScrollController.dispose();
     super.dispose();
   }
@@ -776,7 +756,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
             controller: _hHeaderController,
             scrollDirection: Axis.horizontal,
             physics: const NeverScrollableScrollPhysics(),
-            child: _buildHeaderRow(),
+            child: SizedBox(width: _tableWidth, child: _buildHeaderRow()),
           ),
           // ── Scrollable body + right vertical scrollbar ────────────────────
           Expanded(
@@ -826,14 +806,11 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                       ),
                     ),
                   ),
-                  // ── Right-side vertical nav buttons ─────────────────
-                  _buildVNavBar(),
                 ],
               ),
             },
           ),
           // ── Bottom horizontal scrollbar + nav buttons ─────────────────────
-          _buildHScrollBar(),
           // ── Pagination footer ─────────────────────────────────────────────
           if (state is InventoryProductsLoaded) _buildPaginationFooter(state),
         ],
@@ -901,58 +878,6 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
               curve: Curves.easeOut,
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  /// Right-side column with up/down step buttons
-  Widget _buildVNavBar() {
-    final l10n = AppLocalizations.of(context)!;
-    return Container(
-      width: 32,
-      decoration: const BoxDecoration(
-        color: Color(0xFFF8FAFC),
-        border: Border(left: BorderSide(color: Color(0xFFE2E8F0))),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _NavBtn(icon: Icons.keyboard_arrow_up_rounded, tooltip: l10n.scrollUp, onTap: () => _scrollV(-_vScrollStep)),
-          const SizedBox(height: 4),
-          _NavBtn(icon: Icons.keyboard_arrow_down_rounded, tooltip: l10n.scrollDown, onTap: () => _scrollV(_vScrollStep)),
-        ],
-      ),
-    );
-  }
-
-  /// Bottom area: draggable/clickable horizontal scrollbar + step buttons on either side
-  Widget _buildHScrollBar() {
-    final l10n = AppLocalizations.of(context)!;
-    return Container(
-      height: 32,
-      decoration: const BoxDecoration(
-        color: Color(0xFFF8FAFC),
-        border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
-        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(12), bottomRight: Radius.circular(12)),
-      ),
-      child: Row(
-        children: [
-          _NavBtn(icon: Icons.chevron_left_rounded, tooltip: l10n.scrollLeft, onTap: () => _scrollH(-_hScrollStep)),
-          Expanded(
-            child: Scrollbar(
-              controller: _hBarController,
-              thumbVisibility: true,
-              trackVisibility: true,
-              notificationPredicate: (n) => n.metrics.axis == Axis.horizontal,
-              child: SingleChildScrollView(
-                controller: _hBarController,
-                scrollDirection: Axis.horizontal,
-                child: SizedBox(width: _tableWidth, height: 1),
-              ),
-            ),
-          ),
-          _NavBtn(icon: Icons.chevron_right_rounded, tooltip: l10n.scrollRight, onTap: () => _scrollH(_hScrollStep)),
         ],
       ),
     );

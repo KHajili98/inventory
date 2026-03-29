@@ -12,7 +12,7 @@ class InventoryProductsCubit extends Cubit<InventoryProductsState> {
 
   final InventoryProductsRepository _repository;
 
-  static const int _pageSize = 5;
+  static const int _pageSize = 10;
 
   /// Fetch the first page of inventory products.
   Future<void> fetchProducts() async {
