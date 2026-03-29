@@ -31,14 +31,42 @@ class _DailyProfit {
   const _DailyProfit(this.date, this.profit);
 }
 
-List<_DailyProfit> _generateDailyProfits(DateTimeRange range) {
+class _DailyRow {
+  final DateTime date;
+  final String store;
+  final double sales;
+  final double costOfGoods;
+  final double expenses;
+  final double tax;
+
+  _DailyRow({required this.date, required this.store, required this.sales, required this.costOfGoods, required this.expenses, required this.tax});
+
+  double get margin => sales == 0 ? 0 : ((sales - costOfGoods - expenses - tax) / sales * 100);
+  double get netProfit => sales - costOfGoods - expenses - tax;
+}
+
+List<_DailyRow> _generateDailyRows(DateTimeRange range) {
   final rng = math.Random(42);
   final days = range.end.difference(range.start).inDays + 1;
-  return List.generate(days, (i) {
+  final stores = ['Sədərək', 'Abşeron'];
+
+  final rows = <_DailyRow>[];
+  for (var i = 0; i < days; i++) {
     final d = range.start.add(Duration(days: i));
-    final p = 800 + rng.nextDouble() * 2400 - 400;
-    return _DailyProfit(d, p);
-  });
+    for (final store in stores) {
+      final sales = 450 + rng.nextDouble() * 900; // Split revenue per store
+      final cog = sales * (0.35 + rng.nextDouble() * 0.15);
+      final exp = 40 + rng.nextDouble() * 100; // Split expenses per store
+      final tax = sales * 0.12;
+      rows.add(_DailyRow(date: d, store: store, sales: sales, costOfGoods: cog, expenses: exp, tax: tax));
+    }
+  }
+  return rows;
+}
+
+List<_DailyProfit> _generateDailyProfits(DateTimeRange range) {
+  final rows = _generateDailyRows(range);
+  return rows.map((r) => _DailyProfit(r.date, r.netProfit)).toList();
 }
 
 double _mockRevenueSederek(DateTimeRange range) {
@@ -146,6 +174,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             _PieChartCard(range: _range, l10n: l10n),
             const SizedBox(height: 24),
             _LineChartCard(range: _range, l10n: l10n),
+            const SizedBox(height: 24),
+            _DailyBreakdownTable(range: _range, l10n: l10n),
           ] else ...[
             IntrinsicHeight(
               child: Row(
@@ -165,6 +195,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             ),
             const SizedBox(height: 24),
             _LineChartCard(range: _range, l10n: l10n),
+            const SizedBox(height: 24),
+            _DailyBreakdownTable(range: _range, l10n: l10n),
           ],
           const SizedBox(height: 24),
         ],
@@ -811,6 +843,170 @@ class _ValueBadge extends StatelessWidget {
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: color),
         ),
       ],
+    );
+  }
+}
+
+// ── Daily Breakdown Table ─────────────────────────────────────────────────────
+
+class _DailyBreakdownTable extends StatelessWidget {
+  final DateTimeRange range;
+  final AppLocalizations l10n;
+  const _DailyBreakdownTable({required this.range, required this.l10n});
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = _generateDailyRows(range);
+    final fmt = NumberFormat('#,##0.00', 'en_US');
+    final dateFmt = DateFormat('dd.MM.yyyy');
+
+    // Grand totals
+    final totalSales = rows.fold(0.0, (s, r) => s + r.sales);
+    final totalCog = rows.fold(0.0, (s, r) => s + r.costOfGoods);
+    final totalExp = rows.fold(0.0, (s, r) => s + r.expenses);
+    final totalTax = rows.fold(0.0, (s, r) => s + r.tax);
+    final totalNet = rows.fold(0.0, (s, r) => s + r.netProfit);
+    final avgMargin = totalSales == 0 ? 0.0 : (totalNet / totalSales * 100);
+
+    const headerStyle = TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF64748B), letterSpacing: 0.3);
+    const cellStyle = TextStyle(fontSize: 12, color: Color(0xFF1E293B));
+    const totalStyle = TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF0F172A));
+
+    // Build a cell with flexible width
+    Widget buildCell({
+      required String text,
+      required TextStyle style,
+      TextAlign align = TextAlign.left,
+      Color? textColor,
+      double flex = 1.0,
+      bool isLast = false,
+    }) {
+      return Expanded(
+        flex: (flex * 10).toInt(),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            border: Border(right: isLast ? BorderSide.none : const BorderSide(color: Color(0xFFE2E8F0), width: 1)),
+          ),
+          child: Text(
+            text,
+            style: textColor != null ? style.copyWith(color: textColor) : style,
+            textAlign: align,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      );
+    }
+
+    // Build a table row
+    Widget buildRow({required List<Widget> cells, required Color bg, bool showDivider = true}) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            color: bg,
+            child: Row(children: cells),
+          ),
+          if (showDivider) const Divider(height: 1, color: Color(0xFFE2E8F0)),
+        ],
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 2))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // ── Title ──────────────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            child: Text(
+              l10n.dailyBreakdown,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF0F172A)),
+            ),
+          ),
+          // ── Table ──────────────────────────────────────────────────────
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Header row
+                buildRow(
+                  cells: [
+                    buildCell(text: l10n.colDate, style: headerStyle, flex: 1.2),
+                    buildCell(text: l10n.storeLabel, style: headerStyle, flex: 1.0),
+                    buildCell(text: l10n.colTotalSales, style: headerStyle, align: TextAlign.right, flex: 1.3),
+                    buildCell(text: l10n.colCostOfGoods, style: headerStyle, align: TextAlign.right, flex: 1.3),
+                    buildCell(text: l10n.colTotalExpenses, style: headerStyle, align: TextAlign.right, flex: 1.3),
+                    buildCell(text: l10n.colTax, style: headerStyle, align: TextAlign.right, flex: 1.0),
+                    buildCell(text: l10n.colMargin, style: headerStyle, align: TextAlign.right, flex: 0.9),
+                    buildCell(text: l10n.colNetProfit, style: headerStyle, align: TextAlign.right, flex: 1.2, isLast: true),
+                  ],
+                  bg: const Color(0xFFF8FAFC),
+                ),
+
+                // Data rows
+                ...rows.asMap().entries.map((entry) {
+                  final i = entry.key;
+                  final r = entry.value;
+                  final isEven = i % 2 == 0;
+                  final netColor = r.netProfit >= 0 ? const Color(0xFF10B981) : const Color(0xFFEF4444);
+                  final marginColor = r.margin >= 15 ? const Color(0xFF10B981) : (r.margin >= 5 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444));
+
+                  return buildRow(
+                    cells: [
+                      buildCell(text: dateFmt.format(r.date), style: cellStyle, flex: 1.2),
+                      buildCell(text: r.store, style: cellStyle, flex: 1.0),
+                      buildCell(text: '₼ ${fmt.format(r.sales)}', style: cellStyle, align: TextAlign.right, flex: 1.3),
+                      buildCell(text: '₼ ${fmt.format(r.costOfGoods)}', style: cellStyle, align: TextAlign.right, flex: 1.3),
+                      buildCell(text: '₼ ${fmt.format(r.expenses)}', style: cellStyle, align: TextAlign.right, flex: 1.3),
+                      buildCell(text: '₼ ${fmt.format(r.tax)}', style: cellStyle, align: TextAlign.right, flex: 1.0),
+                      buildCell(text: '${r.margin.toStringAsFixed(1)}%', style: cellStyle, textColor: marginColor, align: TextAlign.right, flex: 0.9),
+                      buildCell(
+                        text: '₼ ${fmt.format(r.netProfit)}',
+                        style: cellStyle.copyWith(fontWeight: FontWeight.w600),
+                        textColor: netColor,
+                        align: TextAlign.right,
+                        flex: 1.2,
+                        isLast: true,
+                      ),
+                    ],
+                    bg: isEven ? Colors.white : const Color(0xFFFAFAFC),
+                  );
+                }),
+
+                // Grand total row
+                buildRow(
+                  cells: [
+                    buildCell(text: l10n.grandTotalRow, style: totalStyle, flex: 2.2), // Spans date + store
+                    buildCell(text: '₼ ${fmt.format(totalSales)}', style: totalStyle, align: TextAlign.right, flex: 1.3),
+                    buildCell(text: '₼ ${fmt.format(totalCog)}', style: totalStyle, align: TextAlign.right, flex: 1.3),
+                    buildCell(text: '₼ ${fmt.format(totalExp)}', style: totalStyle, align: TextAlign.right, flex: 1.3),
+                    buildCell(text: '₼ ${fmt.format(totalTax)}', style: totalStyle, align: TextAlign.right, flex: 1.0),
+                    buildCell(text: '${avgMargin.toStringAsFixed(1)}%', style: totalStyle, textColor: _kPrimary, align: TextAlign.right, flex: 0.9),
+                    buildCell(
+                      text: '₼ ${fmt.format(totalNet)}',
+                      style: totalStyle,
+                      textColor: totalNet >= 0 ? _kSuccess : _kDanger,
+                      align: TextAlign.right,
+                      flex: 1.2,
+                      isLast: true,
+                    ),
+                  ],
+                  bg: const Color(0xFFEEF2FF),
+                  showDivider: false,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

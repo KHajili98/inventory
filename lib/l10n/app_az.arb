@@ -440,5 +440,15 @@
   "sedErekStore": "Sədərək mağazası",
   "abseronStore": "Abşeron mağazası",
   "storeLabel": "Mağaza",
-  "amountLabel": "Məbləğ (₼)"
+  "amountLabel": "Məbləğ (₼)",
+
+  "colDate": "Tarix",
+  "colTotalSales": "Ümumi Satış",
+  "colCostOfGoods": "Ümumi Maya Dəyəri",
+  "colTotalExpenses": "Ümumi Xərc",
+  "colTax": "Vergi",
+  "colMargin": "Marja Faizi",
+  "colNetProfit": "Xalis Mənfəət",
+  "grandTotalRow": "Ümumi Cəm",
+  "dailyBreakdown": "Günlük Cədvəl"
 }

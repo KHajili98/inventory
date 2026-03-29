@@ -756,4 +756,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get amountLabel => 'Amount (₼)';
+
+  @override
+  String get colDate => 'Date';
+
+  @override
+  String get colTotalSales => 'Total Sales';
+
+  @override
+  String get colCostOfGoods => 'Cost of Goods';
+
+  @override
+  String get colTotalExpenses => 'Total Expenses';
+
+  @override
+  String get colTax => 'Tax';
+
+  @override
+  String get colMargin => 'Margin %';
+
+  @override
+  String get colNetProfit => 'Net Profit';
+
+  @override
+  String get grandTotalRow => 'Grand Total';
+
+  @override
+  String get dailyBreakdown => 'Daily Breakdown';
 }

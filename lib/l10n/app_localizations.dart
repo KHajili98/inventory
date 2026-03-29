@@ -1501,6 +1501,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Amount (₼)'**
   String get amountLabel;
+
+  /// No description provided for @colDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get colDate;
+
+  /// No description provided for @colTotalSales.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Sales'**
+  String get colTotalSales;
+
+  /// No description provided for @colCostOfGoods.
+  ///
+  /// In en, this message translates to:
+  /// **'Cost of Goods'**
+  String get colCostOfGoods;
+
+  /// No description provided for @colTotalExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Expenses'**
+  String get colTotalExpenses;
+
+  /// No description provided for @colTax.
+  ///
+  /// In en, this message translates to:
+  /// **'Tax'**
+  String get colTax;
+
+  /// No description provided for @colMargin.
+  ///
+  /// In en, this message translates to:
+  /// **'Margin %'**
+  String get colMargin;
+
+  /// No description provided for @colNetProfit.
+  ///
+  /// In en, this message translates to:
+  /// **'Net Profit'**
+  String get colNetProfit;
+
+  /// No description provided for @grandTotalRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Grand Total'**
+  String get grandTotalRow;
+
+  /// No description provided for @dailyBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Breakdown'**
+  String get dailyBreakdown;
 }
 
 class _AppLocalizationsDelegate

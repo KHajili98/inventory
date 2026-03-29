@@ -1040,5 +1040,15 @@
   "sedErekStore": "Sədərək store",
   "abseronStore": "Abşeron store",
   "storeLabel": "Store",
-  "amountLabel": "Amount (₼)"
+  "amountLabel": "Amount (₼)",
+
+  "colDate": "Date",
+  "colTotalSales": "Total Sales",
+  "colCostOfGoods": "Cost of Goods",
+  "colTotalExpenses": "Total Expenses",
+  "colTax": "Tax",
+  "colMargin": "Margin %",
+  "colNetProfit": "Net Profit",
+  "grandTotalRow": "Grand Total",
+  "dailyBreakdown": "Daily Breakdown"
 }

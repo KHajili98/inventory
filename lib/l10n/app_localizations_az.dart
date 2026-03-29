@@ -760,4 +760,31 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get amountLabel => 'Məbləğ (₼)';
+
+  @override
+  String get colDate => 'Tarix';
+
+  @override
+  String get colTotalSales => 'Ümumi Satış';
+
+  @override
+  String get colCostOfGoods => 'Ümumi Maya Dəyəri';
+
+  @override
+  String get colTotalExpenses => 'Ümumi Xərc';
+
+  @override
+  String get colTax => 'Vergi';
+
+  @override
+  String get colMargin => 'Marja Faizi';
+
+  @override
+  String get colNetProfit => 'Xalis Mənfəət';
+
+  @override
+  String get grandTotalRow => 'Ümumi Cəm';
+
+  @override
+  String get dailyBreakdown => 'Günlük Cədvəl';
 }
