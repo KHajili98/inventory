@@ -787,4 +787,19 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get dailyBreakdown => 'Günlük Cədvəl';
+
+  @override
+  String get exportData => 'İxrac Et';
+
+  @override
+  String get exportToPdf => 'PDF olaraq İxrac Et';
+
+  @override
+  String get exportToExcel => 'Excel olaraq İxrac Et';
+
+  @override
+  String get exportSuccess => 'Uğurla ixrac edildi';
+
+  @override
+  String get exportError => 'İxrac xətası';
 }

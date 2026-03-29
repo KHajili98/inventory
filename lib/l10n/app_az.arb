@@ -450,5 +450,10 @@
   "colMargin": "Marja Faizi",
   "colNetProfit": "Xalis Mənfəət",
   "grandTotalRow": "Ümumi Cəm",
-  "dailyBreakdown": "Günlük Cədvəl"
+  "dailyBreakdown": "Günlük Cədvəl",
+  "exportData": "İxrac Et",
+  "exportToPdf": "PDF olaraq İxrac Et",
+  "exportToExcel": "Excel olaraq İxrac Et",
+  "exportSuccess": "Uğurla ixrac edildi",
+  "exportError": "İxrac xətası"
 }

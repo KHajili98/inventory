@@ -1050,5 +1050,10 @@
   "colMargin": "Margin %",
   "colNetProfit": "Net Profit",
   "grandTotalRow": "Grand Total",
-  "dailyBreakdown": "Daily Breakdown"
+  "dailyBreakdown": "Daily Breakdown",
+  "exportData": "Export Data",
+  "exportToPdf": "Export as PDF",
+  "exportToExcel": "Export as Excel",
+  "exportSuccess": "Exported successfully",
+  "exportError": "Export error"
 }

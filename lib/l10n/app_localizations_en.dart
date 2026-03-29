@@ -783,4 +783,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dailyBreakdown => 'Daily Breakdown';
+
+  @override
+  String get exportData => 'Export Data';
+
+  @override
+  String get exportToPdf => 'Export as PDF';
+
+  @override
+  String get exportToExcel => 'Export as Excel';
+
+  @override
+  String get exportSuccess => 'Exported successfully';
+
+  @override
+  String get exportError => 'Export error';
 }

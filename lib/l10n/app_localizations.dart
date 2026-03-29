@@ -1555,6 +1555,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Daily Breakdown'**
   String get dailyBreakdown;
+
+  /// No description provided for @exportData.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Data'**
+  String get exportData;
+
+  /// No description provided for @exportToPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as PDF'**
+  String get exportToPdf;
+
+  /// No description provided for @exportToExcel.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as Excel'**
+  String get exportToExcel;
+
+  /// No description provided for @exportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Exported successfully'**
+  String get exportSuccess;
+
+  /// No description provided for @exportError.
+  ///
+  /// In en, this message translates to:
+  /// **'Export error'**
+  String get exportError;
 }
 
 class _AppLocalizationsDelegate

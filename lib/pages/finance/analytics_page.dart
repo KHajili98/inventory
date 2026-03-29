@@ -5,6 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:inventory/core/utils/responsive.dart';
 import 'package:inventory/l10n/app_localizations.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:excel/excel.dart' hide Border;
+import 'package:universal_html/html.dart' as html;
 
 // ── Palette ──────────────────────────────────────────────────────────────────
 
@@ -175,7 +179,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             const SizedBox(height: 24),
             _LineChartCard(range: _range, l10n: l10n),
             const SizedBox(height: 24),
-            _DailyBreakdownTable(range: _range, l10n: l10n),
+            _DailyBreakdownTableWithExport(range: _range, l10n: l10n),
           ] else ...[
             IntrinsicHeight(
               child: Row(
@@ -196,7 +200,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             const SizedBox(height: 24),
             _LineChartCard(range: _range, l10n: l10n),
             const SizedBox(height: 24),
-            _DailyBreakdownTable(range: _range, l10n: l10n),
+            _DailyBreakdownTableWithExport(range: _range, l10n: l10n),
           ],
           const SizedBox(height: 24),
         ],
@@ -843,6 +847,279 @@ class _ValueBadge extends StatelessWidget {
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: color),
         ),
       ],
+    );
+  }
+}
+
+// ── Daily Breakdown Table With Export ─────────────────────────────────────────
+
+class _DailyBreakdownTableWithExport extends StatelessWidget {
+  final DateTimeRange range;
+  final AppLocalizations l10n;
+  const _DailyBreakdownTableWithExport({required this.range, required this.l10n});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Export button header
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              OutlinedButton.icon(
+                onPressed: () => _showExportMenu(context),
+                icon: const Icon(Icons.file_download_outlined, size: 18),
+                label: Text(l10n.exportData),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: _kPrimary,
+                  side: const BorderSide(color: _kPrimary),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Table
+        _DailyBreakdownTable(range: range, l10n: l10n),
+      ],
+    );
+  }
+
+  void _showExportMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(color: const Color(0xFFE2E8F0), borderRadius: BorderRadius.circular(2)),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              l10n.exportData,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF0F172A)),
+            ),
+            const SizedBox(height: 20),
+            _ExportOption(
+              icon: Icons.picture_as_pdf_rounded,
+              iconColor: _kDanger,
+              bgColor: const Color(0xFFFEF2F2),
+              title: l10n.exportToPdf,
+              onTap: () {
+                Navigator.pop(context);
+                _exportToPdf(context);
+              },
+            ),
+            const SizedBox(height: 8),
+            _ExportOption(
+              icon: Icons.table_chart_rounded,
+              iconColor: _kSuccess,
+              bgColor: const Color(0xFFECFDF5),
+              title: l10n.exportToExcel,
+              onTap: () {
+                Navigator.pop(context);
+                _exportToExcel(context);
+              },
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _exportToPdf(BuildContext context) async {
+    try {
+      final rows = _generateDailyRows(range);
+      final pdf = pw.Document();
+      final fmt = NumberFormat('#,##0.00', 'en_US');
+      final dateFmt = DateFormat('dd.MM.yyyy');
+
+      final totalSales = rows.fold(0.0, (s, r) => s + r.sales);
+      final totalCog = rows.fold(0.0, (s, r) => s + r.costOfGoods);
+      final totalExp = rows.fold(0.0, (s, r) => s + r.expenses);
+      final totalTax = rows.fold(0.0, (s, r) => s + r.tax);
+      final totalNet = rows.fold(0.0, (s, r) => s + r.netProfit);
+      final avgMargin = totalSales == 0 ? 0.0 : (totalNet / totalSales * 100);
+
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4.landscape,
+          build: (ctx) => pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(l10n.dailyBreakdown, style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 10),
+              pw.Text('${dateFmt.format(range.start)} - ${dateFmt.format(range.end)}', style: const pw.TextStyle(fontSize: 10)),
+              pw.SizedBox(height: 16),
+              pw.Table.fromTextArray(
+                headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
+                cellStyle: const pw.TextStyle(fontSize: 8),
+                headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
+                cellAlignment: pw.Alignment.centerRight,
+                data: [
+                  [
+                    l10n.colDate,
+                    l10n.storeLabel,
+                    l10n.colTotalSales,
+                    l10n.colCostOfGoods,
+                    l10n.colTotalExpenses,
+                    l10n.colTax,
+                    l10n.colMargin,
+                    l10n.colNetProfit,
+                  ],
+                  ...rows.map(
+                    (r) => [
+                      dateFmt.format(r.date),
+                      r.store,
+                      '₼ ${fmt.format(r.sales)}',
+                      '₼ ${fmt.format(r.costOfGoods)}',
+                      '₼ ${fmt.format(r.expenses)}',
+                      '₼ ${fmt.format(r.tax)}',
+                      '${r.margin.toStringAsFixed(1)}%',
+                      '₼ ${fmt.format(r.netProfit)}',
+                    ],
+                  ),
+                  [
+                    l10n.grandTotalRow,
+                    '',
+                    '₼ ${fmt.format(totalSales)}',
+                    '₼ ${fmt.format(totalCog)}',
+                    '₼ ${fmt.format(totalExp)}',
+                    '₼ ${fmt.format(totalTax)}',
+                    '${avgMargin.toStringAsFixed(1)}%',
+                    '₼ ${fmt.format(totalNet)}',
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+
+      final bytes = await pdf.save();
+      final blob = html.Blob([bytes], 'application/pdf');
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.AnchorElement(href: url)
+        ..setAttribute('download', 'analytics_${dateFmt.format(DateTime.now())}.pdf')
+        ..click();
+      html.Url.revokeObjectUrl(url);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.exportSuccess), backgroundColor: _kSuccess));
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${l10n.exportError}: $e'), backgroundColor: _kDanger));
+      }
+    }
+  }
+
+  Future<void> _exportToExcel(BuildContext context) async {
+    try {
+      final rows = _generateDailyRows(range);
+      final excel = Excel.createExcel();
+      final sheet = excel['Analytics'];
+      final fmt = NumberFormat('#,##0.00', 'en_US');
+      final dateFmt = DateFormat('dd.MM.yyyy');
+
+      final totalSales = rows.fold(0.0, (s, r) => s + r.sales);
+      final totalCog = rows.fold(0.0, (s, r) => s + r.costOfGoods);
+      final totalExp = rows.fold(0.0, (s, r) => s + r.expenses);
+      final totalTax = rows.fold(0.0, (s, r) => s + r.tax);
+      final totalNet = rows.fold(0.0, (s, r) => s + r.netProfit);
+      final avgMargin = totalSales == 0 ? 0.0 : (totalNet / totalSales * 100);
+
+      sheet.appendRow([TextCellValue(l10n.dailyBreakdown)]);
+      sheet.appendRow([TextCellValue('${dateFmt.format(range.start)} - ${dateFmt.format(range.end)}')]);
+      sheet.appendRow([]);
+      sheet.appendRow([
+        TextCellValue(l10n.colDate),
+        TextCellValue(l10n.storeLabel),
+        TextCellValue(l10n.colTotalSales),
+        TextCellValue(l10n.colCostOfGoods),
+        TextCellValue(l10n.colTotalExpenses),
+        TextCellValue(l10n.colTax),
+        TextCellValue(l10n.colMargin),
+        TextCellValue(l10n.colNetProfit),
+      ]);
+
+      for (final r in rows) {
+        sheet.appendRow([
+          TextCellValue(dateFmt.format(r.date)),
+          TextCellValue(r.store),
+          TextCellValue('₼ ${fmt.format(r.sales)}'),
+          TextCellValue('₼ ${fmt.format(r.costOfGoods)}'),
+          TextCellValue('₼ ${fmt.format(r.expenses)}'),
+          TextCellValue('₼ ${fmt.format(r.tax)}'),
+          TextCellValue('${r.margin.toStringAsFixed(1)}%'),
+          TextCellValue('₼ ${fmt.format(r.netProfit)}'),
+        ]);
+      }
+
+      sheet.appendRow([]);
+      sheet.appendRow([
+        TextCellValue(l10n.grandTotalRow),
+        TextCellValue(''),
+        TextCellValue('₼ ${fmt.format(totalSales)}'),
+        TextCellValue('₼ ${fmt.format(totalCog)}'),
+        TextCellValue('₼ ${fmt.format(totalExp)}'),
+        TextCellValue('₼ ${fmt.format(totalTax)}'),
+        TextCellValue('${avgMargin.toStringAsFixed(1)}%'),
+        TextCellValue('₼ ${fmt.format(totalNet)}'),
+      ]);
+
+      final bytes = excel.encode();
+      if (bytes != null) {
+        final blob = html.Blob([bytes], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute('download', 'analytics_${dateFmt.format(DateTime.now())}.xlsx')
+          ..click();
+        html.Url.revokeObjectUrl(url);
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.exportSuccess), backgroundColor: _kSuccess));
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${l10n.exportError}: $e'), backgroundColor: _kDanger));
+      }
+    }
+  }
+}
+
+class _ExportOption extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final Color bgColor;
+  final String title;
+  final VoidCallback onTap;
+
+  const _ExportOption({required this.icon, required this.iconColor, required this.bgColor, required this.title, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(10)),
+        child: Icon(icon, color: iconColor, size: 20),
+      ),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+      trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8)),
+      onTap: onTap,
     );
   }
 }
