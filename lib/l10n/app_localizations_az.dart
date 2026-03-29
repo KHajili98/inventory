@@ -847,4 +847,44 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get activeStatus => 'Aktiv';
+
+  @override
+  String get createStockRequest => 'Sorğu Yarat';
+
+  @override
+  String get from => 'Hardan';
+
+  @override
+  String get to => 'Hara';
+
+  @override
+  String get searchProducts => 'Məhsul Axtar';
+
+  @override
+  String get requestedQuantity => 'Tələb Olunan Say';
+
+  @override
+  String get addToRequest => 'Sorğuya Əlavə Et';
+
+  @override
+  String get submitRequest => 'Sorğunu Təsdiq Et';
+
+  @override
+  String get stockRequestCreated => 'Stok sorğusu yaradıldı';
+
+  @override
+  String get pleaseSelectFromAndTo =>
+      'Zəhmət olmasa \'Hardan\' və \'Hara\' seçin';
+
+  @override
+  String get pleaseAddProducts => 'Zəhmət olmasa ən azı bir məhsul əlavə edin';
+
+  @override
+  String get selectInventory => 'Anbar seçin';
+
+  @override
+  String get noProductsFound => 'Məhsul tapılmadı';
+
+  @override
+  String get requestedItems => 'Tələb Olunan Məhsullar';
 }

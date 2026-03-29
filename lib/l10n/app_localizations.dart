@@ -686,7 +686,7 @@ abstract class AppLocalizations {
   /// **'Add Product'**
   String get addProduct;
 
-  /// Add product dialog subtitle
+  /// Product addition method prompt
   ///
   /// In en, this message translates to:
   /// **'Choose how you want to add the product'**
@@ -1675,6 +1675,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Active'**
   String get activeStatus;
+
+  /// Create stock request button
+  ///
+  /// In en, this message translates to:
+  /// **'Create Request'**
+  String get createStockRequest;
+
+  /// From dropdown label
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get from;
+
+  /// To dropdown label
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get to;
+
+  /// Search products placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Search Products'**
+  String get searchProducts;
+
+  /// Requested quantity label
+  ///
+  /// In en, this message translates to:
+  /// **'Requested Quantity'**
+  String get requestedQuantity;
+
+  /// Add to request button
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Request'**
+  String get addToRequest;
+
+  /// Submit request button
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Request'**
+  String get submitRequest;
+
+  /// Success message
+  ///
+  /// In en, this message translates to:
+  /// **'Stock request created'**
+  String get stockRequestCreated;
+
+  /// Validation message
+  ///
+  /// In en, this message translates to:
+  /// **'Please select \'From\' and \'To\''**
+  String get pleaseSelectFromAndTo;
+
+  /// Validation message
+  ///
+  /// In en, this message translates to:
+  /// **'Please add at least one product'**
+  String get pleaseAddProducts;
+
+  /// Select inventory placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Select Inventory'**
+  String get selectInventory;
+
+  /// Empty search result message
+  ///
+  /// In en, this message translates to:
+  /// **'No products found'**
+  String get noProductsFound;
+
+  /// Requested items section title
+  ///
+  /// In en, this message translates to:
+  /// **'Requested Items'**
+  String get requestedItems;
 }
 
 class _AppLocalizationsDelegate

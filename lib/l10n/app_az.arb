@@ -198,6 +198,20 @@
 
   "chooseHowToAddProduct": "Məhsulu necə əlavə etmək istədiyinizi seçin",
 
+  "createStockRequest": "Sorğu Yarat",
+  "from": "Hardan",
+  "to": "Hara",
+  "searchProducts": "Məhsul Axtar",
+  "requestedQuantity": "Tələb Olunan Say",
+  "addToRequest": "Sorğuya Əlavə Et",
+  "submitRequest": "Sorğunu Təsdiq Et",
+  "stockRequestCreated": "Stok sorğusu yaradıldı",
+  "pleaseSelectFromAndTo": "Zəhmət olmasa 'Hardan' və 'Hara' seçin",
+  "pleaseAddProducts": "Zəhmət olmasa ən azı bir məhsul əlavə edin",
+  "selectInventory": "Anbar seçin",
+  "noProductsFound": "Məhsul tapılmadı",
+  "requestedItems": "Tələb Olunan Məhsullar",
+
   "manualEntry": "Manual Giriş",
 
   "fillProductDetails": "Bütün məhsul məlumatlarını\nəl ilə doldurun",

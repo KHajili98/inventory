@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:inventory/core/utils/responsive.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 import 'package:inventory/models/stock_models.dart';
+import 'package:inventory/pages/inventory/add_stock_product_request.dart';
 
 class StockPage extends StatefulWidget {
   const StockPage({super.key});
@@ -182,8 +183,55 @@ class _StockPageState extends State<StockPage> {
                           ),
                         ),
                       ),
+                    if (!isMobile) const SizedBox(width: 12),
+                    if (!isMobile)
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AddStockProductRequest(
+                              availableStockItems: _stockItems,
+                              inventories: _inventoryOptions.where((inv) => inv != 'all').toList(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.add_rounded, size: 20),
+                        label: Text(l10n.createStockRequest),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF6366F1),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          elevation: 0,
+                        ),
+                      ),
                   ],
                 ),
+                if (isMobile) const SizedBox(height: 12),
+                if (isMobile)
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AddStockProductRequest(
+                            availableStockItems: _stockItems,
+                            inventories: _inventoryOptions.where((inv) => inv != 'all').toList(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.add_rounded, size: 20),
+                      label: Text(l10n.createStockRequest),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF6366F1),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        elevation: 0,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),

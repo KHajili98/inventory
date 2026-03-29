@@ -497,7 +497,7 @@
 
   "chooseHowToAddProduct": "Choose how you want to add the product",
   "@chooseHowToAddProduct": {
-    "description": "Add product dialog subtitle"
+    "description": "Product addition method prompt"
   },
 
   "manualEntry": "Manual Entry",
@@ -1130,5 +1130,70 @@
   "activeStatus": "Active",
   "@activeStatus": {
     "description": "Active status label"
+  },
+
+  "createStockRequest": "Create Request",
+  "@createStockRequest": {
+    "description": "Create stock request button"
+  },
+
+  "from": "From",
+  "@from": {
+    "description": "From dropdown label"
+  },
+
+  "to": "To",
+  "@to": {
+    "description": "To dropdown label"
+  },
+
+  "searchProducts": "Search Products",
+  "@searchProducts": {
+    "description": "Search products placeholder"
+  },
+
+  "requestedQuantity": "Requested Quantity",
+  "@requestedQuantity": {
+    "description": "Requested quantity label"
+  },
+
+  "addToRequest": "Add to Request",
+  "@addToRequest": {
+    "description": "Add to request button"
+  },
+
+  "submitRequest": "Submit Request",
+  "@submitRequest": {
+    "description": "Submit request button"
+  },
+
+  "stockRequestCreated": "Stock request created",
+  "@stockRequestCreated": {
+    "description": "Success message"
+  },
+
+  "pleaseSelectFromAndTo": "Please select 'From' and 'To'",
+  "@pleaseSelectFromAndTo": {
+    "description": "Validation message"
+  },
+
+  "pleaseAddProducts": "Please add at least one product",
+  "@pleaseAddProducts": {
+    "description": "Validation message"
+  },
+
+  "selectInventory": "Select Inventory",
+  "@selectInventory": {
+    "description": "Select inventory placeholder"
+  },
+
+  "noProductsFound": "No products found",
+  "@noProductsFound": {
+    "description": "Empty search result message"
+  },
+
+  "requestedItems": "Requested Items",
+  "@requestedItems": {
+    "description": "Requested items section title"
   }
 }

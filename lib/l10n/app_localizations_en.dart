@@ -843,4 +843,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get activeStatus => 'Active';
+
+  @override
+  String get createStockRequest => 'Create Request';
+
+  @override
+  String get from => 'From';
+
+  @override
+  String get to => 'To';
+
+  @override
+  String get searchProducts => 'Search Products';
+
+  @override
+  String get requestedQuantity => 'Requested Quantity';
+
+  @override
+  String get addToRequest => 'Add to Request';
+
+  @override
+  String get submitRequest => 'Submit Request';
+
+  @override
+  String get stockRequestCreated => 'Stock request created';
+
+  @override
+  String get pleaseSelectFromAndTo => 'Please select \'From\' and \'To\'';
+
+  @override
+  String get pleaseAddProducts => 'Please add at least one product';
+
+  @override
+  String get selectInventory => 'Select Inventory';
+
+  @override
+  String get noProductsFound => 'No products found';
+
+  @override
+  String get requestedItems => 'Requested Items';
 }

@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Cubit to manage the app's locale/language state
 class LocaleCubit extends Cubit<Locale> {
-  LocaleCubit() : super(const Locale('en'));
+  LocaleCubit() : super(const Locale('az'));
 
   /// Change the app's language
   void changeLanguage(Locale locale) {
