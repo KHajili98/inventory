@@ -24,6 +24,7 @@ class _PosPageState extends State<PosPage> {
   double _globalDiscountPercent = 0.0;
   int? _selectedDiscountBadge;
   _Product? _selectedDropdownProduct;
+  bool _discountIsPercent = true; // true for %, false for ₼
 
   PriceType _priceType = PriceType.retail;
   _Customer? _selectedCustomer;
@@ -146,14 +147,38 @@ class _PosPageState extends State<PosPage> {
   }
 
   void _onDiscountFieldChanged(String value) {
-    final percent = double.tryParse(value) ?? 0.0;
-    setState(() {
-      _globalDiscountPercent = percent;
-      _selectedDiscountBadge = null;
-      for (var item in _cartItems) {
-        item.discountPercent = _globalDiscountPercent;
+    if (_discountIsPercent) {
+      // Percentage mode
+      var percent = double.tryParse(value) ?? 0.0;
+      // Limit to 100%
+      if (percent > 100) {
+        percent = 100;
+        _discountController.text = '100';
+        _discountController.selection = TextSelection.fromPosition(TextPosition(offset: _discountController.text.length));
       }
-    });
+      setState(() {
+        _globalDiscountPercent = percent;
+        _selectedDiscountBadge = null;
+        for (var item in _cartItems) {
+          item.discountPercent = _globalDiscountPercent;
+        }
+      });
+    } else {
+      // Amount mode (₼)
+      final amount = double.tryParse(value) ?? 0.0;
+      final subtotal = _calculateSubtotal();
+      // Calculate percentage from amount
+      final percent = subtotal > 0 ? (amount / subtotal * 100) : 0.0;
+      // Limit to 100%
+      final limitedPercent = (percent > 100 ? 100.0 : percent.toDouble());
+      setState(() {
+        _globalDiscountPercent = limitedPercent;
+        _selectedDiscountBadge = null;
+        for (var item in _cartItems) {
+          item.discountPercent = _globalDiscountPercent;
+        }
+      });
+    }
   }
 
   double _calculateSubtotal() {
@@ -1072,7 +1097,9 @@ class _PosPageState extends State<PosPage> {
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(color: const Color(0xFFFED7D7), borderRadius: BorderRadius.circular(6)),
                         child: Text(
-                          '${_globalDiscountPercent.toStringAsFixed(0)}%',
+                          _discountIsPercent
+                              ? '${_globalDiscountPercent.toStringAsFixed(0)}%'
+                              : '${(_calculateSubtotal() * _globalDiscountPercent / 100).toStringAsFixed(2)} ₼',
                           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFFC53030)),
                         ),
                       ),
@@ -1104,8 +1131,8 @@ class _PosPageState extends State<PosPage> {
                         child: TextField(
                           controller: _discountController,
                           enabled: _discountEnabled,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
                           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
                           decoration: InputDecoration(
                             filled: true,
@@ -1129,30 +1156,76 @@ class _PosPageState extends State<PosPage> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF7FAFC),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          '%',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF718096)),
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF7FAFC),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          '₼',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF718096)),
-                        ),
+                      // Toggle buttons for % and ₼
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: _discountEnabled
+                                ? () {
+                                    if (!_discountIsPercent) {
+                                      setState(() {
+                                        _discountIsPercent = true;
+                                        // Convert current amount to percentage
+                                        final subtotal = _calculateSubtotal();
+                                        final currentAmount = double.tryParse(_discountController.text) ?? 0.0;
+                                        final percent = subtotal > 0 ? (currentAmount / subtotal * 100) : 0.0;
+                                        _discountController.text = percent.toStringAsFixed(0);
+                                        _onDiscountFieldChanged(_discountController.text);
+                                      });
+                                    }
+                                  }
+                                : null,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: _discountIsPercent ? const Color(0xFF667EEA) : const Color(0xFFF7FAFC),
+                                border: Border.all(color: _discountIsPercent ? const Color(0xFF667EEA) : const Color(0xFFE2E8F0)),
+                                borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), bottomLeft: Radius.circular(8)),
+                              ),
+                              child: Text(
+                                '%',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: _discountIsPercent ? Colors.white : const Color(0xFF718096),
+                                ),
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: _discountEnabled
+                                ? () {
+                                    if (_discountIsPercent) {
+                                      setState(() {
+                                        _discountIsPercent = false;
+                                        // Convert current percentage to amount
+                                        final subtotal = _calculateSubtotal();
+                                        final currentPercent = double.tryParse(_discountController.text) ?? 0.0;
+                                        final amount = (subtotal * currentPercent / 100).toStringAsFixed(2);
+                                        _discountController.text = amount;
+                                        _onDiscountFieldChanged(_discountController.text);
+                                      });
+                                    }
+                                  }
+                                : null,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: !_discountIsPercent ? const Color(0xFF667EEA) : const Color(0xFFF7FAFC),
+                                border: Border.all(color: !_discountIsPercent ? const Color(0xFF667EEA) : const Color(0xFFE2E8F0)),
+                                borderRadius: const BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
+                              ),
+                              child: Text(
+                                '₼',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: !_discountIsPercent ? Colors.white : const Color(0xFF718096),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -1178,7 +1251,9 @@ class _PosPageState extends State<PosPage> {
                   _buildSummaryRow('Ara Cəmi:', '${subtotal.toStringAsFixed(2)} ₼'),
                   if (discount > 0)
                     _buildSummaryRow(
-                      'Endirim (${_globalDiscountPercent.toStringAsFixed(0)}%):',
+                      _discountIsPercent
+                          ? 'Endirim (${_globalDiscountPercent.toStringAsFixed(0)}%):'
+                          : 'Endirim (${(subtotal * _globalDiscountPercent / 100).toStringAsFixed(2)} ₼):',
                       '${discount.toStringAsFixed(2)} ₼',
                       isDiscount: true,
                     ),
