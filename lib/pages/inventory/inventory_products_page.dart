@@ -175,7 +175,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                                 child: Text(
                                   p.productGeneratedName ?? p.productName ?? '—',
                                   style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
-                                  overflow: TextOverflow.ellipsis,
+                                  softWrap: true,
                                 ),
                               ),
                               if (p.barcode != null) ...[
@@ -823,41 +823,43 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
         border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
         borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
       ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: _colCheck,
-            height: 44,
-            child: Checkbox(
-              value: _selectedIds.length == products.length && products.isNotEmpty,
-              tristate: _selectedIds.isNotEmpty && _selectedIds.length < products.length,
-              onChanged: (v) => setState(() {
-                if (v == true)
-                  _selectedIds.addAll(products.map((p) => p.id));
-                else
-                  _selectedIds.clear();
-              }),
-              activeColor: const Color(0xFF6366F1),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(
+              width: _colCheck,
+              child: Checkbox(
+                value: _selectedIds.length == products.length && products.isNotEmpty,
+                tristate: _selectedIds.isNotEmpty && _selectedIds.length < products.length,
+                onChanged: (v) => setState(() {
+                  if (v == true)
+                    _selectedIds.addAll(products.map((p) => p.id));
+                  else
+                    _selectedIds.clear();
+                }),
+                activeColor: const Color(0xFF6366F1),
+              ),
             ),
-          ),
-          _headerCell('#', _colIdx),
-          _headerCell(l10n.productCode, _colProductCode),
-          _headerCell(l10n.productName, _colProductName),
-          _headerCell(l10n.model, _colModelCode),
-          _headerCell(l10n.color, _colColor),
-          _headerCell(l10n.actualQty, _colActQty),
-          _headerCell(l10n.invoiceQty, _colInvQty),
-          _headerCell('${l10n.unitPrice} (USD)', _colUnitUsd),
-          _headerCell('${l10n.unitPrice} (AZN)', _colUnitAzn),
-          _headerCell('${l10n.invoiceTotal} (USD)', _colInvTotal),
-          _headerCell('${l10n.actualTotal} (AZN)', _colActTotal),
-          _headerCell(l10n.barcode, _colBarcode),
-          _headerCell(l10n.location, _colCoord),
-          _headerCell(l10n.source, _colSource),
-          _headerCell(l10n.sourceInventory, _colInventory),
-          _headerCell(l10n.status, _colStatus),
-          SizedBox(width: _colActions),
-        ],
+            _headerCell('#', _colIdx),
+            _headerCell(l10n.productCode, _colProductCode),
+            _headerCell(l10n.productName, _colProductName),
+            _headerCell(l10n.model, _colModelCode),
+            _headerCell(l10n.color, _colColor),
+            _headerCell(l10n.actualQty, _colActQty),
+            _headerCell(l10n.invoiceQty, _colInvQty),
+            _headerCell('${l10n.unitPrice} (USD)', _colUnitUsd),
+            _headerCell('${l10n.unitPrice} (AZN)', _colUnitAzn),
+            _headerCell('${l10n.invoiceTotal} (USD)', _colInvTotal),
+            _headerCell('${l10n.actualTotal} (AZN)', _colActTotal),
+            _headerCell(l10n.barcode, _colBarcode),
+            _headerCell(l10n.location, _colCoord),
+            _headerCell(l10n.source, _colSource),
+            _headerCell(l10n.sourceInventory, _colInventory),
+            _headerCell(l10n.status, _colStatus),
+            SizedBox(width: _colActions),
+          ],
+        ),
       ),
     );
   }
@@ -865,17 +867,16 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
   Widget _headerCell(String label, double width) {
     return Container(
       width: width,
-      height: 44,
+      constraints: const BoxConstraints(minHeight: 44),
       alignment: Alignment.centerLeft,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: const BoxDecoration(
         border: Border(right: BorderSide(color: Color(0xFFE2E8F0))),
       ),
       child: Text(
         label,
         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 0.3, color: Color(0xFF475569)),
-        overflow: TextOverflow.ellipsis,
-        maxLines: 1,
+        softWrap: true,
       ),
     );
   }
@@ -935,32 +936,19 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
             // Color
             SizedBox(
               width: _colColor,
-              height: 52,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        colorStr,
-                        style: const TextStyle(fontSize: 13, color: Color(0xFF475569)),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                    ),
-                  ],
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: Text(colorStr, style: const TextStyle(fontSize: 13, color: Color(0xFF475569)), softWrap: true),
               ),
             ),
             // Actual Qty
             SizedBox(
               width: _colActQty,
-              height: 52,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Flexible(
                       child: Text(
@@ -974,7 +962,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                               ? const Color(0xFFF59E0B)
                               : const Color(0xFF1E293B),
                         ),
-                        overflow: TextOverflow.ellipsis,
+                        softWrap: true,
                       ),
                     ),
                     if (hasDiscrepancy) ...[
@@ -1025,11 +1013,11 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
             // Barcode
             SizedBox(
               width: _colBarcode,
-              height: 52,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Icon(Icons.qr_code_rounded, size: 14, color: Color(0xFF94A3B8)),
                     const SizedBox(width: 6),
@@ -1037,8 +1025,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                       child: Text(
                         product.barcode ?? '—',
                         style: const TextStyle(fontSize: 12, color: Color(0xFF64748B), fontFamily: 'monospace'),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
+                        softWrap: true,
                       ),
                     ),
                   ],
@@ -1048,23 +1035,15 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
             // Location
             SizedBox(
               width: _colCoord,
-              height: 52,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(6)),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          location,
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF6366F1)),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    location,
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF6366F1)),
+                    softWrap: true,
                   ),
                 ),
               ),
@@ -1072,15 +1051,15 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
             // Source
             SizedBox(
               width: _colSource,
-              height: 52,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: product.source != null && product.source!.isNotEmpty
                     ? Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(color: const Color(0xFFE0F2FE), borderRadius: BorderRadius.circular(6)),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             const Icon(Icons.receipt_long_rounded, size: 12, color: Color(0xFF0284C7)),
                             const SizedBox(width: 4),
@@ -1088,7 +1067,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                               child: Text(
                                 product.source!,
                                 style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF0284C7)),
-                                overflow: TextOverflow.ellipsis,
+                                softWrap: true,
                               ),
                             ),
                           ],
@@ -1100,15 +1079,15 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
             // Inventory
             SizedBox(
               width: _colInventory,
-              height: 52,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: product.inventoryName != null && product.inventoryName!.isNotEmpty
                     ? Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(color: const Color(0xFFF0FDF4), borderRadius: BorderRadius.circular(6)),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             const Icon(Icons.warehouse_outlined, size: 12, color: Color(0xFF16A34A)),
                             const SizedBox(width: 4),
@@ -1116,7 +1095,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                               child: Text(
                                 product.inventoryName!,
                                 style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF16A34A)),
-                                overflow: TextOverflow.ellipsis,
+                                softWrap: true,
                               ),
                             ),
                           ],
@@ -1128,28 +1107,29 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
             // Status
             SizedBox(
               width: _colStatus,
-              height: 52,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: _ApiStatusBadge(status: status),
               ),
             ),
             // Actions
             SizedBox(
               width: _colActions,
-              height: 52,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _IconBtn(icon: Icons.print_rounded, tooltip: 'Print', color: const Color(0xFF6366F1), onTap: () => _showPrintDialog(product)),
-                  _IconBtn(icon: Icons.edit_outlined, tooltip: l10n.edit, color: const Color(0xFF8B5CF6), onTap: () => _showEditDialog(product)),
-                  _IconBtn(
-                    icon: Icons.delete_outline_rounded,
-                    tooltip: l10n.delete,
-                    color: const Color(0xFFEF4444),
-                    onTap: () => _confirmDeleteProduct(product),
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _IconBtn(icon: Icons.print_rounded, tooltip: 'Print', color: const Color(0xFF6366F1), onTap: () => _showPrintDialog(product)),
+                    _IconBtn(icon: Icons.edit_outlined, tooltip: l10n.edit, color: const Color(0xFF8B5CF6), onTap: () => _showEditDialog(product)),
+                    _IconBtn(
+                      icon: Icons.delete_outline_rounded,
+                      tooltip: l10n.delete,
+                      color: const Color(0xFFEF4444),
+                      onTap: () => _confirmDeleteProduct(product),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -1161,17 +1141,11 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
   Widget _cell(String text, double width, {TextStyle? style}) {
     return SizedBox(
       width: width,
-      height: 52,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Align(
           alignment: Alignment.centerLeft,
-          child: Text(
-            text,
-            style: style ?? const TextStyle(fontSize: 13, color: Color(0xFF475569)),
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-          ),
+          child: Text(text, style: style ?? const TextStyle(fontSize: 13, color: Color(0xFF475569)), softWrap: true),
         ),
       ),
     );
@@ -1361,7 +1335,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                     child: Text(
                       product.productGeneratedName ?? product.productName ?? '—',
                       style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
-                      overflow: TextOverflow.ellipsis,
+                      softWrap: true,
                     ),
                   ),
                 ],
@@ -1622,7 +1596,7 @@ class _EditManualProductDialogState extends State<_EditManualProductDialog> {
                             Text(
                               widget.product.productGeneratedName ?? widget.product.productName ?? '—',
                               style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-                              overflow: TextOverflow.ellipsis,
+                              softWrap: true,
                             ),
                           ],
                         ),
@@ -2083,7 +2057,7 @@ class _EditInvoiceProductDialogState extends State<_EditInvoiceProductDialog> {
                             Text(
                               p.productGeneratedName ?? p.productName ?? '—',
                               style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-                              overflow: TextOverflow.ellipsis,
+                              softWrap: true,
                             ),
                           ],
                         ),
@@ -4365,11 +4339,7 @@ class _InventoryDropdownState extends State<_InventoryDropdown> {
                   const Icon(Icons.refresh_rounded, size: 14, color: Color(0xFFEF4444)),
                   const SizedBox(width: 6),
                   Expanded(
-                    child: Text(
-                      'Failed to load — tap to retry',
-                      style: const TextStyle(fontSize: 12, color: Color(0xFFEF4444)),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    child: Text('Failed to load — tap to retry', style: const TextStyle(fontSize: 12, color: Color(0xFFEF4444)), softWrap: true),
                   ),
                 ],
               ),
@@ -4419,11 +4389,7 @@ class _InventoryDropdownState extends State<_InventoryDropdown> {
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Text(
-                          inv.name,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 13, color: Color(0xFF1E293B)),
-                        ),
+                        child: Text(inv.name, softWrap: true, style: const TextStyle(fontSize: 13, color: Color(0xFF1E293B))),
                       ),
                     ],
                   ),
@@ -4947,11 +4913,7 @@ class _PrintInfoRow extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: Text(
-            value,
-            style: const TextStyle(fontSize: 12, color: Color(0xFF1E293B)),
-            overflow: TextOverflow.ellipsis,
-          ),
+          child: Text(value, style: const TextStyle(fontSize: 12, color: Color(0xFF1E293B)), softWrap: true),
         ),
       ],
     );
