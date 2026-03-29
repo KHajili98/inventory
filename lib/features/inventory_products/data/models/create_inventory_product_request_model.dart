@@ -28,6 +28,10 @@ class CreateInventoryProductRequestModel {
   final String locationShelf;
   final String source;
 
+  /// UUID of the inventory (warehouse) this product belongs to.
+  /// Pass an empty string or null to leave unassigned.
+  final String? inventory;
+
   const CreateInventoryProductRequestModel({
     required this.modelCode,
     required this.productName,
@@ -51,6 +55,7 @@ class CreateInventoryProductRequestModel {
     required this.locationRow,
     required this.locationShelf,
     this.source = 'manual',
+    this.inventory,
   });
 
   /// Helper method to round double to max 10 decimal places
@@ -81,5 +86,6 @@ class CreateInventoryProductRequestModel {
     'location_row': locationRow,
     'location_shelf': locationShelf,
     'source': source,
+    if (inventory != null && inventory!.isNotEmpty) 'inventory': inventory,
   };
 }

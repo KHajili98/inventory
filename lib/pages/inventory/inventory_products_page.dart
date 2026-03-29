@@ -10,7 +10,9 @@ import 'package:inventory/features/barcode/data/repositories/barcode_repository.
 import 'package:inventory/features/inventory_products/cubit/inventory_products_cubit.dart';
 import 'package:inventory/features/inventory_products/cubit/inventory_products_state.dart';
 import 'package:inventory/features/inventory_products/data/models/create_inventory_product_request_model.dart';
+import 'package:inventory/features/inventory_products/data/models/inventory_model.dart';
 import 'package:inventory/features/inventory_products/data/models/inventory_product_response_model.dart';
+import 'package:inventory/features/inventory_products/data/repositories/inventory_repository.dart';
 import 'package:inventory/features/invoice_detail/data/models/invoice_detail_model.dart';
 import 'package:inventory/features/invoice_detail/data/repositories/invoice_detail_repository.dart';
 import 'package:inventory/features/invoice_list/data/models/invoice_list_response_model.dart';
@@ -1439,6 +1441,9 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
   }
 }
 
+// ── Shared price rounding helper (mirrors CreateInventoryProductRequestModel) ──
+double _roundPrice(double value) => double.parse(value.toStringAsFixed(10));
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // Edit Manual Product Dialog
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1456,6 +1461,9 @@ class _EditManualProductDialogState extends State<_EditManualProductDialog> {
   final _formKey = GlobalKey<FormState>();
   bool _isSaving = false;
   String _barcodeType = 'preprinted';
+
+  // Selected inventory UUID (nullable = no inventory assigned)
+  String? _selectedInventoryId;
 
   late final TextEditingController _productName;
   late final TextEditingController _modelCode;
@@ -1475,6 +1483,7 @@ class _EditManualProductDialogState extends State<_EditManualProductDialog> {
   void initState() {
     super.initState();
     final p = widget.product;
+    _selectedInventoryId = (p.inventory != null && p.inventory!.isNotEmpty) ? p.inventory : null;
     _productName = TextEditingController(text: p.productName ?? '');
     _modelCode = TextEditingController(text: p.modelCode ?? '');
     _color = TextEditingController(text: p.color ?? '');
@@ -1534,13 +1543,14 @@ class _EditManualProductDialogState extends State<_EditManualProductDialog> {
       'barcode': _barcode.text.trim(),
       'barcode_type': _barcodeType,
       'actual_quantity': actualQty,
-      'actual_total_price': actualTotalPrice,
-      'invoice_unit_price_azn': unitPriceAzn,
+      'actual_total_price': _roundPrice(actualTotalPrice),
+      'invoice_unit_price_azn': _roundPrice(unitPriceAzn),
       'actual_pieces_per_carton': actualPcs,
       'actual_carton_count': actualCartons,
       'location_zone': _zone.text.trim().toUpperCase(),
       'location_row': _row.text.trim(),
       'location_shelf': _shelf.text.trim(),
+      'inventory': _selectedInventoryId,
     };
 
     setState(() => _isSaving = true);
@@ -1703,6 +1713,16 @@ class _EditManualProductDialogState extends State<_EditManualProductDialog> {
                         );
                       },
                     ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ── Inventory Selection ───────────────────────────────────────
+                  _InventoryDropdown(
+                    selectedId: _selectedInventoryId,
+                    enabled: !_isSaving,
+                    required: true,
+                    onChanged: (id) => setState(() => _selectedInventoryId = id),
                   ),
 
                   const SizedBox(height: 20),
@@ -1919,6 +1939,9 @@ class _EditInvoiceProductDialogState extends State<_EditInvoiceProductDialog> {
   bool _isSaving = false;
   String _barcodeType = 'preprinted';
 
+  // Selected inventory UUID (nullable = no inventory assigned)
+  String? _selectedInventoryId;
+
   late final TextEditingController _barcode;
   late final TextEditingController _actualQty;
   late final TextEditingController _exchangeRate;
@@ -1932,6 +1955,7 @@ class _EditInvoiceProductDialogState extends State<_EditInvoiceProductDialog> {
   void initState() {
     super.initState();
     final p = widget.product;
+    _selectedInventoryId = (p.inventory != null && p.inventory!.isNotEmpty) ? p.inventory : null;
     _barcode = TextEditingController(text: p.barcode ?? '');
     _barcodeType = p.barcodeType ?? 'preprinted';
     _barcode.addListener(() {
@@ -1974,13 +1998,14 @@ class _EditInvoiceProductDialogState extends State<_EditInvoiceProductDialog> {
       'barcode': _barcode.text.trim(),
       'barcode_type': _barcodeType,
       'actual_quantity': actualQty,
-      'invoice_unit_price_azn': unitPriceAzn,
-      'actual_total_price': actualTotalPrice,
+      'invoice_unit_price_azn': _roundPrice(unitPriceAzn),
+      'actual_total_price': _roundPrice(actualTotalPrice),
       'actual_pieces_per_carton': actualPcs,
       'actual_carton_count': actualCartons,
       'location_zone': _zone.text.trim().toUpperCase(),
       'location_row': _row.text.trim(),
       'location_shelf': _shelf.text.trim(),
+      'inventory': _selectedInventoryId,
     };
 
     setState(() => _isSaving = true);
@@ -2322,6 +2347,16 @@ class _EditInvoiceProductDialogState extends State<_EditInvoiceProductDialog> {
                         );
                       },
                     ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ── Inventory Selection ───────────────────────────────────────
+                  _InventoryDropdown(
+                    selectedId: _selectedInventoryId,
+                    enabled: !_isSaving,
+                    required: true,
+                    onChanged: (id) => setState(() => _selectedInventoryId = id),
                   ),
 
                   const SizedBox(height: 20),
@@ -4197,6 +4232,171 @@ class _PaginationBtn extends StatelessWidget {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Reusable Inventory (Warehouse) Dropdown
+// Fetches from GET /api/inventories/ and shows a searchable dropdown.
+// ═══════════════════════════════════════════════════════════════════════════════
+class _InventoryDropdown extends StatefulWidget {
+  final String? selectedId;
+  final ValueChanged<String?> onChanged;
+  final bool enabled;
+  final bool required;
+
+  const _InventoryDropdown({required this.selectedId, required this.onChanged, this.enabled = true, this.required = false});
+
+  @override
+  State<_InventoryDropdown> createState() => _InventoryDropdownState();
+}
+
+class _InventoryDropdownState extends State<_InventoryDropdown> {
+  List<InventoryModel> _inventories = [];
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchInventories();
+  }
+
+  Future<void> _fetchInventories() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    final result = await InventoryRepository.instance.fetchInventories();
+    if (!mounted) return;
+    switch (result) {
+      case Success(:final data):
+        setState(() {
+          _inventories = data.results;
+          _loading = false;
+        });
+      case Failure(:final message):
+        setState(() {
+          _error = message;
+          _loading = false;
+        });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.warehouse_outlined, size: 13, color: Color(0xFF6366F1)),
+            const SizedBox(width: 5),
+            const Text(
+              'Inventory (Warehouse)',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
+            ),
+            if (widget.required) const Text(' *', style: TextStyle(fontSize: 12, color: Color(0xFFEF4444))),
+          ],
+        ),
+        const SizedBox(height: 6),
+        if (_loading)
+          Container(
+            height: 38,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: const Center(
+              child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF6366F1))),
+            ),
+          )
+        else if (_error != null)
+          GestureDetector(
+            onTap: _fetchInventories,
+            child: Container(
+              height: 38,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEF2F2),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFFECACA)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.refresh_rounded, size: 14, color: Color(0xFFEF4444)),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Failed to load — tap to retry',
+                      style: const TextStyle(fontSize: 12, color: Color(0xFFEF4444)),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          DropdownButtonFormField<String>(
+            initialValue: widget.selectedId,
+            isExpanded: true,
+            decoration: InputDecoration(
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              filled: true,
+              fillColor: widget.enabled ? Colors.white : const Color(0xFFF8FAFC),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
+              ),
+            ),
+            hint: const Text('Select inventory…', style: TextStyle(fontSize: 13, color: Color(0xFFCBD5E1))),
+            style: const TextStyle(fontSize: 13, color: Color(0xFF1E293B)),
+            icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: Color(0xFF94A3B8)),
+            validator: widget.required ? (val) => (val == null || val.isEmpty) ? 'Please select an inventory' : null : null,
+            items: [
+              if (!widget.required)
+                const DropdownMenuItem<String>(
+                  value: null,
+                  child: Text('— None —', style: TextStyle(fontSize: 13, color: Color(0xFF94A3B8))),
+                ),
+              ..._inventories.map(
+                (inv) => DropdownMenuItem<String>(
+                  value: inv.id,
+                  child: Row(
+                    children: [
+                      Icon(
+                        inv.isStock ? Icons.store_rounded : Icons.warehouse_outlined,
+                        size: 14,
+                        color: inv.isStock ? const Color(0xFF0EA5E9) : const Color(0xFF6366F1),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          inv.name,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 13, color: Color(0xFF1E293B)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+            onChanged: widget.enabled ? widget.onChanged : null,
+          ),
+      ],
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Manual Add / Edit Product Dialog  (API-integrated)
 // ═══════════════════════════════════════════════════════════════════════════════
 class _ProductDialog extends StatefulWidget {
@@ -4217,6 +4417,9 @@ class _ProductDialogState extends State<_ProductDialog> {
 
   // 'preprinted' when user types the barcode, 'generated' when obtained via API
   String _barcodeType = 'preprinted';
+
+  // Selected inventory UUID (nullable = no inventory assigned)
+  String? _selectedInventoryId;
 
   // ── Product info ────────────────────────────────────────────────────────────
   late final TextEditingController _productName; // product_name
@@ -4317,6 +4520,7 @@ class _ProductDialogState extends State<_ProductDialog> {
       invoiceTotalPrice: 0,
       invoicePiecesPerCarton: 0,
       invoiceCartonCount: 0,
+      inventory: _selectedInventoryId,
     );
 
     setState(() => _isSaving = true);
@@ -4471,6 +4675,16 @@ class _ProductDialogState extends State<_ProductDialog> {
                         );
                       },
                     ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ── Section: Inventory Selection ──────────────────────────────
+                  _InventoryDropdown(
+                    selectedId: _selectedInventoryId,
+                    enabled: !_isSaving,
+                    required: true,
+                    onChanged: (id) => setState(() => _selectedInventoryId = id),
                   ),
 
                   const SizedBox(height: 20),
