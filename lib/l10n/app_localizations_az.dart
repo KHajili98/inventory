@@ -887,4 +887,98 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get requestedItems => 'Tələb Olunan Məhsullar';
+
+  @override
+  String get priceRequestsSubtitle => 'Qiymət hesablama sorğuları';
+
+  @override
+  String get totalRequests => 'Ümumi';
+
+  @override
+  String get approvedStatus => 'Təsdiqləndi';
+
+  @override
+  String get onReviewStatus => 'Gözləmədə';
+
+  @override
+  String get rejectedStatus => 'Rədd edildi';
+
+  @override
+  String get pendingStatus => 'Gözləyir';
+
+  @override
+  String get requestName => 'Request adı';
+
+  @override
+  String get sourceColumn => 'Mənbə';
+
+  @override
+  String get userColumn => 'İstifadəçi';
+
+  @override
+  String get creationDate => 'Yaradılma tarixi';
+
+  @override
+  String get statusColumn => 'Status';
+
+  @override
+  String get searchPlaceholder => 'Axtar...';
+
+  @override
+  String get noResultsFound => 'Nəticə tapılmadı';
+
+  @override
+  String get confirmationTitle => 'Təsdiqləmə';
+
+  @override
+  String get confirmCalculationMessage =>
+      'Hesablamaları təsdiqləmək istədiyinizə əminsiniz?';
+
+  @override
+  String get no => 'Xeyr';
+
+  @override
+  String get yesConfirm => 'Bəli, təsdiqlə';
+
+  @override
+  String get productNameColumn => 'Məhsul adı';
+
+  @override
+  String get barcodeColumn => 'Barkod';
+
+  @override
+  String get quantityColumn => 'Miqdar';
+
+  @override
+  String get invoicePriceAzn => 'Faktura qiyməti (AZN)';
+
+  @override
+  String get colorColumn => 'Rəng';
+
+  @override
+  String get priceCalculationTitle => 'Qiymət Hesablaması';
+
+  @override
+  String get costPriceStep => '1. Maya Qiymət';
+
+  @override
+  String get costPriceLabel => 'AZN  maya qiymət';
+
+  @override
+  String get wholesalePriceStep => '2. Topdan Qiymət';
+
+  @override
+  String get wholesalePriceLabel => 'AZN  topdan qiymət';
+
+  @override
+  String get retailPriceStep => '3. Pərakəndə Qiymət';
+
+  @override
+  String get retailPriceLabel => 'AZN  pərakəndə qiymət';
+
+  @override
+  String get confirmCalculation => 'Hesablamanı Təsdiqlə';
+
+  @override
+  String get confirm => 'Təsdiqlə';
 }

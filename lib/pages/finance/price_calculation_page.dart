@@ -117,15 +117,16 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
   }
 
   String _statusLabel(PriceRequestStatus s) {
+    final l10n = AppLocalizations.of(context)!;
     switch (s) {
       case PriceRequestStatus.approved:
-        return 'Təsdiqləndi';
+        return l10n.approvedStatus;
       case PriceRequestStatus.rejected:
-        return 'Rədd edildi';
+        return l10n.rejectedStatus;
       case PriceRequestStatus.onReview:
-        return 'Gözləmədə';
+        return l10n.onReviewStatus;
       case PriceRequestStatus.pending:
-        return 'Gözləyir';
+        return l10n.pendingStatus;
     }
   }
 
@@ -167,6 +168,7 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
   }
 
   Widget _buildStatsRow() {
+    final l10n = AppLocalizations.of(context)!;
     final total = _mockRequests.length;
     final approved = _mockRequests.where((r) => r.status == PriceRequestStatus.approved).length;
     final onReview = _mockRequests.where((r) => r.status == PriceRequestStatus.onReview).length;
@@ -179,17 +181,17 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
         children: [
           Row(
             children: [
-              _buildStatCard(label: 'Ümumi', count: total, color: const Color(0xFF6366F1), icon: Icons.receipt_long_outlined),
+              _buildStatCard(label: l10n.totalRequests, count: total, color: const Color(0xFF6366F1), icon: Icons.receipt_long_outlined),
               const SizedBox(width: 10),
-              _buildStatCard(label: 'Təsdiqləndi', count: approved, color: const Color(0xFF16A34A), icon: Icons.check_circle_outline),
+              _buildStatCard(label: l10n.approvedStatus, count: approved, color: const Color(0xFF16A34A), icon: Icons.check_circle_outline),
             ],
           ),
           const SizedBox(height: 10),
           Row(
             children: [
-              _buildStatCard(label: 'Gözləmədə', count: onReview, color: const Color(0xFFCA8A04), icon: Icons.hourglass_top_outlined),
+              _buildStatCard(label: l10n.onReviewStatus, count: onReview, color: const Color(0xFFCA8A04), icon: Icons.hourglass_top_outlined),
               const SizedBox(width: 10),
-              _buildStatCard(label: 'Rədd edildi', count: rejected, color: const Color(0xFFDC2626), icon: Icons.cancel_outlined),
+              _buildStatCard(label: l10n.rejectedStatus, count: rejected, color: const Color(0xFFDC2626), icon: Icons.cancel_outlined),
             ],
           ),
         ],
@@ -198,13 +200,13 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
 
     return Row(
       children: [
-        _buildStatCard(label: 'Ümumi', count: total, color: const Color(0xFF6366F1), icon: Icons.receipt_long_outlined),
+        _buildStatCard(label: l10n.totalRequests, count: total, color: const Color(0xFF6366F1), icon: Icons.receipt_long_outlined),
         const SizedBox(width: 12),
-        _buildStatCard(label: 'Təsdiqləndi', count: approved, color: const Color(0xFF16A34A), icon: Icons.check_circle_outline),
+        _buildStatCard(label: l10n.approvedStatus, count: approved, color: const Color(0xFF16A34A), icon: Icons.check_circle_outline),
         const SizedBox(width: 12),
-        _buildStatCard(label: 'Gözləmədə', count: onReview, color: const Color(0xFFCA8A04), icon: Icons.hourglass_top_outlined),
+        _buildStatCard(label: l10n.onReviewStatus, count: onReview, color: const Color(0xFFCA8A04), icon: Icons.hourglass_top_outlined),
         const SizedBox(width: 12),
-        _buildStatCard(label: 'Rədd edildi', count: rejected, color: const Color(0xFFDC2626), icon: Icons.cancel_outlined),
+        _buildStatCard(label: l10n.rejectedStatus, count: rejected, color: const Color(0xFFDC2626), icon: Icons.cancel_outlined),
       ],
     );
   }
@@ -212,6 +214,7 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
   // ── Table ────────────────────────────────────────────────────────────────
 
   Widget _buildTable() {
+    final l10n = AppLocalizations.of(context)!;
     final rows = _filtered;
     final isMobile = context.isMobile;
 
@@ -222,7 +225,7 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
           children: [
             Icon(Icons.search_off_rounded, size: 48, color: Colors.grey.shade300),
             const SizedBox(height: 12),
-            Text('Nəticə tapılmadı', style: TextStyle(color: Colors.grey.shade400, fontSize: 14)),
+            Text(l10n.noResultsFound, style: TextStyle(color: Colors.grey.shade400, fontSize: 14)),
           ],
         ),
       );
@@ -255,40 +258,40 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
               color: const Color(0xFFF8FAFC),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(
-                children: const [
+                children: [
                   Expanded(
                     flex: 1,
                     child: Text(
-                      'Request adı',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
+                      l10n.requestName,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
                     ),
                   ),
                   Expanded(
                     flex: 1,
                     child: Text(
-                      'Mənbə',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
+                      l10n.sourceColumn,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
                     ),
                   ),
                   Expanded(
                     flex: 1,
                     child: Text(
-                      'İstifadəçi',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
+                      l10n.userColumn,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
                     ),
                   ),
                   Expanded(
                     flex: 1,
                     child: Text(
-                      'Yaradılma tarixi',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
+                      l10n.creationDate,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
                     ),
                   ),
                   Expanded(
                     flex: 1,
                     child: Text(
-                      'Status',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
+                      l10n.statusColumn,
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
                     ),
                   ),
                 ],
@@ -468,7 +471,7 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Qiymət hesablama sorğuları',
+                    l10n.priceRequestsSubtitle,
                     style: TextStyle(fontSize: isMobile ? 12 : 13, color: const Color(0xFF64748B)),
                   ),
                 ],
@@ -488,7 +491,7 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
             child: TextField(
               onChanged: (v) => setState(() => _searchQuery = v),
               decoration: InputDecoration(
-                hintText: 'Axtar...',
+                hintText: l10n.searchPlaceholder,
                 hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                 prefixIcon: const Icon(Icons.search, color: Color(0xFF94A3B8), size: 20),
                 filled: true,

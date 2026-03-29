@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:inventory/core/utils/responsive.dart';
+import 'package:inventory/l10n/app_localizations.dart';
 import 'package:inventory/pages/finance/price_calculation_page.dart';
 
 // ── Mock product model ───────────────────────────────────────────────────────
@@ -127,12 +128,13 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
   // ── Confirm dialog ────────────────────────────────────────────────────────
 
   void _showConfirmDialog() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Təsdiqləmə', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18)),
-        content: const Text('Hesablamaları təsdiqləmək istədiyinizə əminsiniz?', style: TextStyle(fontSize: 14, color: Color(0xFF475569))),
+        title: Text(l10n.confirmationTitle, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18)),
+        content: Text(l10n.confirmCalculationMessage, style: const TextStyle(fontSize: 14, color: Color(0xFF475569))),
         actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         actions: [
           OutlinedButton(
@@ -142,7 +144,7 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
               side: const BorderSide(color: Color(0xFFE2E8F0)),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
-            child: const Text('Xeyr', style: TextStyle(color: Color(0xFF475569))),
+            child: Text(l10n.no, style: const TextStyle(color: Color(0xFF475569))),
           ),
           const SizedBox(width: 8),
           FilledButton(
@@ -155,7 +157,7 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
-            child: const Text('Bəli, təsdiqlə'),
+            child: Text(l10n.yesConfirm),
           ),
         ],
       ),
@@ -165,17 +167,18 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
   // ── Product table header ──────────────────────────────────────────────────
 
   Widget _buildProductTableHeader() {
+    final l10n = AppLocalizations.of(context)!;
     const style = TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF475569));
     return Container(
       color: const Color(0xFFF8FAFC),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
-        children: const [
-          Expanded(flex: 2, child: Text('Məhsul adı', style: style)),
-          Expanded(flex: 2, child: Text('Barkod', style: style)),
-          Expanded(flex: 1, child: Text('Miqdar', style: style)),
-          Expanded(flex: 1, child: Text('Faktura qiyməti (AZN)', style: style)),
-          Expanded(flex: 1, child: Text('Rəng', style: style)),
+        children: [
+          Expanded(flex: 2, child: Text(l10n.productNameColumn, style: style)),
+          Expanded(flex: 2, child: Text(l10n.barcodeColumn, style: style)),
+          Expanded(flex: 1, child: Text(l10n.quantityColumn, style: style)),
+          Expanded(flex: 1, child: Text(l10n.invoicePriceAzn, style: style)),
+          Expanded(flex: 1, child: Text(l10n.colorColumn, style: style)),
         ],
       ),
     );
@@ -408,6 +411,7 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
   // ── Per-product card ─────────────────────────────────────────────────────
 
   Widget _buildProductCalcCard(int index) {
+    final l10n = AppLocalizations.of(context)!;
     final p = _mockProducts[index];
     final s = _states[index];
 
@@ -434,17 +438,17 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Qiymət Hesablaması',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                Text(
+                  l10n.priceCalculationTitle,
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
                 ),
                 const SizedBox(height: 12),
 
                 // 1. Cost price (maya qiymet)
                 _buildCalcBlock(
-                  title: '1. Maya Qiymət',
+                  title: l10n.costPriceStep,
                   basePrice: p.invoicePerPrice,
-                  resultLabel: 'AZN  maya qiymət',
+                  resultLabel: l10n.costPriceLabel,
                   resultValue: s.costPrice,
                   enabled: true,
                   pctCtrl: s.costPctCtrl,
@@ -480,9 +484,9 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
 
                 // 2. Wholesale (topdan)
                 _buildCalcBlock(
-                  title: '2. Topdan Qiymət',
+                  title: l10n.wholesalePriceStep,
                   basePrice: s.costPrice ?? 0,
-                  resultLabel: 'AZN  topdan qiymət',
+                  resultLabel: l10n.wholesalePriceLabel,
                   resultValue: s.wholePrice,
                   enabled: s.costPrice != null,
                   pctCtrl: s.wholePctCtrl,
@@ -511,9 +515,9 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
 
                 // 3. Retail (perakende)
                 _buildCalcBlock(
-                  title: '3. Pərakəndə Qiymət',
+                  title: l10n.retailPriceStep,
                   basePrice: s.costPrice ?? 0,
-                  resultLabel: 'AZN  pərakəndə qiymət',
+                  resultLabel: l10n.retailPriceLabel,
                   resultValue: s.retailPrice,
                   enabled: s.costPrice != null,
                   pctCtrl: s.retailPctCtrl,
@@ -550,6 +554,7 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isMobile = context.isMobile;
     final allDone = _allComplete;
 
@@ -586,7 +591,7 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
               child: FilledButton.icon(
                 onPressed: allDone ? _showConfirmDialog : null,
                 icon: const Icon(Icons.check_circle_outline, size: 18),
-                label: Text(isMobile ? 'Təsdiqlə' : 'Hesablamanı Təsdiqlə'),
+                label: Text(isMobile ? l10n.confirm : l10n.confirmCalculation),
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFF6366F1),
                   disabledBackgroundColor: const Color(0xFF6366F1),

@@ -1753,6 +1753,192 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Requested Items'**
   String get requestedItems;
+
+  /// Subtitle for price calculation page
+  ///
+  /// In en, this message translates to:
+  /// **'Price calculation requests'**
+  String get priceRequestsSubtitle;
+
+  /// Total requests label
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get totalRequests;
+
+  /// Approved status label
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get approvedStatus;
+
+  /// On review status label
+  ///
+  /// In en, this message translates to:
+  /// **'On Review'**
+  String get onReviewStatus;
+
+  /// Rejected status label
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get rejectedStatus;
+
+  /// Pending status label
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get pendingStatus;
+
+  /// Request name column header
+  ///
+  /// In en, this message translates to:
+  /// **'Request name'**
+  String get requestName;
+
+  /// Source column header
+  ///
+  /// In en, this message translates to:
+  /// **'Source'**
+  String get sourceColumn;
+
+  /// User column header
+  ///
+  /// In en, this message translates to:
+  /// **'User'**
+  String get userColumn;
+
+  /// Creation date column header
+  ///
+  /// In en, this message translates to:
+  /// **'Creation date'**
+  String get creationDate;
+
+  /// Status column header
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get statusColumn;
+
+  /// Search input placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Search...'**
+  String get searchPlaceholder;
+
+  /// No search results message
+  ///
+  /// In en, this message translates to:
+  /// **'No results found'**
+  String get noResultsFound;
+
+  /// Confirmation dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmation'**
+  String get confirmationTitle;
+
+  /// Confirmation dialog message for calculations
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to confirm the calculations?'**
+  String get confirmCalculationMessage;
+
+  /// No button text
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get no;
+
+  /// Yes confirm button text
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, confirm'**
+  String get yesConfirm;
+
+  /// Product name column header
+  ///
+  /// In en, this message translates to:
+  /// **'Product name'**
+  String get productNameColumn;
+
+  /// Barcode column header
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode'**
+  String get barcodeColumn;
+
+  /// Quantity column header
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get quantityColumn;
+
+  /// Invoice price column header
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice price (AZN)'**
+  String get invoicePriceAzn;
+
+  /// Color column header
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get colorColumn;
+
+  /// Price calculation section title
+  ///
+  /// In en, this message translates to:
+  /// **'Price Calculation'**
+  String get priceCalculationTitle;
+
+  /// Cost price step label
+  ///
+  /// In en, this message translates to:
+  /// **'1. Cost Price'**
+  String get costPriceStep;
+
+  /// Cost price result label
+  ///
+  /// In en, this message translates to:
+  /// **'AZN  cost price'**
+  String get costPriceLabel;
+
+  /// Wholesale price step label
+  ///
+  /// In en, this message translates to:
+  /// **'2. Wholesale Price'**
+  String get wholesalePriceStep;
+
+  /// Wholesale price result label
+  ///
+  /// In en, this message translates to:
+  /// **'AZN  wholesale price'**
+  String get wholesalePriceLabel;
+
+  /// Retail price step label
+  ///
+  /// In en, this message translates to:
+  /// **'3. Retail Price'**
+  String get retailPriceStep;
+
+  /// Retail price result label
+  ///
+  /// In en, this message translates to:
+  /// **'AZN  retail price'**
+  String get retailPriceLabel;
+
+  /// Confirm calculation button text
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Calculation'**
+  String get confirmCalculation;
+
+  /// Confirm button text
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
 }
 
 class _AppLocalizationsDelegate

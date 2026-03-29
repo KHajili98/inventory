@@ -882,4 +882,98 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get requestedItems => 'Requested Items';
+
+  @override
+  String get priceRequestsSubtitle => 'Price calculation requests';
+
+  @override
+  String get totalRequests => 'Total';
+
+  @override
+  String get approvedStatus => 'Approved';
+
+  @override
+  String get onReviewStatus => 'On Review';
+
+  @override
+  String get rejectedStatus => 'Rejected';
+
+  @override
+  String get pendingStatus => 'Pending';
+
+  @override
+  String get requestName => 'Request name';
+
+  @override
+  String get sourceColumn => 'Source';
+
+  @override
+  String get userColumn => 'User';
+
+  @override
+  String get creationDate => 'Creation date';
+
+  @override
+  String get statusColumn => 'Status';
+
+  @override
+  String get searchPlaceholder => 'Search...';
+
+  @override
+  String get noResultsFound => 'No results found';
+
+  @override
+  String get confirmationTitle => 'Confirmation';
+
+  @override
+  String get confirmCalculationMessage =>
+      'Are you sure you want to confirm the calculations?';
+
+  @override
+  String get no => 'No';
+
+  @override
+  String get yesConfirm => 'Yes, confirm';
+
+  @override
+  String get productNameColumn => 'Product name';
+
+  @override
+  String get barcodeColumn => 'Barcode';
+
+  @override
+  String get quantityColumn => 'Quantity';
+
+  @override
+  String get invoicePriceAzn => 'Invoice price (AZN)';
+
+  @override
+  String get colorColumn => 'Color';
+
+  @override
+  String get priceCalculationTitle => 'Price Calculation';
+
+  @override
+  String get costPriceStep => '1. Cost Price';
+
+  @override
+  String get costPriceLabel => 'AZN  cost price';
+
+  @override
+  String get wholesalePriceStep => '2. Wholesale Price';
+
+  @override
+  String get wholesalePriceLabel => 'AZN  wholesale price';
+
+  @override
+  String get retailPriceStep => '3. Retail Price';
+
+  @override
+  String get retailPriceLabel => 'AZN  retail price';
+
+  @override
+  String get confirmCalculation => 'Confirm Calculation';
+
+  @override
+  String get confirm => 'Confirm';
 }

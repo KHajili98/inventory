@@ -1195,5 +1195,160 @@
   "requestedItems": "Requested Items",
   "@requestedItems": {
     "description": "Requested items section title"
+  },
+
+  "priceRequestsSubtitle": "Price calculation requests",
+  "@priceRequestsSubtitle": {
+    "description": "Subtitle for price calculation page"
+  },
+
+  "totalRequests": "Total",
+  "@totalRequests": {
+    "description": "Total requests label"
+  },
+
+  "approvedStatus": "Approved",
+  "@approvedStatus": {
+    "description": "Approved status label"
+  },
+
+  "onReviewStatus": "On Review",
+  "@onReviewStatus": {
+    "description": "On review status label"
+  },
+
+  "rejectedStatus": "Rejected",
+  "@rejectedStatus": {
+    "description": "Rejected status label"
+  },
+
+  "pendingStatus": "Pending",
+  "@pendingStatus": {
+    "description": "Pending status label"
+  },
+
+  "requestName": "Request name",
+  "@requestName": {
+    "description": "Request name column header"
+  },
+
+  "sourceColumn": "Source",
+  "@sourceColumn": {
+    "description": "Source column header"
+  },
+
+  "userColumn": "User",
+  "@userColumn": {
+    "description": "User column header"
+  },
+
+  "creationDate": "Creation date",
+  "@creationDate": {
+    "description": "Creation date column header"
+  },
+
+  "statusColumn": "Status",
+  "@statusColumn": {
+    "description": "Status column header"
+  },
+
+  "searchPlaceholder": "Search...",
+  "@searchPlaceholder": {
+    "description": "Search input placeholder"
+  },
+
+  "noResultsFound": "No results found",
+  "@noResultsFound": {
+    "description": "No search results message"
+  },
+
+  "confirmationTitle": "Confirmation",
+  "@confirmationTitle": {
+    "description": "Confirmation dialog title"
+  },
+
+  "confirmCalculationMessage": "Are you sure you want to confirm the calculations?",
+  "@confirmCalculationMessage": {
+    "description": "Confirmation dialog message for calculations"
+  },
+
+  "no": "No",
+  "@no": {
+    "description": "No button text"
+  },
+
+  "yesConfirm": "Yes, confirm",
+  "@yesConfirm": {
+    "description": "Yes confirm button text"
+  },
+
+  "productNameColumn": "Product name",
+  "@productNameColumn": {
+    "description": "Product name column header"
+  },
+
+  "barcodeColumn": "Barcode",
+  "@barcodeColumn": {
+    "description": "Barcode column header"
+  },
+
+  "quantityColumn": "Quantity",
+  "@quantityColumn": {
+    "description": "Quantity column header"
+  },
+
+  "invoicePriceAzn": "Invoice price (AZN)",
+  "@invoicePriceAzn": {
+    "description": "Invoice price column header"
+  },
+
+  "colorColumn": "Color",
+  "@colorColumn": {
+    "description": "Color column header"
+  },
+
+  "priceCalculationTitle": "Price Calculation",
+  "@priceCalculationTitle": {
+    "description": "Price calculation section title"
+  },
+
+  "costPriceStep": "1. Cost Price",
+  "@costPriceStep": {
+    "description": "Cost price step label"
+  },
+
+  "costPriceLabel": "AZN  cost price",
+  "@costPriceLabel": {
+    "description": "Cost price result label"
+  },
+
+  "wholesalePriceStep": "2. Wholesale Price",
+  "@wholesalePriceStep": {
+    "description": "Wholesale price step label"
+  },
+
+  "wholesalePriceLabel": "AZN  wholesale price",
+  "@wholesalePriceLabel": {
+    "description": "Wholesale price result label"
+  },
+
+  "retailPriceStep": "3. Retail Price",
+  "@retailPriceStep": {
+    "description": "Retail price step label"
+  },
+
+  "retailPriceLabel": "AZN  retail price",
+  "@retailPriceLabel": {
+    "description": "Retail price result label"
+  },
+
+  "confirmCalculation": "Confirm Calculation",
+  "@confirmCalculation": {
+    "description": "Confirm calculation button text"
+  },
+
+  "confirm": "Confirm",
+  "@confirm": {
+    "description": "Confirm button text"
   }
 }
