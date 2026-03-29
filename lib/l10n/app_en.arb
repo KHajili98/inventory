@@ -6,6 +6,11 @@
     "description": "The title of the application"
   },
 
+  "pos": "POS",
+  "@pos": {
+    "description": "Point of Sale navigation label"
+  },
+
   "invoices": "Invoices",
   "@invoices": {
     "description": "Invoices navigation label"

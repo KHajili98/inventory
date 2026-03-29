@@ -104,6 +104,12 @@ abstract class AppLocalizations {
   /// **'Inventory'**
   String get appTitle;
 
+  /// Point of Sale navigation label
+  ///
+  /// In en, this message translates to:
+  /// **'POS'**
+  String get pos;
+
   /// Invoices navigation label
   ///
   /// In en, this message translates to:

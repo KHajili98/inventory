@@ -12,6 +12,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Inventory';
 
   @override
+  String get pos => 'POS';
+
+  @override
   String get invoices => 'Invoices';
 
   @override

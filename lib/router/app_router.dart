@@ -6,6 +6,7 @@ import 'package:inventory/pages/inventory/inventory_products_page.dart';
 import 'package:inventory/pages/inventory/stock_page.dart';
 import 'package:inventory/pages/invoice/invoices_page.dart';
 import 'package:inventory/pages/finance/price_calculation_page.dart';
+import 'package:inventory/pages/pos/pos_page.dart';
 import 'package:inventory/widgets/app_shell.dart';
 
 final appRouter = GoRouter(
@@ -16,6 +17,7 @@ final appRouter = GoRouter(
     ShellRoute(
       builder: (context, state, child) => AppShell(child: child),
       routes: [
+        GoRoute(path: '/pos', builder: (context, state) => const PosPage()),
         GoRoute(path: '/invoices', builder: (context, state) => const InvoicesPage()),
         GoRoute(path: '/inventory-products', builder: (context, state) => const InventoryProductsPage()),
         GoRoute(path: '/stock', builder: (context, state) => const StockPage()),

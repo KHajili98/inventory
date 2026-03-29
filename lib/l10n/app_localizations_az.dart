@@ -12,6 +12,9 @@ class AppLocalizationsAz extends AppLocalizations {
   String get appTitle => 'İnventar';
 
   @override
+  String get pos => 'Satış';
+
+  @override
   String get invoices => 'Qaimələr';
 
   @override
