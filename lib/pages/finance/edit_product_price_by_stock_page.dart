@@ -164,184 +164,180 @@ class _EditProductPriceByStockPageState extends State<EditProductPriceByStockPag
 
     showDialog(
       context: context,
-      builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Container(
-          width: 600,
-          constraints: const BoxConstraints(maxHeight: 700),
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(10)),
-                    child: const Icon(Icons.edit_outlined, color: Color(0xFF6366F1), size: 20),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Container(
+            width: 600,
+            constraints: const BoxConstraints(maxHeight: 700),
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(10)),
+                      child: const Icon(Icons.edit_outlined, color: Color(0xFF6366F1), size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.editPrices,
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                          ),
+                          Text(product.productName, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      icon: const Icon(Icons.close, color: Color(0xFF94A3B8)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                const SizedBox(height: 20),
+
+                // Product info
+                _buildInfoRow(l10n.productCode, product.productCode),
+                _buildInfoRow(l10n.barcodeColumn, product.barcode),
+                _buildInfoRow(l10n.quantityColumn, '${product.quantity}'),
+                const SizedBox(height: 20),
+
+                // Price calculation blocks
+                Expanded(
+                  child: SingleChildScrollView(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          l10n.editPrices,
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                        _buildCalcBlock(
+                          title: l10n.costPriceStep,
+                          basePrice: product.invoicePrice ?? 0,
+                          resultLabel: l10n.costPriceLabel,
+                          pctCtrl: costPctCtrl,
+                          amtCtrl: costAmtCtrl,
+                          accentColor: const Color(0xFF6366F1),
+                          onChanged: () {
+                            setDialogState(() {
+                              final pct = double.tryParse(costPctCtrl.text);
+                              final amt = double.tryParse(costAmtCtrl.text);
+                              if (pct != null && product.invoicePrice != null && product.invoicePrice! > 0) {
+                                final newAmt = product.invoicePrice! * pct / 100;
+                                costAmtCtrl.text = newAmt.toStringAsFixed(2);
+                              } else if (amt != null && product.invoicePrice != null && product.invoicePrice! > 0) {
+                                final newPct = (amt / product.invoicePrice!) * 100;
+                                costPctCtrl.text = newPct.toStringAsFixed(2);
+                              }
+                            });
+                          },
                         ),
-                        Text(product.productName, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+                        const SizedBox(height: 12),
+                        _buildCalcBlock(
+                          title: l10n.wholesalePriceStep,
+                          basePrice: product.costPrice ?? 0,
+                          resultLabel: l10n.wholesalePriceLabel,
+                          pctCtrl: wholePctCtrl,
+                          amtCtrl: wholeAmtCtrl,
+                          accentColor: const Color(0xFF0EA5E9),
+                          onChanged: () {
+                            setDialogState(() {
+                              final pct = double.tryParse(wholePctCtrl.text);
+                              final amt = double.tryParse(wholeAmtCtrl.text);
+                              if (pct != null && product.costPrice != null && product.costPrice! > 0) {
+                                final newAmt = product.costPrice! * pct / 100;
+                                wholeAmtCtrl.text = newAmt.toStringAsFixed(2);
+                              } else if (amt != null && product.costPrice != null && product.costPrice! > 0) {
+                                final newPct = (amt / product.costPrice!) * 100;
+                                wholePctCtrl.text = newPct.toStringAsFixed(2);
+                              }
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        _buildCalcBlock(
+                          title: l10n.retailPriceStep,
+                          basePrice: product.costPrice ?? 0,
+                          resultLabel: l10n.retailPriceLabel,
+                          pctCtrl: retailPctCtrl,
+                          amtCtrl: retailAmtCtrl,
+                          accentColor: const Color(0xFF10B981),
+                          onChanged: () {
+                            setDialogState(() {
+                              final pct = double.tryParse(retailPctCtrl.text);
+                              final amt = double.tryParse(retailAmtCtrl.text);
+                              if (pct != null && product.costPrice != null && product.costPrice! > 0) {
+                                final newAmt = product.costPrice! * pct / 100;
+                                retailAmtCtrl.text = newAmt.toStringAsFixed(2);
+                              } else if (amt != null && product.costPrice != null && product.costPrice! > 0) {
+                                final newPct = (amt / product.costPrice!) * 100;
+                                retailPctCtrl.text = newPct.toStringAsFixed(2);
+                              }
+                            });
+                          },
+                        ),
                       ],
                     ),
                   ),
-                  IconButton(
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    icon: const Icon(Icons.close, color: Color(0xFF94A3B8)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const Divider(height: 1, color: Color(0xFFE2E8F0)),
-              const SizedBox(height: 20),
-
-              // Product info
-              _buildInfoRow(l10n.productCode, product.productCode),
-              _buildInfoRow(l10n.barcodeColumn, product.barcode),
-              _buildInfoRow(l10n.quantityColumn, '${product.quantity}'),
-              const SizedBox(height: 20),
-
-              // Price calculation blocks
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _buildCalcBlock(
-                        title: l10n.costPriceStep,
-                        basePrice: product.invoicePrice ?? 0,
-                        resultLabel: l10n.costPriceLabel,
-                        pctCtrl: costPctCtrl,
-                        amtCtrl: costAmtCtrl,
-                        accentColor: const Color(0xFF6366F1),
-                        onChanged: () {
-                          final pct = double.tryParse(costPctCtrl.text);
-                          final amt = double.tryParse(costAmtCtrl.text);
-                          if (pct != null && product.invoicePrice != null) {
-                            final newAmt = product.invoicePrice! * pct / 100;
-                            if (costAmtCtrl.text != newAmt.toStringAsFixed(2)) {
-                              costAmtCtrl.text = newAmt.toStringAsFixed(2);
-                            }
-                          } else if (amt != null && product.invoicePrice != null) {
-                            final newPct = (amt / product.invoicePrice!) * 100;
-                            if (costPctCtrl.text != newPct.toStringAsFixed(2)) {
-                              costPctCtrl.text = newPct.toStringAsFixed(2);
-                            }
-                          }
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      _buildCalcBlock(
-                        title: l10n.wholesalePriceStep,
-                        basePrice: product.costPrice ?? 0,
-                        resultLabel: l10n.wholesalePriceLabel,
-                        pctCtrl: wholePctCtrl,
-                        amtCtrl: wholeAmtCtrl,
-                        accentColor: const Color(0xFF0EA5E9),
-                        onChanged: () {
-                          final pct = double.tryParse(wholePctCtrl.text);
-                          final amt = double.tryParse(wholeAmtCtrl.text);
-                          if (pct != null && product.costPrice != null) {
-                            final newAmt = product.costPrice! * pct / 100;
-                            if (wholeAmtCtrl.text != newAmt.toStringAsFixed(2)) {
-                              wholeAmtCtrl.text = newAmt.toStringAsFixed(2);
-                            }
-                          } else if (amt != null && product.costPrice != null) {
-                            final newPct = (amt / product.costPrice!) * 100;
-                            if (wholePctCtrl.text != newPct.toStringAsFixed(2)) {
-                              wholePctCtrl.text = newPct.toStringAsFixed(2);
-                            }
-                          }
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      _buildCalcBlock(
-                        title: l10n.retailPriceStep,
-                        basePrice: product.costPrice ?? 0,
-                        resultLabel: l10n.retailPriceLabel,
-                        pctCtrl: retailPctCtrl,
-                        amtCtrl: retailAmtCtrl,
-                        accentColor: const Color(0xFF10B981),
-                        onChanged: () {
-                          final pct = double.tryParse(retailPctCtrl.text);
-                          final amt = double.tryParse(retailAmtCtrl.text);
-                          if (pct != null && product.costPrice != null) {
-                            final newAmt = product.costPrice! * pct / 100;
-                            if (retailAmtCtrl.text != newAmt.toStringAsFixed(2)) {
-                              retailAmtCtrl.text = newAmt.toStringAsFixed(2);
-                            }
-                          } else if (amt != null && product.costPrice != null) {
-                            final newPct = (amt / product.costPrice!) * 100;
-                            if (retailPctCtrl.text != newPct.toStringAsFixed(2)) {
-                              retailPctCtrl.text = newPct.toStringAsFixed(2);
-                            }
-                          }
-                        },
-                      ),
-                    ],
-                  ),
                 ),
-              ),
 
-              const SizedBox(height: 20),
-              const Divider(height: 1, color: Color(0xFFE2E8F0)),
-              const SizedBox(height: 16),
+                const SizedBox(height: 20),
+                const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                const SizedBox(height: 16),
 
-              // Actions
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  OutlinedButton(
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      side: const BorderSide(color: Color(0xFFE2E8F0)),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                // Actions
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    OutlinedButton(
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      style: OutlinedButton.styleFrom(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        side: const BorderSide(color: Color(0xFFE2E8F0)),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      ),
+                      child: Text(l10n.no, style: const TextStyle(color: Color(0xFF475569))),
                     ),
-                    child: Text(l10n.no, style: const TextStyle(color: Color(0xFF475569))),
-                  ),
-                  const SizedBox(width: 12),
-                  FilledButton.icon(
-                    onPressed: () {
-                      // Update prices
-                      setState(() {
-                        final costAmt = double.tryParse(costAmtCtrl.text);
-                        final wholeAmt = double.tryParse(wholeAmtCtrl.text);
-                        final retailAmt = double.tryParse(retailAmtCtrl.text);
+                    const SizedBox(width: 12),
+                    FilledButton.icon(
+                      onPressed: () {
+                        // Update prices
+                        setState(() {
+                          final costAmt = double.tryParse(costAmtCtrl.text);
+                          final wholeAmt = double.tryParse(wholeAmtCtrl.text);
+                          final retailAmt = double.tryParse(retailAmtCtrl.text);
 
-                        if (costAmt != null && product.invoicePrice != null) {
-                          product.costPrice = product.invoicePrice! + costAmt;
-                        }
-                        if (wholeAmt != null && product.costPrice != null) {
-                          product.wholesalePrice = product.costPrice! + wholeAmt;
-                        }
-                        if (retailAmt != null && product.costPrice != null) {
-                          product.retailPrice = product.costPrice! + retailAmt;
-                        }
-                      });
-                      Navigator.of(ctx).pop();
-                    },
-                    icon: const Icon(Icons.check, size: 18),
-                    label: Text(l10n.confirm),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF6366F1),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          if (costAmt != null && product.invoicePrice != null) {
+                            product.costPrice = product.invoicePrice! + costAmt;
+                          }
+                          if (wholeAmt != null && product.costPrice != null) {
+                            product.wholesalePrice = product.costPrice! + wholeAmt;
+                          }
+                          if (retailAmt != null && product.costPrice != null) {
+                            product.retailPrice = product.costPrice! + retailAmt;
+                          }
+                        });
+                        Navigator.of(ctx).pop();
+                      },
+                      icon: const Icon(Icons.check, size: 18),
+                      label: Text(l10n.confirm),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF6366F1),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -375,9 +371,8 @@ class _EditProductPriceByStockPageState extends State<EditProductPriceByStockPag
     required Color accentColor,
     required VoidCallback onChanged,
   }) {
-    final pct = double.tryParse(pctCtrl.text);
     final amt = double.tryParse(amtCtrl.text);
-    final result = (pct != null && amt != null) ? basePrice + amt : null;
+    final result = amt != null ? basePrice + amt : null;
 
     return Container(
       padding: const EdgeInsets.all(14),
