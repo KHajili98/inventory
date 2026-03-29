@@ -84,13 +84,14 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
   static double get _tableWidth =>
       _colCheck +
       _colIdx +
+      _colProductCode +
       _colProductName +
-      _colGeneratedName +
       _colModelCode +
       _colColor +
       _colActQty +
       _colInvQty +
-      _colUnit +
+      _colUnitUsd +
+      _colUnitAzn +
       _colInvTotal +
       _colActTotal +
       _colBarcode +
@@ -102,15 +103,16 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
   // ── Column widths ────────────────────────────────────────────────────────────
   static const double _colCheck = 48;
   static const double _colIdx = 48;
+  static const double _colProductCode = 120;
   static const double _colProductName = 160;
-  static const double _colGeneratedName = 180;
   static const double _colModelCode = 120;
   static const double _colColor = 120;
   static const double _colActQty = 100;
   static const double _colInvQty = 100;
-  static const double _colUnit = 110;
-  static const double _colInvTotal = 120;
-  static const double _colActTotal = 120;
+  static const double _colUnitUsd = 120;
+  static const double _colUnitAzn = 120;
+  static const double _colInvTotal = 130;
+  static const double _colActTotal = 130;
   static const double _colBarcode = 150;
   static const double _colCoord = 120;
   static const double _colSource = 130;
@@ -130,6 +132,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
     var result = all.where((p) {
       final matchSearch =
           q.isEmpty ||
+          (p.productCode?.toLowerCase().contains(q) ?? false) ||
           (p.productGeneratedName?.toLowerCase().contains(q) ?? false) ||
           (p.productName?.toLowerCase().contains(q) ?? false) ||
           (p.modelCode?.toLowerCase().contains(q) ?? false) ||
@@ -144,11 +147,11 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
     result.sort((a, b) {
       int cmp;
       switch (_sortColumn) {
+        case 'productCode':
+          cmp = (a.productCode ?? '').compareTo(b.productCode ?? '');
+          break;
         case 'name':
           cmp = (a.productName ?? '').compareTo(b.productName ?? '');
-          break;
-        case 'generatedName':
-          cmp = (a.productGeneratedName ?? '').compareTo(b.productGeneratedName ?? '');
           break;
         case 'color':
           cmp = (a.color ?? '').compareTo(b.color ?? '');
@@ -156,8 +159,11 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
         case 'qty':
           cmp = (a.actualQuantity ?? 0).compareTo(b.actualQuantity ?? 0);
           break;
-        case 'unit':
+        case 'unitUsd':
           cmp = (a.invoiceUnitPriceUsd ?? 0).compareTo(b.invoiceUnitPriceUsd ?? 0);
+          break;
+        case 'unitAzn':
+          cmp = (a.invoiceUnitPriceAzn ?? 0).compareTo(b.invoiceUnitPriceAzn ?? 0);
           break;
         case 'total':
           cmp = (a.actualTotalPrice ?? 0).compareTo(b.actualTotalPrice ?? 0);
@@ -828,6 +834,8 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
           ),
           // ── Bottom horizontal scrollbar + nav buttons ─────────────────────
           _buildHScrollBar(),
+          // ── Pagination footer ─────────────────────────────────────────────
+          if (state is InventoryProductsLoaded) _buildPaginationFooter(state),
         ],
       ),
     );
@@ -950,6 +958,86 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
     );
   }
 
+  Widget _buildPaginationFooter(InventoryProductsLoaded state) {
+    final cubit = context.read<InventoryProductsCubit>();
+    final currentPage = state.currentPage;
+    final totalPages = state.totalPages;
+    final pageSize = state.pageSize;
+    final totalCount = state.totalCount;
+    final startItem = totalCount == 0 ? 0 : (currentPage - 1) * pageSize + 1;
+    final endItem = ((currentPage * pageSize) < totalCount ? currentPage * pageSize : totalCount);
+
+    // Build a compact list of page numbers with ellipsis
+    List<int?> pageNumbers() {
+      if (totalPages <= 7) return List.generate(totalPages, (i) => i + 1);
+      final pages = <int?>[];
+      pages.add(1);
+      if (currentPage > 3) pages.add(null); // ellipsis
+      for (int p = (currentPage - 1).clamp(2, totalPages - 1); p <= (currentPage + 1).clamp(2, totalPages - 1); p++) {
+        pages.add(p);
+      }
+      if (currentPage < totalPages - 2) pages.add(null); // ellipsis
+      pages.add(totalPages);
+      return pages;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: const BoxDecoration(
+        color: Color(0xFFF8FAFC),
+        border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(12), bottomRight: Radius.circular(12)),
+      ),
+      child: Row(
+        children: [
+          Text('Showing $startItem–$endItem of $totalCount', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+          const Spacer(),
+          // Previous
+          _PaginationBtn(icon: Icons.chevron_left_rounded, enabled: currentPage > 1, onTap: () => cubit.goToPage(currentPage - 1)),
+          const SizedBox(width: 4),
+          // Page number buttons
+          ...pageNumbers().map((p) {
+            if (p == null) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4),
+                child: Text('…', style: TextStyle(fontSize: 13, color: Color(0xFF94A3B8))),
+              );
+            }
+            final isActive = p == currentPage;
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: GestureDetector(
+                onTap: isActive ? null : () => cubit.goToPage(p),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  width: 30,
+                  height: 30,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: isActive ? const Color(0xFF6366F1) : Colors.transparent,
+                    borderRadius: BorderRadius.circular(6),
+                    border: isActive ? null : Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Text(
+                    '$p',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                      color: isActive ? Colors.white : const Color(0xFF475569),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+          const SizedBox(width: 4),
+          // Next
+          _PaginationBtn(icon: Icons.chevron_right_rounded, enabled: currentPage < totalPages, onTap: () => cubit.goToPage(currentPage + 1)),
+        ],
+      ),
+    );
+  }
+
   Widget _buildHeaderRow() {
     final l10n = AppLocalizations.of(context)!;
     return Container(
@@ -976,15 +1064,16 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
             ),
           ),
           _headerCell('#', _colIdx, null),
+          _headerCell(l10n.productCode, _colProductCode, 'productCode'),
           _headerCell(l10n.productName, _colProductName, 'name'),
-          _headerCell(l10n.generatedName, _colGeneratedName, 'generatedName'),
           _headerCell(l10n.model, _colModelCode, null),
           _headerCell(l10n.color, _colColor, 'color'),
           _headerCell(l10n.actualQty, _colActQty, 'qty'),
           _headerCell(l10n.invoiceQty, _colInvQty, null),
-          _headerCell(l10n.unitPrice, _colUnit, 'unit'),
-          _headerCell(l10n.invoiceTotal, _colInvTotal, null),
-          _headerCell(l10n.actualTotal, _colActTotal, 'total'),
+          _headerCell('${l10n.unitPrice} (USD)', _colUnitUsd, 'unitUsd'),
+          _headerCell('${l10n.unitPrice} (AZN)', _colUnitAzn, 'unitAzn'),
+          _headerCell('${l10n.invoiceTotal} (USD)', _colInvTotal, null),
+          _headerCell('${l10n.actualTotal} (AZN)', _colActTotal, 'total'),
           _headerCell(l10n.barcode, _colBarcode, 'barcode'),
           _headerCell(l10n.location, _colCoord, 'coord'),
           _headerCell(l10n.source, _colSource, null),
@@ -1075,14 +1164,18 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
               ),
             ),
             _cell('${index + 1}', _colIdx, style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+            // Product code
+            _cell(
+              product.productCode ?? '—',
+              _colProductCode,
+              style: const TextStyle(fontSize: 12, color: Color(0xFF64748B), fontFamily: 'monospace'),
+            ),
             // Product name
             _cell(
               product.productName ?? '—',
               _colProductName,
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
             ),
-            // Generated name
-            _cell(product.productGeneratedName ?? '—', _colGeneratedName, style: const TextStyle(fontSize: 13, color: Color(0xFF6366F1))),
             // Model code
             _cell(product.modelCode ?? '—', _colModelCode, style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
             // Color
@@ -1151,21 +1244,27 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
               _colInvQty,
               style: TextStyle(fontSize: 13, color: invoiceQty != null ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
             ),
-            // Unit price
+            // Unit price USD
             _cell(
               product.invoiceUnitPriceUsd != null ? '\$${product.invoiceUnitPriceUsd!.toStringAsFixed(4)}' : '—',
-              _colUnit,
+              _colUnitUsd,
               style: const TextStyle(fontSize: 13, color: Color(0xFF475569)),
             ),
-            // Invoice Total
+            // Unit price AZN
+            _cell(
+              product.invoiceUnitPriceAzn != null ? '₼${product.invoiceUnitPriceAzn!.toStringAsFixed(4)}' : '—',
+              _colUnitAzn,
+              style: const TextStyle(fontSize: 13, color: Color(0xFF475569)),
+            ),
+            // Invoice Total (USD)
             _cell(
               product.invoiceTotalPrice != null ? '\$${product.invoiceTotalPrice!.toStringAsFixed(2)}' : '—',
               _colInvTotal,
               style: TextStyle(fontSize: 13, color: product.invoiceTotalPrice != null ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
             ),
-            // Actual Total
+            // Actual Total (AZN)
             _cell(
-              product.actualTotalPrice != null ? '\$${product.actualTotalPrice!.toStringAsFixed(2)}' : '—',
+              product.actualTotalPrice != null ? '₼${product.actualTotalPrice!.toStringAsFixed(2)}' : '—',
               _colActTotal,
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
             ),
@@ -1294,13 +1393,6 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
         ),
       ),
     );
-  }
-
-  Color _colorDot(String color) {
-    if (color.contains('Gold') || color.contains('GD')) return const Color(0xFFD97706);
-    if (color.contains('Silver') || color.contains('SL')) return const Color(0xFF94A3B8);
-    if (color.contains('White') || color.contains('WH')) return const Color(0xFFE2E8F0);
-    return const Color(0xFF6366F1);
   }
 
   // ── Print barcode ────────────────────────────────────────────────────────────
@@ -4318,6 +4410,32 @@ class _NavBtn extends StatelessWidget {
           height: 28,
           child: Center(child: Icon(icon, size: 18, color: const Color(0xFF94A3B8))),
         ),
+      ),
+    );
+  }
+}
+
+class _PaginationBtn extends StatelessWidget {
+  final IconData icon;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  const _PaginationBtn({required this.icon, required this.enabled, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: enabled ? onTap : null,
+      child: Container(
+        width: 30,
+        height: 30,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: enabled ? const Color(0xFFE2E8F0) : const Color(0xFFF1F5F9)),
+        ),
+        child: Icon(icon, size: 16, color: enabled ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
       ),
     );
   }

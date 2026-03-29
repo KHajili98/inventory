@@ -19,6 +19,7 @@ class InventoryProductResponseModel {
 
 class InventoryProductItemModel {
   final String id;
+  final String? productCode;
   final String? modelCode;
   final String? productName;
   final String? productGeneratedName;
@@ -50,6 +51,7 @@ class InventoryProductItemModel {
 
   const InventoryProductItemModel({
     required this.id,
+    this.productCode,
     this.modelCode,
     this.productName,
     this.productGeneratedName,
@@ -80,6 +82,7 @@ class InventoryProductItemModel {
 
   factory InventoryProductItemModel.fromJson(Map<String, dynamic> json) => InventoryProductItemModel(
     id: json['id'] as String,
+    productCode: json['product_code'] as String?,
     modelCode: json['model_code'] as String?,
     productName: json['product_name'] as String?,
     productGeneratedName: json['product_generated_name'] as String?,
@@ -110,6 +113,7 @@ class InventoryProductItemModel {
 
   Map<String, dynamic> toJson() => {
     'id': id,
+    'product_code': productCode,
     'model_code': modelCode,
     'product_name': productName,
     'product_generated_name': productGeneratedName,

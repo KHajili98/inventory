@@ -12,7 +12,7 @@ class InventoryProductsCubit extends Cubit<InventoryProductsState> {
 
   final InventoryProductsRepository _repository;
 
-  static const int _pageSize = 10;
+  static const int _pageSize = 5;
 
   /// Fetch the first page of inventory products.
   Future<void> fetchProducts() async {
@@ -22,8 +22,27 @@ class InventoryProductsCubit extends Cubit<InventoryProductsState> {
 
     switch (result) {
       case Success(:final data):
-        emit(InventoryProductsLoaded(products: data.results, totalCount: data.count, hasMore: data.next != null, currentPage: 1));
+        emit(
+          InventoryProductsLoaded(products: data.results, totalCount: data.count, hasMore: data.next != null, currentPage: 1, pageSize: _pageSize),
+        );
       case Failure(:final message):
+        emit(InventoryProductsError(message));
+    }
+  }
+
+  /// Fetch a specific page.
+  Future<void> goToPage(int page) async {
+    emit(const InventoryProductsLoading());
+
+    final result = await _repository.fetchProducts(page: page, pageSize: _pageSize);
+
+    switch (result) {
+      case Success(:final data):
+        emit(
+          InventoryProductsLoaded(products: data.results, totalCount: data.count, hasMore: data.next != null, currentPage: page, pageSize: _pageSize),
+        );
+      case Failure(:final message):
+        // Restore count context if available
         emit(InventoryProductsError(message));
     }
   }
@@ -56,8 +75,27 @@ class InventoryProductsCubit extends Cubit<InventoryProductsState> {
     }
   }
 
-  /// Refresh — re-fetches the first page.
-  Future<void> refresh() => fetchProducts();
+  /// Refresh — re-fetches the current page (or page 1 if not loaded).
+  Future<void> refresh() async {
+    final current = state;
+    final page = current is InventoryProductsLoaded ? current.currentPage : 1;
+    // If we're on page > 1 and some deletion happened, stay on the same page
+    // (backend will return fewer items; that's fine)
+    final result = await _repository.fetchProducts(page: page, pageSize: _pageSize);
+
+    switch (result) {
+      case Success(:final data):
+        // If the page is now empty and it's not page 1, go back one page
+        if (data.results.isEmpty && page > 1) {
+          return goToPage(page - 1);
+        }
+        emit(
+          InventoryProductsLoaded(products: data.results, totalCount: data.count, hasMore: data.next != null, currentPage: page, pageSize: _pageSize),
+        );
+      case Failure(:final message):
+        emit(InventoryProductsError(message));
+    }
+  }
 
   /// Creates a new product via POST /api/inventory-products/
   /// Emits [InventoryProductCreating] → [InventoryProductCreated] or [InventoryProductCreateError].

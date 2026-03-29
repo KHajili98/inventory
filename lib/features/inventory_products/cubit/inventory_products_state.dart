@@ -20,6 +20,7 @@ final class InventoryProductsLoaded extends InventoryProductsState {
   final int totalCount;
   final bool hasMore;
   final int currentPage;
+  final int pageSize;
   final bool isLoadingMore;
 
   const InventoryProductsLoaded({
@@ -27,20 +28,25 @@ final class InventoryProductsLoaded extends InventoryProductsState {
     required this.totalCount,
     this.hasMore = false,
     this.currentPage = 1,
+    this.pageSize = 20,
     this.isLoadingMore = false,
   });
+
+  int get totalPages => pageSize > 0 ? ((totalCount + pageSize - 1) ~/ pageSize) : 1;
 
   InventoryProductsLoaded copyWith({
     List<InventoryProductItemModel>? products,
     int? totalCount,
     bool? hasMore,
     int? currentPage,
+    int? pageSize,
     bool? isLoadingMore,
   }) => InventoryProductsLoaded(
     products: products ?? this.products,
     totalCount: totalCount ?? this.totalCount,
     hasMore: hasMore ?? this.hasMore,
     currentPage: currentPage ?? this.currentPage,
+    pageSize: pageSize ?? this.pageSize,
     isLoadingMore: isLoadingMore ?? this.isLoadingMore,
   );
 }
