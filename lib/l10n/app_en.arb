@@ -1024,5 +1024,21 @@
   "expenseNoResults": "No expenses found in selected date range",
   "expenseEditTitle": "Edit Expense",
   "expenseDeleteTitle": "Delete Expense",
-  "expenseDeleteConfirm": "Are you sure you want to delete this expense?"
+  "expenseDeleteConfirm": "Are you sure you want to delete this expense?",
+
+  "analytics": "Analytics",
+  "analyticsSubtitle": "Financial indicators for selected period",
+  "dateRange": "Date range",
+  "thisWeek": "This week",
+  "revenue": "Revenue",
+  "totalExpensesCard": "Total Expenses",
+  "tax": "Tax",
+  "netProfit": "Net Profit",
+  "revenueByStore": "Revenue by store",
+  "expensesByCategory": "Expenses by category",
+  "netProfitOverTime": "Net profit over time",
+  "sedErekStore": "Sədərək store",
+  "abseronStore": "Abşeron store",
+  "storeLabel": "Store",
+  "amountLabel": "Amount (₼)"
 }

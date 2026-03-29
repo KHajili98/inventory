@@ -424,5 +424,21 @@
   "expenseNoResults": "Seçilmiş tarix aralığında xərc tapılmadı",
   "expenseEditTitle": "Xərci Redaktə Et",
   "expenseDeleteTitle": "Xərci Sil",
-  "expenseDeleteConfirm": "Bu xərci silmək istədiyinizə əminsiniz?"
+  "expenseDeleteConfirm": "Bu xərci silmək istədiyinizə əminsiniz?",
+
+  "analytics": "Analitika",
+  "analyticsSubtitle": "Seçilmiş dövr üzrə maliyyə göstəriciləri",
+  "dateRange": "Tarix aralığı",
+  "thisWeek": "Bu həftə",
+  "revenue": "Dövriyyə",
+  "totalExpensesCard": "Cəmi Xərc",
+  "tax": "Vergi",
+  "netProfit": "Xalis Mənfəət",
+  "revenueByStore": "Mağazaya görə dövriyyə",
+  "expensesByCategory": "Xərclərin kateqoriyası",
+  "netProfitOverTime": "Xalis mənfəət dinamikası",
+  "sedErekStore": "Sədərək mağazası",
+  "abseronStore": "Abşeron mağazası",
+  "storeLabel": "Mağaza",
+  "amountLabel": "Məbləğ (₼)"
 }

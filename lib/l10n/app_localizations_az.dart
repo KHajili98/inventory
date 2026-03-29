@@ -715,4 +715,49 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get expenseDeleteConfirm => 'Bu xərci silmək istədiyinizə əminsiniz?';
+
+  @override
+  String get analytics => 'Analitika';
+
+  @override
+  String get analyticsSubtitle => 'Seçilmiş dövr üzrə maliyyə göstəriciləri';
+
+  @override
+  String get dateRange => 'Tarix aralığı';
+
+  @override
+  String get thisWeek => 'Bu həftə';
+
+  @override
+  String get revenue => 'Dövriyyə';
+
+  @override
+  String get totalExpensesCard => 'Cəmi Xərc';
+
+  @override
+  String get tax => 'Vergi';
+
+  @override
+  String get netProfit => 'Xalis Mənfəət';
+
+  @override
+  String get revenueByStore => 'Mağazaya görə dövriyyə';
+
+  @override
+  String get expensesByCategory => 'Xərclərin kateqoriyası';
+
+  @override
+  String get netProfitOverTime => 'Xalis mənfəət dinamikası';
+
+  @override
+  String get sedErekStore => 'Sədərək mağazası';
+
+  @override
+  String get abseronStore => 'Abşeron mağazası';
+
+  @override
+  String get storeLabel => 'Mağaza';
+
+  @override
+  String get amountLabel => 'Məbləğ (₼)';
 }

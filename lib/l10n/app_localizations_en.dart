@@ -711,4 +711,49 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get expenseDeleteConfirm =>
       'Are you sure you want to delete this expense?';
+
+  @override
+  String get analytics => 'Analytics';
+
+  @override
+  String get analyticsSubtitle => 'Financial indicators for selected period';
+
+  @override
+  String get dateRange => 'Date range';
+
+  @override
+  String get thisWeek => 'This week';
+
+  @override
+  String get revenue => 'Revenue';
+
+  @override
+  String get totalExpensesCard => 'Total Expenses';
+
+  @override
+  String get tax => 'Tax';
+
+  @override
+  String get netProfit => 'Net Profit';
+
+  @override
+  String get revenueByStore => 'Revenue by store';
+
+  @override
+  String get expensesByCategory => 'Expenses by category';
+
+  @override
+  String get netProfitOverTime => 'Net profit over time';
+
+  @override
+  String get sedErekStore => 'Sədərək store';
+
+  @override
+  String get abseronStore => 'Abşeron store';
+
+  @override
+  String get storeLabel => 'Store';
+
+  @override
+  String get amountLabel => 'Amount (₼)';
 }

@@ -35,6 +35,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
       subItems: [
         _SubNavItem(labelKey: 'priceCalculation', path: '/finance/price-calculation'),
         _SubNavItem(labelKey: 'expenseTracking', path: '/finance/expense-tracking'),
+        _SubNavItem(labelKey: 'analytics', path: '/finance/analytics'),
       ],
     ),
   ];
@@ -58,6 +59,8 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
         return l10n.priceCalculation;
       case 'expenseTracking':
         return l10n.expenseTracking;
+      case 'analytics':
+        return l10n.analytics;
       default:
         return key;
     }

@@ -1411,6 +1411,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you sure you want to delete this expense?'**
   String get expenseDeleteConfirm;
+
+  /// No description provided for @analytics.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics'**
+  String get analytics;
+
+  /// No description provided for @analyticsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Financial indicators for selected period'**
+  String get analyticsSubtitle;
+
+  /// No description provided for @dateRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Date range'**
+  String get dateRange;
+
+  /// No description provided for @thisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get thisWeek;
+
+  /// No description provided for @revenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue'**
+  String get revenue;
+
+  /// No description provided for @totalExpensesCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Expenses'**
+  String get totalExpensesCard;
+
+  /// No description provided for @tax.
+  ///
+  /// In en, this message translates to:
+  /// **'Tax'**
+  String get tax;
+
+  /// No description provided for @netProfit.
+  ///
+  /// In en, this message translates to:
+  /// **'Net Profit'**
+  String get netProfit;
+
+  /// No description provided for @revenueByStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue by store'**
+  String get revenueByStore;
+
+  /// No description provided for @expensesByCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses by category'**
+  String get expensesByCategory;
+
+  /// No description provided for @netProfitOverTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Net profit over time'**
+  String get netProfitOverTime;
+
+  /// No description provided for @sedErekStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Sədərək store'**
+  String get sedErekStore;
+
+  /// No description provided for @abseronStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Abşeron store'**
+  String get abseronStore;
+
+  /// No description provided for @storeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Store'**
+  String get storeLabel;
+
+  /// No description provided for @amountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount (₼)'**
+  String get amountLabel;
 }
 
 class _AppLocalizationsDelegate
