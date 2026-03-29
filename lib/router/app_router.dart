@@ -4,7 +4,7 @@ import 'package:inventory/pages/invoice/expense_tracking_page.dart';
 import 'package:inventory/pages/invoice/finance_page.dart';
 import 'package:inventory/pages/inventory/inventory_products_page.dart';
 import 'package:inventory/pages/invoice/invoices_page.dart';
-import 'package:inventory/pages/invoice/price_calculation_page.dart';
+import 'package:inventory/pages/finance/price_calculation_page.dart';
 import 'package:inventory/widgets/app_shell.dart';
 
 final appRouter = GoRouter(
