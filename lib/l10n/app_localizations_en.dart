@@ -697,6 +697,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get expenseClearFilter => 'Clear filter';
 
   @override
+  String get expenseFilterApply => 'Apply';
+
+  @override
   String get expenseNoResults => 'No expenses found in selected date range';
 
   @override

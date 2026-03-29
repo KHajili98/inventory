@@ -1382,6 +1382,12 @@ abstract class AppLocalizations {
   /// **'Clear filter'**
   String get expenseClearFilter;
 
+  /// No description provided for @expenseFilterApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get expenseFilterApply;
+
   /// No description provided for @expenseNoResults.
   ///
   /// In en, this message translates to:

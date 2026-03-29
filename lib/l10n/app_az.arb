@@ -420,6 +420,7 @@
   "save": "Saxla",
   "expenseFilterByDate": "Tarixə görə filter",
   "expenseClearFilter": "Filtri təmizlə",
+  "expenseFilterApply": "Tətbiq et",
   "expenseNoResults": "Seçilmiş tarix aralığında xərc tapılmadı",
   "expenseEditTitle": "Xərci Redaktə Et",
   "expenseDeleteTitle": "Xərci Sil",

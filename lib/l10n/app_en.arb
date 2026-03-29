@@ -1020,6 +1020,7 @@
   "save": "Save",
   "expenseFilterByDate": "Filter by date",
   "expenseClearFilter": "Clear filter",
+  "expenseFilterApply": "Apply",
   "expenseNoResults": "No expenses found in selected date range",
   "expenseEditTitle": "Edit Expense",
   "expenseDeleteTitle": "Delete Expense",

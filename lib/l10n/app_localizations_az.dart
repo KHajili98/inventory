@@ -702,6 +702,9 @@ class AppLocalizationsAz extends AppLocalizations {
   String get expenseClearFilter => 'Filtri təmizlə';
 
   @override
+  String get expenseFilterApply => 'Tətbiq et';
+
+  @override
   String get expenseNoResults => 'Seçilmiş tarix aralığında xərc tapılmadı';
 
   @override
