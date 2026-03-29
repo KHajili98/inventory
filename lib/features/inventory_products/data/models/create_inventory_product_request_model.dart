@@ -3,6 +3,7 @@
 /// [barcodeType] must be either `'preprinted'` (user typed the barcode manually)
 /// or `'generated'` (barcode was obtained via POST /api/generate-barcode/).
 class CreateInventoryProductRequestModel {
+  final String productCode;
   final String modelCode;
   final String productName;
   final String size;
@@ -33,6 +34,7 @@ class CreateInventoryProductRequestModel {
   final String? inventory;
 
   const CreateInventoryProductRequestModel({
+    required this.productCode,
     required this.modelCode,
     required this.productName,
     this.size = '',
@@ -64,6 +66,7 @@ class CreateInventoryProductRequestModel {
   }
 
   Map<String, dynamic> toJson() => {
+    'product_code': productCode,
     'model_code': modelCode,
     'product_name': productName,
     'size': size,

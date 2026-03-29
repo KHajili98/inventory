@@ -1465,6 +1465,7 @@ class _EditManualProductDialogState extends State<_EditManualProductDialog> {
   // Selected inventory UUID (nullable = no inventory assigned)
   String? _selectedInventoryId;
 
+  late final TextEditingController _productCode;
   late final TextEditingController _productName;
   late final TextEditingController _modelCode;
   late final TextEditingController _color;
@@ -1484,6 +1485,7 @@ class _EditManualProductDialogState extends State<_EditManualProductDialog> {
     super.initState();
     final p = widget.product;
     _selectedInventoryId = (p.inventory != null && p.inventory!.isNotEmpty) ? p.inventory : null;
+    _productCode = TextEditingController(text: p.productCode ?? '');
     _productName = TextEditingController(text: p.productName ?? '');
     _modelCode = TextEditingController(text: p.modelCode ?? '');
     _color = TextEditingController(text: p.color ?? '');
@@ -1506,6 +1508,7 @@ class _EditManualProductDialogState extends State<_EditManualProductDialog> {
   @override
   void dispose() {
     for (final c in [
+      _productCode,
       _productName,
       _modelCode,
       _color,
@@ -1535,6 +1538,7 @@ class _EditManualProductDialogState extends State<_EditManualProductDialog> {
     final actualTotalPrice = unitPriceAzn * actualQty;
 
     final data = <String, dynamic>{
+      'product_code': _productCode.text.trim(),
       'model_code': _modelCode.text.trim(),
       'product_name': _productName.text.trim(),
       'size': _size.text.trim(),
@@ -1635,6 +1639,8 @@ class _EditManualProductDialogState extends State<_EditManualProductDialog> {
 
                   // ── Product Info ──────────────────────────────────────────────
                   _sectionHeader(Icons.inventory_2_outlined, l10n.productInfoSection),
+                  const SizedBox(height: 12),
+                  _field(_productCode, 'Product Code', 'e.g. PC-001', required: true),
                   const SizedBox(height: 12),
                   Row(
                     children: [
@@ -1942,6 +1948,7 @@ class _EditInvoiceProductDialogState extends State<_EditInvoiceProductDialog> {
   // Selected inventory UUID (nullable = no inventory assigned)
   String? _selectedInventoryId;
 
+  late final TextEditingController _productCode;
   late final TextEditingController _barcode;
   late final TextEditingController _actualQty;
   late final TextEditingController _exchangeRate;
@@ -1956,6 +1963,7 @@ class _EditInvoiceProductDialogState extends State<_EditInvoiceProductDialog> {
     super.initState();
     final p = widget.product;
     _selectedInventoryId = (p.inventory != null && p.inventory!.isNotEmpty) ? p.inventory : null;
+    _productCode = TextEditingController(text: p.productCode ?? '');
     _barcode = TextEditingController(text: p.barcode ?? '');
     _barcodeType = p.barcodeType ?? 'preprinted';
     _barcode.addListener(() {
@@ -1977,7 +1985,7 @@ class _EditInvoiceProductDialogState extends State<_EditInvoiceProductDialog> {
 
   @override
   void dispose() {
-    for (final c in [_barcode, _actualQty, _exchangeRate, _actualPcsPerCarton, _actualCartonCount, _zone, _row, _shelf]) {
+    for (final c in [_productCode, _barcode, _actualQty, _exchangeRate, _actualPcsPerCarton, _actualCartonCount, _zone, _row, _shelf]) {
       c.dispose();
     }
     super.dispose();
@@ -1995,6 +2003,7 @@ class _EditInvoiceProductDialogState extends State<_EditInvoiceProductDialog> {
     final actualTotalPrice = unitPriceAzn * actualQty;
 
     final data = <String, dynamic>{
+      'product_code': _productCode.text.trim(),
       'barcode': _barcode.text.trim(),
       'barcode_type': _barcodeType,
       'actual_quantity': actualQty,
@@ -2145,6 +2154,10 @@ class _EditInvoiceProductDialogState extends State<_EditInvoiceProductDialog> {
                     ),
                   ),
                   const SizedBox(height: 20),
+
+                  // ── Product Code ──────────────────────────────────────────────
+                  _detailField(_productCode, 'Product Code', 'e.g. PC-001', required: true, icon: Icons.tag_rounded),
+                  const SizedBox(height: 16),
 
                   // ── Barcode + Actual Qty ──────────────────────────────────────
                   Row(
@@ -2832,6 +2845,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
   String? _selectedInventoryId;
 
   // ── Per-row controllers (keyed by item index in _detail.items) ───────────────
+  final Map<int, TextEditingController> _productCodeCtrl = {};
   final Map<int, TextEditingController> _barcodeCtrl = {};
   final Map<int, TextEditingController> _actualQtyCtrl = {};
   final Map<int, TextEditingController> _actPcsCtrl = {};
@@ -2898,6 +2912,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
       _rowCtrl.putIfAbsent(idx, () => TextEditingController());
       _shelfCtrl.putIfAbsent(idx, () => TextEditingController());
       _exchangeRateCtrl.putIfAbsent(idx, () => TextEditingController(text: '1.70')); // Default USD to AZN rate
+      _productCodeCtrl.putIfAbsent(idx, () => TextEditingController());
       _barcodeTypeMap.putIfAbsent(idx, () => 'preprinted');
     }
   }
@@ -2905,6 +2920,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
   @override
   void dispose() {
     for (final c in [
+      ..._productCodeCtrl.values,
       ..._barcodeCtrl.values,
       ..._actualQtyCtrl.values,
       ..._actPcsCtrl.values,
@@ -2961,6 +2977,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
       final actualTotal = unitPriceAzn * actualQty;
 
       final request = CreateInventoryProductRequestModel(
+        productCode: _productCodeCtrl[idx]!.text.trim(),
         productName: item.productName ?? '',
         modelCode: item.modelCode ?? '',
         color: item.color ?? '',
@@ -3440,6 +3457,15 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                         padding: const EdgeInsets.all(14),
                         child: Column(
                           children: [
+                            // Product Code
+                            _DetailField(
+                              ctrl: _productCodeCtrl[idx]!,
+                              label: 'Product Code',
+                              hint: 'e.g. PC-001',
+                              required: true,
+                              icon: Icons.tag_rounded,
+                            ),
+                            const SizedBox(height: 10),
                             // Row 1: barcode + actual qty
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -4437,6 +4463,7 @@ class _ProductDialogState extends State<_ProductDialog> {
   String? _selectedInventoryId;
 
   // ── Product info ────────────────────────────────────────────────────────────
+  late final TextEditingController _productCode; // product_code
   late final TextEditingController _productName; // product_name
   late final TextEditingController _modelCode; // model_code
   late final TextEditingController _color; // color
@@ -4457,6 +4484,7 @@ class _ProductDialogState extends State<_ProductDialog> {
   void initState() {
     super.initState();
     final p = widget.product;
+    _productCode = TextEditingController();
     _productName = TextEditingController(text: p?.sku ?? '');
     _modelCode = TextEditingController(text: p?.name ?? '');
     _color = TextEditingController(text: (p?.color == '—' ? '' : p?.color) ?? '');
@@ -4481,6 +4509,7 @@ class _ProductDialogState extends State<_ProductDialog> {
   @override
   void dispose() {
     for (final c in [
+      _productCode,
       _productName,
       _modelCode,
       _color,
@@ -4512,6 +4541,7 @@ class _ProductDialogState extends State<_ProductDialog> {
     final actualTotalPrice = unitPriceAzn * actualQty;
 
     final request = CreateInventoryProductRequestModel(
+      productCode: _productCode.text.trim(),
       productName: _productName.text.trim(),
       modelCode: _modelCode.text.trim(),
       color: _color.text.trim(),
@@ -4612,6 +4642,8 @@ class _ProductDialogState extends State<_ProductDialog> {
 
                   // ── Section: Product Info ─────────────────────────────────────
                   _sectionHeader(Icons.inventory_2_outlined, l10n.productInfoSection),
+                  const SizedBox(height: 12),
+                  _field(_productCode, 'Product Code', 'e.g. PC-001', required: true),
                   const SizedBox(height: 12),
                   Row(
                     children: [
