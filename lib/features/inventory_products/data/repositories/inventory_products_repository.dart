@@ -69,6 +69,24 @@ class InventoryProductsRepository {
     }
   }
 
+  /// Updates an inventory product via PATCH /api/inventory-products/{id}/
+  Future<ApiResult<InventoryProductItemModel>> updateProduct(String id, Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.patch<Map<String, dynamic>>('${ApiConstants.inventoryProducts}$id/', data: data);
+
+      if (response.statusCode == 200) {
+        final model = InventoryProductItemModel.fromJson(response.data as Map<String, dynamic>);
+        return Success(model);
+      }
+
+      return Failure('Unexpected status: ${response.statusCode}', statusCode: response.statusCode);
+    } on DioException catch (e) {
+      return Failure(_parseDioError(e), statusCode: e.response?.statusCode);
+    } catch (e) {
+      return Failure(e.toString());
+    }
+  }
+
   String _parseDioError(DioException e) {
     switch (e.type) {
       case DioExceptionType.connectionTimeout:

@@ -98,4 +98,16 @@ class InventoryProductsCubit extends Cubit<InventoryProductsState> {
 
     return result;
   }
+
+  /// Updates a product by [id] via PATCH /api/inventory-products/{id}/
+  /// On success the list is refreshed. Returns the [ApiResult] for callers.
+  Future<ApiResult<InventoryProductItemModel>> updateProduct(String id, Map<String, dynamic> data) async {
+    final result = await _repository.updateProduct(id, data);
+
+    if (result is Success) {
+      await refresh();
+    }
+
+    return result;
+  }
 }

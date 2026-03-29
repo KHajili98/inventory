@@ -26,6 +26,7 @@ class InventoryProductItemModel {
   final String? color;
   final String? colorCode;
   final double? invoiceUnitPriceUsd;
+  final double? invoiceUnitPriceAzn;
   final int? invoiceQuantity;
   final double? invoiceTotalPrice;
   final int? actualQuantity;
@@ -56,6 +57,7 @@ class InventoryProductItemModel {
     this.color,
     this.colorCode,
     this.invoiceUnitPriceUsd,
+    this.invoiceUnitPriceAzn,
     this.invoiceQuantity,
     this.invoiceTotalPrice,
     this.actualQuantity,
@@ -85,6 +87,7 @@ class InventoryProductItemModel {
     color: json['color'] as String?,
     colorCode: json['color_code'] as String?,
     invoiceUnitPriceUsd: json['invoice_unit_price_usd'] != null ? (json['invoice_unit_price_usd'] as num).toDouble() : null,
+    invoiceUnitPriceAzn: json['invoice_unit_price_azn'] != null ? (json['invoice_unit_price_azn'] as num).toDouble() : null,
     invoiceQuantity: json['invoice_quantity'] != null ? (json['invoice_quantity'] as num).toInt() : null,
     invoiceTotalPrice: json['invoice_total_price'] != null ? (json['invoice_total_price'] as num).toDouble() : null,
     actualQuantity: json['actual_quantity'] != null ? (json['actual_quantity'] as num).toInt() : null,
@@ -114,6 +117,7 @@ class InventoryProductItemModel {
     'color': color,
     'color_code': colorCode,
     'invoice_unit_price_usd': invoiceUnitPriceUsd,
+    'invoice_unit_price_azn': invoiceUnitPriceAzn,
     'invoice_quantity': invoiceQuantity,
     'invoice_total_price': invoiceTotalPrice,
     'actual_quantity': actualQuantity,

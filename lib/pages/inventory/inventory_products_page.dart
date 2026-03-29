@@ -1253,7 +1253,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                 child: _ApiStatusBadge(status: status),
               ),
             ),
-            // Actions (view-only for API records)
+            // Actions
             SizedBox(
               width: _colActions,
               height: 52,
@@ -1261,6 +1261,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _IconBtn(icon: Icons.print_rounded, tooltip: 'Print', color: const Color(0xFF6366F1), onTap: () => _showPrintDialog(product)),
+                  _IconBtn(icon: Icons.edit_outlined, tooltip: l10n.edit, color: const Color(0xFF8B5CF6), onTap: () => _showEditDialog(product)),
                   _IconBtn(
                     icon: Icons.delete_outline_rounded,
                     tooltip: l10n.delete,
@@ -1547,6 +1548,1136 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
           ),
         );
     }
+  }
+
+  // ── Edit dialog dispatcher ────────────────────────────────────────────────────
+  void _showEditDialog(InventoryProductItemModel product) {
+    final isManual = (product.source ?? '').toLowerCase() == 'manual' || product.source == null || product.source!.isEmpty;
+    if (isManual) {
+      showDialog(
+        context: context,
+        builder: (_) => _EditManualProductDialog(product: product, cubit: context.read<InventoryProductsCubit>()),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (_) => _EditInvoiceProductDialog(product: product, cubit: context.read<InventoryProductsCubit>()),
+      );
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Edit Manual Product Dialog
+// ═══════════════════════════════════════════════════════════════════════════════
+class _EditManualProductDialog extends StatefulWidget {
+  final InventoryProductItemModel product;
+  final InventoryProductsCubit cubit;
+
+  const _EditManualProductDialog({required this.product, required this.cubit});
+
+  @override
+  State<_EditManualProductDialog> createState() => _EditManualProductDialogState();
+}
+
+class _EditManualProductDialogState extends State<_EditManualProductDialog> {
+  final _formKey = GlobalKey<FormState>();
+  bool _isSaving = false;
+  String _barcodeType = 'preprinted';
+
+  late final TextEditingController _productName;
+  late final TextEditingController _modelCode;
+  late final TextEditingController _color;
+  late final TextEditingController _colorCode;
+  late final TextEditingController _size;
+  late final TextEditingController _barcode;
+  late final TextEditingController _actualQty;
+  late final TextEditingController _unitPriceAzn;
+  late final TextEditingController _actualPcsPerCarton;
+  late final TextEditingController _actualCartonCount;
+  late final TextEditingController _zone;
+  late final TextEditingController _row;
+  late final TextEditingController _shelf;
+
+  @override
+  void initState() {
+    super.initState();
+    final p = widget.product;
+    _productName = TextEditingController(text: p.productName ?? '');
+    _modelCode = TextEditingController(text: p.modelCode ?? '');
+    _color = TextEditingController(text: p.color ?? '');
+    _colorCode = TextEditingController(text: p.colorCode ?? '');
+    _size = TextEditingController(text: p.size ?? '');
+    _barcode = TextEditingController(text: p.barcode ?? '');
+    _barcodeType = p.barcodeType ?? 'preprinted';
+    _barcode.addListener(() {
+      if (_barcodeType != 'generated') _barcodeType = 'preprinted';
+    });
+    _actualQty = TextEditingController(text: p.actualQuantity != null ? '${p.actualQuantity}' : '');
+    _unitPriceAzn = TextEditingController(text: p.invoiceUnitPriceAzn != null ? p.invoiceUnitPriceAzn!.toStringAsFixed(4) : '');
+    _actualPcsPerCarton = TextEditingController(text: p.actualPiecesPerCarton != null ? '${p.actualPiecesPerCarton}' : '');
+    _actualCartonCount = TextEditingController(text: p.actualCartonCount != null ? '${p.actualCartonCount}' : '');
+    _zone = TextEditingController(text: p.locationZone ?? '');
+    _row = TextEditingController(text: p.locationRow ?? '');
+    _shelf = TextEditingController(text: p.locationShelf ?? '');
+  }
+
+  @override
+  void dispose() {
+    for (final c in [
+      _productName,
+      _modelCode,
+      _color,
+      _colorCode,
+      _size,
+      _barcode,
+      _actualQty,
+      _unitPriceAzn,
+      _actualPcsPerCarton,
+      _actualCartonCount,
+      _zone,
+      _row,
+      _shelf,
+    ]) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) return;
+    final l10n = AppLocalizations.of(context)!;
+    final actualQty = int.tryParse(_actualQty.text.trim()) ?? 0;
+    final actualPcs = int.tryParse(_actualPcsPerCarton.text.trim()) ?? 0;
+    final actualCartons = int.tryParse(_actualCartonCount.text.trim()) ?? 0;
+    final unitPriceAzn = double.tryParse(_unitPriceAzn.text.trim()) ?? 0.0;
+    final actualTotalPrice = unitPriceAzn * actualQty;
+
+    final data = <String, dynamic>{
+      'model_code': _modelCode.text.trim(),
+      'product_name': _productName.text.trim(),
+      'size': _size.text.trim(),
+      'color': _color.text.trim(),
+      'color_code': _colorCode.text.trim(),
+      'barcode': _barcode.text.trim(),
+      'barcode_type': _barcodeType,
+      'actual_quantity': actualQty,
+      'actual_total_price': actualTotalPrice,
+      'invoice_unit_price_azn': unitPriceAzn,
+      'actual_pieces_per_carton': actualPcs,
+      'actual_carton_count': actualCartons,
+      'location_zone': _zone.text.trim().toUpperCase(),
+      'location_row': _row.text.trim(),
+      'location_shelf': _shelf.text.trim(),
+    };
+
+    setState(() => _isSaving = true);
+    final result = await widget.cubit.updateProduct(widget.product.id, data);
+    if (!mounted) return;
+
+    switch (result) {
+      case Success():
+        Navigator.of(context, rootNavigator: true).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.productSavedSuccess),
+            backgroundColor: const Color(0xFF22C55E),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+      case Failure(:final message):
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.productSaveFailed(message)),
+            backgroundColor: const Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: SizedBox(
+        width: 600,
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Header ────────────────────────────────────────────────────
+                  Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(10)),
+                        child: const Icon(Icons.edit_rounded, color: Color(0xFF6366F1), size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Edit Product',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                            ),
+                            Text(
+                              widget.product.productGeneratedName ?? widget.product.productName ?? '—',
+                              style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: _isSaving ? null : () => Navigator.of(context, rootNavigator: true).pop(),
+                        icon: const Icon(Icons.close_rounded, size: 20, color: Color(0xFF94A3B8)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  const Divider(color: Color(0xFFE2E8F0)),
+                  const SizedBox(height: 20),
+
+                  // ── Product Info ──────────────────────────────────────────────
+                  _sectionHeader(Icons.inventory_2_outlined, l10n.productInfoSection),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: _field(_productName, l10n.productName, 'e.g. X-1-black', required: true)),
+                      const SizedBox(width: 16),
+                      Expanded(child: _field(_modelCode, l10n.modelField, 'e.g. X-1', required: true)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: _field(_color, l10n.colorField, 'e.g. Black')),
+                      const SizedBox(width: 16),
+                      Expanded(child: _field(_colorCode, l10n.colorCodeField, 'e.g. BL')),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: _field(_size, l10n.sizeField, 'e.g. M / 42')),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _field(_barcode, l10n.barcodeField, 'e.g. 1234500001', required: true),
+                            const SizedBox(height: 4),
+                            _GenerateBarcodeButton(ctrl: _barcode, onGenerated: (_) => setState(() => _barcodeType = 'generated')),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: _field(_actualQty, l10n.actualQtyReceived, '0', isNumber: true, required: true)),
+                      const SizedBox(width: 16),
+                      Expanded(child: _field(_unitPriceAzn, 'Unit Price (AZN)', '0.00', isDecimal: true)),
+                    ],
+                  ),
+                  // Live total preview
+                  ValueListenableBuilder(
+                    valueListenable: _actualQty,
+                    builder: (_, __, ___) => ValueListenableBuilder(
+                      valueListenable: _unitPriceAzn,
+                      builder: (_, __, ___) {
+                        final qty = int.tryParse(_actualQty.text.trim());
+                        final unitPrice = double.tryParse(_unitPriceAzn.text.trim());
+                        final total = (qty != null && unitPrice != null) ? qty * unitPrice : null;
+                        return AnimatedSize(
+                          duration: const Duration(milliseconds: 200),
+                          child: total == null
+                              ? const SizedBox.shrink()
+                              : Container(
+                                  margin: const EdgeInsets.only(top: 8),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF0FDF4),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: const Color(0xFFBBF7D0)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.calculate_rounded, size: 14, color: Color(0xFF15803D)),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          'Total Price: ₼${total.toStringAsFixed(2)}',
+                                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF15803D)),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ── Packaging ─────────────────────────────────────────────────
+                  _sectionHeader(Icons.inventory_outlined, l10n.packagingSection),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: _field(_actualPcsPerCarton, l10n.actualPcsPerCarton, '0', isNumber: true)),
+                      const SizedBox(width: 16),
+                      Expanded(child: _field(_actualCartonCount, l10n.actualCartonCount, '0', isNumber: true)),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ── Warehouse Location ────────────────────────────────────────
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on_rounded, size: 16, color: Color(0xFF6366F1)),
+                            const SizedBox(width: 6),
+                            Text(
+                              l10n.warehouseLocation,
+                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(child: _field(_zone, l10n.zone, 'A', required: true, hint: l10n.zoneLetter)),
+                            const SizedBox(width: 12),
+                            Expanded(child: _field(_row, l10n.row, '1', isNumber: true, required: true)),
+                            const SizedBox(width: 12),
+                            Expanded(child: _field(_shelf, l10n.shelf, '1', isNumber: true, required: true)),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        ValueListenableBuilder(
+                          valueListenable: _zone,
+                          builder: (_, __, ___) => ValueListenableBuilder(
+                            valueListenable: _row,
+                            builder: (_, __, ___) => ValueListenableBuilder(
+                              valueListenable: _shelf,
+                              builder: (_, __, ___) {
+                                final z = _zone.text.toUpperCase();
+                                final r = _row.text;
+                                final s = _shelf.text;
+                                if (z.isEmpty || r.isEmpty || s.isEmpty) return const SizedBox.shrink();
+                                return Row(
+                                  children: [
+                                    const Icon(Icons.info_outline_rounded, size: 14, color: Color(0xFF94A3B8)),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      l10n.locationCode('$z-$r-$s'),
+                                      style: const TextStyle(fontSize: 12, color: Color(0xFF6366F1), fontWeight: FontWeight.w500),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // ── Footer ────────────────────────────────────────────────────
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _isSaving ? null : () => Navigator.of(context, rootNavigator: true).pop(),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFFCBD5E1)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF475569))),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: FilledButton.icon(
+                          onPressed: _isSaving ? null : _save,
+                          icon: _isSaving
+                              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                              : const Icon(Icons.check_rounded, size: 16),
+                          label: Text(_isSaving ? l10n.savingProduct : 'Save Changes'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFF6366F1),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _sectionHeader(IconData icon, String label) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: const Color(0xFF6366F1)),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+        ),
+      ],
+    );
+  }
+
+  Widget _field(
+    TextEditingController ctrl,
+    String label,
+    String placeholder, {
+    bool required = false,
+    bool isNumber = false,
+    bool isDecimal = false,
+    String? hint,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              label,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
+            ),
+            if (required) const Text(' *', style: TextStyle(fontSize: 12, color: Color(0xFFEF4444))),
+          ],
+        ),
+        const SizedBox(height: 6),
+        TextFormField(
+          controller: ctrl,
+          enabled: !_isSaving,
+          keyboardType: isDecimal
+              ? const TextInputType.numberWithOptions(decimal: true)
+              : isNumber
+              ? TextInputType.number
+              : TextInputType.text,
+          validator: required ? (v) => (v == null || v.trim().isEmpty) ? AppLocalizations.of(context)!.required : null : null,
+          style: const TextStyle(fontSize: 13, color: Color(0xFF1E293B)),
+          decoration: InputDecoration(
+            hintText: hint ?? placeholder,
+            hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFCBD5E1)),
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFEF4444)),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Edit Invoice Product Dialog (source != 'manual')
+// Invoice fields are read-only; only actual qty, barcode, exchange rate,
+// packaging and location can be edited.
+// ═══════════════════════════════════════════════════════════════════════════════
+class _EditInvoiceProductDialog extends StatefulWidget {
+  final InventoryProductItemModel product;
+  final InventoryProductsCubit cubit;
+
+  const _EditInvoiceProductDialog({required this.product, required this.cubit});
+
+  @override
+  State<_EditInvoiceProductDialog> createState() => _EditInvoiceProductDialogState();
+}
+
+class _EditInvoiceProductDialogState extends State<_EditInvoiceProductDialog> {
+  final _formKey = GlobalKey<FormState>();
+  bool _isSaving = false;
+  String _barcodeType = 'preprinted';
+
+  late final TextEditingController _barcode;
+  late final TextEditingController _actualQty;
+  late final TextEditingController _exchangeRate;
+  late final TextEditingController _actualPcsPerCarton;
+  late final TextEditingController _actualCartonCount;
+  late final TextEditingController _zone;
+  late final TextEditingController _row;
+  late final TextEditingController _shelf;
+
+  @override
+  void initState() {
+    super.initState();
+    final p = widget.product;
+    _barcode = TextEditingController(text: p.barcode ?? '');
+    _barcodeType = p.barcodeType ?? 'preprinted';
+    _barcode.addListener(() {
+      if (_barcodeType != 'generated') _barcodeType = 'preprinted';
+    });
+    _actualQty = TextEditingController(text: p.actualQuantity != null ? '${p.actualQuantity}' : '');
+    // Derive exchange rate from stored prices if available, else default 1.70
+    double initialRate = 1.70;
+    if (p.invoiceUnitPriceUsd != null && p.invoiceUnitPriceAzn != null && p.invoiceUnitPriceUsd! > 0) {
+      initialRate = p.invoiceUnitPriceAzn! / p.invoiceUnitPriceUsd!;
+    }
+    _exchangeRate = TextEditingController(text: initialRate.toStringAsFixed(2));
+    _actualPcsPerCarton = TextEditingController(text: p.actualPiecesPerCarton != null ? '${p.actualPiecesPerCarton}' : '');
+    _actualCartonCount = TextEditingController(text: p.actualCartonCount != null ? '${p.actualCartonCount}' : '');
+    _zone = TextEditingController(text: p.locationZone ?? '');
+    _row = TextEditingController(text: p.locationRow ?? '');
+    _shelf = TextEditingController(text: p.locationShelf ?? '');
+  }
+
+  @override
+  void dispose() {
+    for (final c in [_barcode, _actualQty, _exchangeRate, _actualPcsPerCarton, _actualCartonCount, _zone, _row, _shelf]) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) return;
+    final l10n = AppLocalizations.of(context)!;
+    final actualQty = int.tryParse(_actualQty.text.trim()) ?? 0;
+    final actualPcs = int.tryParse(_actualPcsPerCarton.text.trim()) ?? 0;
+    final actualCartons = int.tryParse(_actualCartonCount.text.trim()) ?? 0;
+    final exchangeRate = double.tryParse(_exchangeRate.text.trim()) ?? 1.70;
+    final unitPriceUsd = widget.product.invoiceUnitPriceUsd ?? 0.0;
+    final unitPriceAzn = unitPriceUsd * exchangeRate;
+    final actualTotalPrice = unitPriceAzn * actualQty;
+
+    final data = <String, dynamic>{
+      'barcode': _barcode.text.trim(),
+      'barcode_type': _barcodeType,
+      'actual_quantity': actualQty,
+      'invoice_unit_price_azn': unitPriceAzn,
+      'actual_total_price': actualTotalPrice,
+      'actual_pieces_per_carton': actualPcs,
+      'actual_carton_count': actualCartons,
+      'location_zone': _zone.text.trim().toUpperCase(),
+      'location_row': _row.text.trim(),
+      'location_shelf': _shelf.text.trim(),
+    };
+
+    setState(() => _isSaving = true);
+    final result = await widget.cubit.updateProduct(widget.product.id, data);
+    if (!mounted) return;
+
+    switch (result) {
+      case Success():
+        Navigator.of(context, rootNavigator: true).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.productSavedSuccess),
+            backgroundColor: const Color(0xFF22C55E),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+      case Failure(:final message):
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.productSaveFailed(message)),
+            backgroundColor: const Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final p = widget.product;
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: SizedBox(
+        width: 640,
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Header ────────────────────────────────────────────────────
+                  Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(color: const Color(0xFFE0F2FE), borderRadius: BorderRadius.circular(10)),
+                        child: const Icon(Icons.receipt_long_rounded, color: Color(0xFF0284C7), size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Edit Invoice Product',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                            ),
+                            Text(
+                              p.productGeneratedName ?? p.productName ?? '—',
+                              style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (p.source != null && p.source!.isNotEmpty)
+                        Container(
+                          margin: const EdgeInsets.only(right: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(color: const Color(0xFFE0F2FE), borderRadius: BorderRadius.circular(20)),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.receipt_long_rounded, size: 12, color: Color(0xFF0284C7)),
+                              const SizedBox(width: 4),
+                              Text(
+                                p.source!,
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF0284C7)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      IconButton(
+                        onPressed: _isSaving ? null : () => Navigator.of(context, rootNavigator: true).pop(),
+                        icon: const Icon(Icons.close_rounded, size: 20, color: Color(0xFF94A3B8)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  const Divider(color: Color(0xFFE2E8F0)),
+                  const SizedBox(height: 16),
+
+                  // ── Read-only product info banner ─────────────────────────────
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.lock_outline_rounded, size: 14, color: Color(0xFF94A3B8)),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'Invoice Details (read-only)',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 16,
+                          runSpacing: 8,
+                          children: [
+                            if (p.productName != null) _InfoChip(label: 'Product', value: p.productName!),
+                            if (p.modelCode != null) _InfoChip(label: 'Model', value: p.modelCode!),
+                            if (p.color != null && p.color!.isNotEmpty) _InfoChip(label: 'Color', value: p.color!),
+                            if (p.size != null && p.size!.isNotEmpty) _InfoChip(label: 'Size', value: p.size!),
+                            if (p.invoiceQuantity != null) _InfoChip(label: 'Invoice Qty', value: '${p.invoiceQuantity}'),
+                            if (p.invoiceUnitPriceUsd != null)
+                              _InfoChip(label: 'Unit Price (USD)', value: '\$${p.invoiceUnitPriceUsd!.toStringAsFixed(4)}'),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // ── Barcode + Actual Qty ──────────────────────────────────────
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _detailField(_barcode, l10n.barcodeField, 'e.g. 6901234500010', required: true, icon: Icons.qr_code_rounded),
+                            const SizedBox(height: 4),
+                            _GenerateBarcodeButton(ctrl: _barcode, onGenerated: (_) => setState(() => _barcodeType = 'generated')),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 2,
+                        child: _detailField(
+                          _actualQty,
+                          l10n.actualQtyReceived,
+                          '${p.invoiceQuantity ?? 0}',
+                          required: true,
+                          isNumber: true,
+                          icon: Icons.numbers_rounded,
+                          suffixWidget: ValueListenableBuilder(
+                            valueListenable: _actualQty,
+                            builder: (_, __, ___) {
+                              final actual = int.tryParse(_actualQty.text);
+                              if (actual == null) return const SizedBox.shrink();
+                              final diff = actual - (p.invoiceQuantity ?? 0);
+                              if (diff == 0) return const SizedBox.shrink();
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      diff > 0 ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                                      size: 12,
+                                      color: diff > 0 ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
+                                    ),
+                                    const SizedBox(width: 3),
+                                    Text(
+                                      l10n.vsInvoice('${diff > 0 ? '+' : ''}$diff'),
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: diff > 0 ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // ── Price Calculation ─────────────────────────────────────────
+                  Row(
+                    children: [
+                      const Icon(Icons.attach_money_rounded, size: 15, color: Color(0xFF0EA5E9)),
+                      const SizedBox(width: 6),
+                      const Text(
+                        'Price Calculation',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      // Unit Price USD (locked)
+                      Expanded(
+                        flex: 2,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Unit Price (USD)',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
+                            ),
+                            const SizedBox(height: 6),
+                            Container(
+                              height: 36,
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF8FAFC),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.lock_outline_rounded, size: 14, color: Color(0xFF94A3B8)),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '\$${(p.invoiceUnitPriceUsd ?? 0.0).toStringAsFixed(4)}',
+                                    style: const TextStyle(fontSize: 13, color: Color(0xFF475569), fontWeight: FontWeight.w600),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Padding(
+                        padding: EdgeInsets.only(top: 20),
+                        child: Icon(Icons.close_rounded, size: 16, color: Color(0xFF94A3B8)),
+                      ),
+                      const SizedBox(width: 12),
+                      // Exchange Rate
+                      Expanded(
+                        flex: 2,
+                        child: _detailField(_exchangeRate, 'Exchange Rate', '1.70', isDecimal: true, icon: Icons.currency_exchange_rounded),
+                      ),
+                      const SizedBox(width: 12),
+                      const Padding(
+                        padding: EdgeInsets.only(top: 20),
+                        child: Icon(Icons.arrow_forward_rounded, size: 16, color: Color(0xFF6366F1)),
+                      ),
+                      const SizedBox(width: 12),
+                      // Unit Price AZN (computed)
+                      Expanded(
+                        flex: 2,
+                        child: ValueListenableBuilder(
+                          valueListenable: _exchangeRate,
+                          builder: (_, __, ___) {
+                            final rate = double.tryParse(_exchangeRate.text.trim()) ?? 1.70;
+                            final aznPrice = (p.invoiceUnitPriceUsd ?? 0.0) * rate;
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Unit Price (AZN)',
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
+                                ),
+                                const SizedBox(height: 6),
+                                Container(
+                                  height: 36,
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFEEF2FF),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: const Color(0xFF6366F1)),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '₼${aznPrice.toStringAsFixed(4)}',
+                                      style: const TextStyle(fontSize: 13, color: Color(0xFF6366F1), fontWeight: FontWeight.w700),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  // Live total preview
+                  ValueListenableBuilder(
+                    valueListenable: _actualQty,
+                    builder: (_, __, ___) => ValueListenableBuilder(
+                      valueListenable: _exchangeRate,
+                      builder: (_, __, ___) {
+                        final rate = double.tryParse(_exchangeRate.text.trim()) ?? 1.70;
+                        final unitPriceAzn = (p.invoiceUnitPriceUsd ?? 0.0) * rate;
+                        final qty = int.tryParse(_actualQty.text.trim());
+                        final total = qty != null ? qty * unitPriceAzn : null;
+                        return AnimatedSize(
+                          duration: const Duration(milliseconds: 200),
+                          child: total == null
+                              ? const SizedBox.shrink()
+                              : Container(
+                                  margin: const EdgeInsets.only(top: 8),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF0FDF4),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: const Color(0xFFBBF7D0)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.calculate_rounded, size: 14, color: Color(0xFF15803D)),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          'Total: ₼${total.toStringAsFixed(2)} ($qty × ₼${unitPriceAzn.toStringAsFixed(4)})',
+                                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF15803D)),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ── Faktiki Əd/Karton & Faktiki Karton Sayı ───────────────────
+                  Row(
+                    children: [
+                      const Icon(Icons.widgets_outlined, size: 14, color: Color(0xFF6366F1)),
+                      const SizedBox(width: 6),
+                      Text(
+                        l10n.packagingSection,
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _detailField(
+                          _actualPcsPerCarton,
+                          l10n.actualPcsPerCarton,
+                          '${p.actualPiecesPerCarton ?? 0}',
+                          isNumber: true,
+                          icon: Icons.widgets_outlined,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _detailField(
+                          _actualCartonCount,
+                          l10n.actualCartonCount,
+                          '${p.actualCartonCount ?? 0}',
+                          isNumber: true,
+                          icon: Icons.inventory_2_outlined,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ── Warehouse Location ────────────────────────────────────────
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on_rounded, size: 15, color: Color(0xFF6366F1)),
+                      const SizedBox(width: 6),
+                      Text(
+                        l10n.warehouseLocation,
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: _detailField(_zone, l10n.zone, 'A', required: true)),
+                      const SizedBox(width: 10),
+                      Expanded(child: _detailField(_row, l10n.row, '1', isNumber: true, required: true)),
+                      const SizedBox(width: 10),
+                      Expanded(child: _detailField(_shelf, l10n.shelf, '1', isNumber: true, required: true)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ValueListenableBuilder(
+                          valueListenable: _zone,
+                          builder: (_, __, ___) => ValueListenableBuilder(
+                            valueListenable: _row,
+                            builder: (_, __, ___) => ValueListenableBuilder(
+                              valueListenable: _shelf,
+                              builder: (_, __, ___) {
+                                final z = _zone.text.toUpperCase();
+                                final r = _row.text;
+                                final s = _shelf.text;
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      l10n.codeLabel,
+                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Container(
+                                      height: 36,
+                                      decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(8)),
+                                      child: Center(
+                                        child: Text(
+                                          (z.isEmpty || r.isEmpty || s.isEmpty) ? '—' : '$z-$r-$s',
+                                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF6366F1)),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // ── Footer ────────────────────────────────────────────────────
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _isSaving ? null : () => Navigator.of(context, rootNavigator: true).pop(),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFFCBD5E1)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF475569))),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: FilledButton.icon(
+                          onPressed: _isSaving ? null : _save,
+                          icon: _isSaving
+                              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                              : const Icon(Icons.check_rounded, size: 16),
+                          label: Text(_isSaving ? l10n.savingProduct : 'Save Changes'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFF6366F1),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _detailField(
+    TextEditingController ctrl,
+    String label,
+    String hint, {
+    bool required = false,
+    bool isNumber = false,
+    bool isDecimal = false,
+    IconData? icon,
+    Widget? suffixWidget,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            if (icon != null) ...[Icon(icon, size: 12, color: const Color(0xFF94A3B8)), const SizedBox(width: 4)],
+            Text(
+              label,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
+            ),
+            if (required) const Text(' *', style: TextStyle(fontSize: 12, color: Color(0xFFEF4444))),
+          ],
+        ),
+        const SizedBox(height: 5),
+        TextFormField(
+          controller: ctrl,
+          enabled: !_isSaving,
+          keyboardType: isDecimal
+              ? const TextInputType.numberWithOptions(decimal: true)
+              : isNumber
+              ? TextInputType.number
+              : TextInputType.text,
+          validator: required ? (v) => (v == null || v.trim().isEmpty) ? AppLocalizations.of(context)!.required : null : null,
+          style: const TextStyle(fontSize: 13, color: Color(0xFF1E293B)),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFCBD5E1)),
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFEF4444)),
+            ),
+          ),
+        ),
+        if (suffixWidget != null) suffixWidget,
+      ],
+    );
+  }
+}
+
+// ── Small read-only info chip ─────────────────────────────────────────────────
+class _InfoChip extends StatelessWidget {
+  final String label;
+  final String value;
+  const _InfoChip({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text('$label: ', style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+        ),
+      ],
+    );
   }
 }
 
