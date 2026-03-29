@@ -607,6 +607,15 @@ class _PosPageState extends State<PosPage> {
                   ),
                 ),
                 SizedBox(
+                  width: 180,
+                  child: Center(
+                    child: Text(
+                      'Endirim',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                  ),
+                ),
+                SizedBox(
                   width: 120,
                   child: Center(
                     child: Text(
@@ -637,7 +646,10 @@ class _PosPageState extends State<PosPage> {
                     itemBuilder: (context, index) {
                       final item = _cartItems[index];
                       final unitPrice = _getCurrentPrice(item.product);
-                      final total = unitPrice * item.quantity;
+                      final discountAmount = unitPrice * item.discountPercent / 100;
+                      final priceAfterDiscount = unitPrice - discountAmount;
+                      final total = priceAfterDiscount * item.quantity;
+
                       return Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
@@ -672,12 +684,83 @@ class _PosPageState extends State<PosPage> {
                             ),
                             SizedBox(
                               width: 120,
-                              child: Center(child: Text('${unitPrice.toStringAsFixed(0)} ₼', style: const TextStyle(fontSize: 14))),
+                              child: Center(child: Text('${unitPrice.toStringAsFixed(2)} ₼', style: const TextStyle(fontSize: 14))),
+                            ),
+                            // Discount fields (percent and amount)
+                            SizedBox(
+                              width: 180,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  // Percent field
+                                  SizedBox(
+                                    width: 50,
+                                    height: 32,
+                                    child: TextField(
+                                      controller: TextEditingController(
+                                        text: item.discountPercent > 0 ? item.discountPercent.toStringAsFixed(0) : '',
+                                      ),
+                                      keyboardType: TextInputType.number,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(fontSize: 12),
+                                      decoration: InputDecoration(
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(4),
+                                          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                                        ),
+                                        isDense: true,
+                                        hintText: '0',
+                                        hintStyle: TextStyle(fontSize: 12, color: Colors.grey[400]),
+                                      ),
+                                      onChanged: (value) {
+                                        final percent = double.tryParse(value) ?? 0.0;
+                                        setState(() {
+                                          _cartItems[index].discountPercent = percent;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  const Text('%', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                  const SizedBox(width: 8),
+                                  // Amount field
+                                  SizedBox(
+                                    width: 60,
+                                    height: 32,
+                                    child: TextField(
+                                      controller: TextEditingController(text: discountAmount > 0 ? discountAmount.toStringAsFixed(2) : ''),
+                                      keyboardType: TextInputType.number,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(fontSize: 12),
+                                      decoration: InputDecoration(
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(4),
+                                          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                                        ),
+                                        isDense: true,
+                                        hintText: '0',
+                                        hintStyle: TextStyle(fontSize: 12, color: Colors.grey[400]),
+                                      ),
+                                      onChanged: (value) {
+                                        final amount = double.tryParse(value) ?? 0.0;
+                                        final percent = unitPrice > 0 ? (amount / unitPrice * 100) : 0.0;
+                                        setState(() {
+                                          _cartItems[index].discountPercent = percent;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  const Text('₼', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                ],
+                              ),
                             ),
                             SizedBox(
                               width: 120,
                               child: Center(
-                                child: Text('${total.toStringAsFixed(0)} ₼', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                                child: Text('${total.toStringAsFixed(2)} ₼', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                               ),
                             ),
                             SizedBox(
