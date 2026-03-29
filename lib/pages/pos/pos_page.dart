@@ -1012,50 +1012,17 @@ class _PosPageState extends State<PosPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
-                  children: [
-                    Icon(Icons.receipt_long, size: 18, color: Color(0xFF667EEA)),
-                    SizedBox(width: 8),
-                    Text(
-                      'Qiymət Növü',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
-                    ),
-                  ],
+                const Text(
+                  'Qiymət Növü',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
                 ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF7FAFC),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<PriceType>(
-                      value: _priceType,
-                      isExpanded: true,
-                      icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF667EEA)),
-                      items: const [
-                        DropdownMenuItem(
-                          value: PriceType.retail,
-                          child: Text(
-                            'Pərakəndə',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
-                          ),
-                        ),
-                        DropdownMenuItem(
-                          value: PriceType.wholesale,
-                          child: Text(
-                            'Topdan',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
-                          ),
-                        ),
-                      ],
-                      onChanged: (value) {
-                        if (value != null) setState(() => _priceType = value);
-                      },
-                    ),
-                  ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(child: _buildPriceTypeButton(PriceType.retail, 'Pərakəndə')),
+                    const SizedBox(width: 8),
+                    Expanded(child: _buildPriceTypeButton(PriceType.wholesale, 'Topdan')),
+                  ],
                 ),
               ],
             ),
@@ -1067,24 +1034,18 @@ class _PosPageState extends State<PosPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
-                  children: [
-                    Icon(Icons.payment, size: 18, color: Color(0xFF667EEA)),
-                    SizedBox(width: 8),
-                    Text(
-                      'Ödəniş Metodu',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
-                    ),
-                  ],
+                const Text(
+                  'Ödəniş Metodu',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 Row(
                   children: [
-                    Expanded(child: _buildPaymentMethodButton(PaymentMethod.cash, Icons.money, 'Nağd')),
-                    const SizedBox(width: 8),
-                    Expanded(child: _buildPaymentMethodButton(PaymentMethod.card, Icons.credit_card, 'Kart')),
-                    const SizedBox(width: 8),
-                    Expanded(child: _buildPaymentMethodButton(PaymentMethod.transfer, Icons.account_balance, 'Köçürmə')),
+                    Expanded(child: _buildPaymentMethodButton(PaymentMethod.cash, 'Nağd')),
+                    const SizedBox(width: 6),
+                    Expanded(child: _buildPaymentMethodButton(PaymentMethod.card, 'Kart')),
+                    const SizedBox(width: 6),
+                    Expanded(child: _buildPaymentMethodButton(PaymentMethod.transfer, 'Köçürmə')),
                   ],
                 ),
               ],
@@ -1350,34 +1311,49 @@ class _PosPageState extends State<PosPage> {
     );
   }
 
-  Widget _buildPaymentMethodButton(PaymentMethod method, IconData icon, String label) {
+  Widget _buildPaymentMethodButton(PaymentMethod method, String label) {
     final isSelected = _selectedPaymentMethod == method;
     return InkWell(
       onTap: () => setState(() => _selectedPaymentMethod = method),
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(8),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           gradient: isSelected
               ? const LinearGradient(colors: [Color(0xFF667EEA), Color(0xFF764BA2)], begin: Alignment.topLeft, end: Alignment.bottomRight)
               : null,
           color: isSelected ? null : const Color(0xFFF7FAFC),
           border: Border.all(color: isSelected ? Colors.transparent : const Color(0xFFE2E8F0)),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(8),
         ),
-        child: Column(
-          children: [
-            Icon(icon, color: isSelected ? Colors.white : const Color(0xFF718096), size: 26),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                color: isSelected ? Colors.white : const Color(0xFF4A5568),
-              ),
-            ),
-          ],
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isSelected ? Colors.white : const Color(0xFF4A5568)),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPriceTypeButton(PriceType type, String label) {
+    final isSelected = _priceType == type;
+    return InkWell(
+      onTap: () => setState(() => _priceType = type),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? const LinearGradient(colors: [Color(0xFF667EEA), Color(0xFF764BA2)], begin: Alignment.topLeft, end: Alignment.bottomRight)
+              : null,
+          color: isSelected ? null : const Color(0xFFF7FAFC),
+          border: Border.all(color: isSelected ? Colors.transparent : const Color(0xFFE2E8F0)),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isSelected ? Colors.white : const Color(0xFF4A5568)),
         ),
       ),
     );
