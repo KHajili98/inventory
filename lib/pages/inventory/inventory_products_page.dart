@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dio/dio.dart';
@@ -33,25 +35,20 @@ class _InventoryProductsView extends StatefulWidget {
 }
 
 class _InventoryProductsViewState extends State<_InventoryProductsView> {
-  // Local-only state for search/filter/sort (applied client-side on top of API data)
-  List<InventoryProductItemModel> _filtered = [];
   final Set<String> _selectedIds = {};
-  String _searchQuery = '';
-  String? _statusFilter; // 'in_stock' | 'low_stock' | 'out_of_stock' | null
-  String _sortColumn = 'name';
-  bool _sortAscending = true;
+  String? _activeStatusFilter; // 'in_stock' | 'low_stock' | 'out_of_stock' | null
 
-  // Primary horizontal scroll controller (drives the body rows)
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _searchDebounce;
+
+  // Primary horizontal scroll controller (drives both header and body rows)
   final ScrollController _hScrollController = ScrollController();
-  // Mirror controllers kept in sync via listener (header + bottom scrollbar)
+  // Mirror controller for header kept in sync via listener
   final ScrollController _hHeaderController = ScrollController();
 
   final ScrollController _vScrollController = ScrollController();
 
-  static const double _hScrollStep = 200.0;
-  static const double _vScrollStep = 200.0;
-
-  // ── Sync all horizontal controllers together ──────────────────────────────
+  // ── Sync header horizontal scroll with body ───────────────────────────────
   bool _hSyncing = false;
   void _onHScroll() {
     if (_hSyncing) return;
@@ -102,87 +99,10 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
   static const double _colStatus = 120;
   static const double _colActions = 116;
 
-  // ── Filtering & Sorting ──────────────────────────────────────────────────────
   @override
   void initState() {
     super.initState();
     _hScrollController.addListener(_onHScroll);
-  }
-
-  List<InventoryProductItemModel> _applyFilterAndSort(List<InventoryProductItemModel> all) {
-    final q = _searchQuery.toLowerCase();
-    var result = all.where((p) {
-      final matchSearch =
-          q.isEmpty ||
-          (p.productCode?.toLowerCase().contains(q) ?? false) ||
-          (p.productGeneratedName?.toLowerCase().contains(q) ?? false) ||
-          (p.productName?.toLowerCase().contains(q) ?? false) ||
-          (p.modelCode?.toLowerCase().contains(q) ?? false) ||
-          (p.barcode?.toLowerCase().contains(q) ?? false) ||
-          (p.color?.toLowerCase().contains(q) ?? false) ||
-          _locationLabel(p).toLowerCase().contains(q) ||
-          (p.source?.toLowerCase().contains(q) ?? false);
-      final matchStatus = _statusFilter == null || _productStatus(p) == _statusFilter;
-      return matchSearch && matchStatus;
-    }).toList();
-
-    result.sort((a, b) {
-      int cmp;
-      switch (_sortColumn) {
-        case 'productCode':
-          cmp = (a.productCode ?? '').compareTo(b.productCode ?? '');
-          break;
-        case 'name':
-          cmp = (a.productName ?? '').compareTo(b.productName ?? '');
-          break;
-        case 'color':
-          cmp = (a.color ?? '').compareTo(b.color ?? '');
-          break;
-        case 'qty':
-          cmp = (a.actualQuantity ?? 0).compareTo(b.actualQuantity ?? 0);
-          break;
-        case 'unitUsd':
-          cmp = (a.invoiceUnitPriceUsd ?? 0).compareTo(b.invoiceUnitPriceUsd ?? 0);
-          break;
-        case 'unitAzn':
-          cmp = (a.invoiceUnitPriceAzn ?? 0).compareTo(b.invoiceUnitPriceAzn ?? 0);
-          break;
-        case 'total':
-          cmp = (a.actualTotalPrice ?? 0).compareTo(b.actualTotalPrice ?? 0);
-          break;
-        case 'barcode':
-          cmp = (a.barcode ?? '').compareTo(b.barcode ?? '');
-          break;
-        case 'coord':
-          cmp = _locationLabel(a).compareTo(_locationLabel(b));
-          break;
-        default:
-          cmp = 0;
-      }
-      return _sortAscending ? cmp : -cmp;
-    });
-    return result;
-  }
-
-  void _applyFilter() {
-    final loaded = context.read<InventoryProductsCubit>().state;
-    if (loaded is InventoryProductsLoaded) {
-      setState(() {
-        _filtered = _applyFilterAndSort(loaded.products);
-      });
-    }
-  }
-
-  void _onSort(String column) {
-    setState(() {
-      if (_sortColumn == column) {
-        _sortAscending = !_sortAscending;
-      } else {
-        _sortColumn = column;
-        _sortAscending = true;
-      }
-      _applyFilter();
-    });
   }
 
   Future<void> _deleteSelected() async {
@@ -376,6 +296,8 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
+    _searchController.dispose();
     _hScrollController.removeListener(_onHScroll);
     _hScrollController.dispose();
     _hHeaderController.dispose();
@@ -387,9 +309,10 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
   Widget build(BuildContext context) {
     return BlocConsumer<InventoryProductsCubit, InventoryProductsState>(
       listener: (context, state) {
+        // Clear selection when page data changes
         if (state is InventoryProductsLoaded) {
           setState(() {
-            _filtered = _applyFilterAndSort(state.products);
+            _selectedIds.removeWhere((id) => !state.products.any((p) => p.id == id));
           });
         }
       },
@@ -640,7 +563,8 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
     final l10n = AppLocalizations.of(context)!;
     final isMobile = context.isMobile;
     final searchWidth = isMobile ? MediaQuery.of(context).size.width - (context.responsivePadding * 2) : 300.0;
-    final allCount = state is InventoryProductsLoaded ? state.products.length : 0;
+    final totalCount = state is InventoryProductsLoaded ? state.totalCount : 0;
+    final pageCount = state is InventoryProductsLoaded ? state.products.length : 0;
 
     return Column(
       children: [
@@ -649,9 +573,12 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
           width: isMobile ? double.infinity : searchWidth,
           height: 40,
           child: TextField(
+            controller: _searchController,
             onChanged: (v) {
-              _searchQuery = v;
-              _applyFilter();
+              _searchDebounce?.cancel();
+              _searchDebounce = Timer(const Duration(milliseconds: 400), () {
+                context.read<InventoryProductsCubit>().updateSearch(v);
+              });
             },
             decoration: InputDecoration(
               hintText: l10n.searchSKUNameBarcode,
@@ -676,51 +603,51 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
           ),
         ),
         const SizedBox(height: 10),
-        // Filters - horizontal scroll
+        // Stock status filter chips + result count
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
               _FilterChip(
                 label: l10n.all,
-                selected: _statusFilter == null,
+                selected: _activeStatusFilter == null,
                 onTap: () {
-                  _statusFilter = null;
-                  _applyFilter();
+                  setState(() => _activeStatusFilter = null);
+                  context.read<InventoryProductsCubit>().updateStatusFilter(null);
                 },
               ),
               const SizedBox(width: 8),
               _FilterChip(
                 label: l10n.inStock,
-                selected: _statusFilter == 'in_stock',
+                selected: _activeStatusFilter == 'in_stock',
                 color: const Color(0xFF22C55E),
                 onTap: () {
-                  _statusFilter = 'in_stock';
-                  _applyFilter();
+                  setState(() => _activeStatusFilter = 'in_stock');
+                  context.read<InventoryProductsCubit>().updateStatusFilter('in_stock');
                 },
               ),
               const SizedBox(width: 8),
               _FilterChip(
                 label: l10n.lowStock,
-                selected: _statusFilter == 'low_stock',
+                selected: _activeStatusFilter == 'low_stock',
                 color: const Color(0xFFF59E0B),
                 onTap: () {
-                  _statusFilter = 'low_stock';
-                  _applyFilter();
+                  setState(() => _activeStatusFilter = 'low_stock');
+                  context.read<InventoryProductsCubit>().updateStatusFilter('low_stock');
                 },
               ),
               const SizedBox(width: 8),
               _FilterChip(
                 label: l10n.outOfStock,
-                selected: _statusFilter == 'out_of_stock',
+                selected: _activeStatusFilter == 'out_of_stock',
                 color: const Color(0xFFEF4444),
                 onTap: () {
-                  _statusFilter = 'out_of_stock';
-                  _applyFilter();
+                  setState(() => _activeStatusFilter = 'out_of_stock');
+                  context.read<InventoryProductsCubit>().updateStatusFilter('out_of_stock');
                 },
               ),
               const SizedBox(width: 16),
-              Text(l10n.nOfMProducts(_filtered.length, allCount), style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8))),
+              Text(l10n.nOfMProducts(pageCount, totalCount), style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8))),
             ],
           ),
         ),
@@ -728,18 +655,8 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
     );
   }
 
-  void _scrollH(double delta) {
-    if (!_hScrollController.hasClients) return;
-    final target = (_hScrollController.offset + delta).clamp(0.0, _hScrollController.position.maxScrollExtent);
-    _hScrollController.animateTo(target, duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
-  }
-
-  void _scrollV(double delta) {
-    final target = (_vScrollController.offset + delta).clamp(0.0, _vScrollController.position.maxScrollExtent);
-    _vScrollController.animateTo(target, duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
-  }
-
   Widget _buildTable(InventoryProductsState state) {
+    final products = state is InventoryProductsLoaded ? state.products : <InventoryProductItemModel>[];
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -749,16 +666,14 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
       ),
       child: Column(
         children: [
-          // ── Top navigation bar (scroll left/right & jump to top/bottom) ──
-          _buildHNavBar(),
           // ── Sticky header ─────────────────────────────────────────────────
           SingleChildScrollView(
             controller: _hHeaderController,
             scrollDirection: Axis.horizontal,
             physics: const NeverScrollableScrollPhysics(),
-            child: SizedBox(width: _tableWidth, child: _buildHeaderRow()),
+            child: SizedBox(width: _tableWidth, child: _buildHeaderRow(products)),
           ),
-          // ── Scrollable body + right vertical scrollbar ────────────────────
+          // ── Scrollable body ───────────────────────────────────────────────
           Expanded(
             child: switch (state) {
               InventoryProductsLoading() => const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1))),
@@ -779,13 +694,12 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                   ],
                 ),
               ),
-              _ when _filtered.isEmpty => Center(
+              _ when products.isEmpty => Center(
                 child: Text(AppLocalizations.of(context)!.noProductsMatchSearch, style: const TextStyle(fontSize: 14, color: Color(0xFF94A3B8))),
               ),
               _ => Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Table rows with horizontal scroll
                   Expanded(
                     child: SingleChildScrollView(
                       controller: _hScrollController,
@@ -798,9 +712,9 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                           trackVisibility: true,
                           child: ListView.separated(
                             controller: _vScrollController,
-                            itemCount: _filtered.length,
+                            itemCount: products.length,
                             separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                            itemBuilder: (_, i) => _buildProductRow(i, _filtered[i]),
+                            itemBuilder: (_, i) => _buildProductRow(i, products[i]),
                           ),
                         ),
                       ),
@@ -810,74 +724,8 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
               ),
             },
           ),
-          // ── Bottom horizontal scrollbar + nav buttons ─────────────────────
           // ── Pagination footer ─────────────────────────────────────────────
           if (state is InventoryProductsLoaded) _buildPaginationFooter(state),
-        ],
-      ),
-    );
-  }
-
-  /// Top bar: ← scroll left  |  → scroll right  |  spacer  |  ↑ top  |  ↓ bottom
-  Widget _buildHNavBar() {
-    final l10n = AppLocalizations.of(context)!;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: const BoxDecoration(
-        color: Color(0xFFF8FAFC),
-        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
-      ),
-      child: Row(
-        children: [
-          _NavBtn(
-            icon: Icons.keyboard_double_arrow_left_rounded,
-            tooltip: l10n.scrollToStart,
-            onTap: () {
-              if (_hScrollController.hasClients) {
-                _hScrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
-              }
-            },
-          ),
-          const SizedBox(width: 4),
-          _NavBtn(icon: Icons.chevron_left_rounded, tooltip: l10n.scrollLeft, onTap: () => _scrollH(-_hScrollStep)),
-          const SizedBox(width: 4),
-          _NavBtn(icon: Icons.chevron_right_rounded, tooltip: l10n.scrollRight, onTap: () => _scrollH(_hScrollStep)),
-          const SizedBox(width: 4),
-          _NavBtn(
-            icon: Icons.keyboard_double_arrow_right_rounded,
-            tooltip: l10n.scrollToEnd,
-            onTap: () {
-              if (_hScrollController.hasClients) {
-                _hScrollController.animateTo(
-                  _hScrollController.position.maxScrollExtent,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOut,
-                );
-              }
-            },
-          ),
-          const Spacer(),
-          Text(l10n.horizontal, style: const TextStyle(fontSize: 11, color: Color(0xFFCBD5E1))),
-          const SizedBox(width: 12),
-          const VerticalDivider(width: 1, thickness: 1, color: Color(0xFFE2E8F0)),
-          const SizedBox(width: 12),
-          Text(l10n.vertical, style: const TextStyle(fontSize: 11, color: Color(0xFFCBD5E1))),
-          const SizedBox(width: 4),
-          _NavBtn(
-            icon: Icons.keyboard_double_arrow_up_rounded,
-            tooltip: l10n.scrollToTop,
-            onTap: () => _vScrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut),
-          ),
-          const SizedBox(width: 4),
-          _NavBtn(
-            icon: Icons.keyboard_double_arrow_down_rounded,
-            tooltip: l10n.scrollToBottom,
-            onTap: () => _vScrollController.animateTo(
-              _vScrollController.position.maxScrollExtent,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-            ),
-          ),
         ],
       ),
     );
@@ -963,7 +811,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
     );
   }
 
-  Widget _buildHeaderRow() {
+  Widget _buildHeaderRow(List<InventoryProductItemModel> products) {
     final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: const BoxDecoration(
@@ -977,76 +825,52 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
             width: _colCheck,
             height: 44,
             child: Checkbox(
-              value: _selectedIds.length == _filtered.length && _filtered.isNotEmpty,
-              tristate: _selectedIds.isNotEmpty && _selectedIds.length < _filtered.length,
+              value: _selectedIds.length == products.length && products.isNotEmpty,
+              tristate: _selectedIds.isNotEmpty && _selectedIds.length < products.length,
               onChanged: (v) => setState(() {
                 if (v == true)
-                  _selectedIds.addAll(_filtered.map((p) => p.id));
+                  _selectedIds.addAll(products.map((p) => p.id));
                 else
                   _selectedIds.clear();
               }),
               activeColor: const Color(0xFF6366F1),
             ),
           ),
-          _headerCell('#', _colIdx, null),
-          _headerCell(l10n.productCode, _colProductCode, 'productCode'),
-          _headerCell(l10n.productName, _colProductName, 'name'),
-          _headerCell(l10n.model, _colModelCode, null),
-          _headerCell(l10n.color, _colColor, 'color'),
-          _headerCell(l10n.actualQty, _colActQty, 'qty'),
-          _headerCell(l10n.invoiceQty, _colInvQty, null),
-          _headerCell('${l10n.unitPrice} (USD)', _colUnitUsd, 'unitUsd'),
-          _headerCell('${l10n.unitPrice} (AZN)', _colUnitAzn, 'unitAzn'),
-          _headerCell('${l10n.invoiceTotal} (USD)', _colInvTotal, null),
-          _headerCell('${l10n.actualTotal} (AZN)', _colActTotal, 'total'),
-          _headerCell(l10n.barcode, _colBarcode, 'barcode'),
-          _headerCell(l10n.location, _colCoord, 'coord'),
-          _headerCell(l10n.source, _colSource, null),
-          _headerCell(l10n.status, _colStatus, null),
+          _headerCell('#', _colIdx),
+          _headerCell(l10n.productCode, _colProductCode),
+          _headerCell(l10n.productName, _colProductName),
+          _headerCell(l10n.model, _colModelCode),
+          _headerCell(l10n.color, _colColor),
+          _headerCell(l10n.actualQty, _colActQty),
+          _headerCell(l10n.invoiceQty, _colInvQty),
+          _headerCell('${l10n.unitPrice} (USD)', _colUnitUsd),
+          _headerCell('${l10n.unitPrice} (AZN)', _colUnitAzn),
+          _headerCell('${l10n.invoiceTotal} (USD)', _colInvTotal),
+          _headerCell('${l10n.actualTotal} (AZN)', _colActTotal),
+          _headerCell(l10n.barcode, _colBarcode),
+          _headerCell(l10n.location, _colCoord),
+          _headerCell(l10n.source, _colSource),
+          _headerCell(l10n.status, _colStatus),
           SizedBox(width: _colActions),
         ],
       ),
     );
   }
 
-  Widget _headerCell(String label, double width, String? sortKey) {
-    final isActive = sortKey != null && _sortColumn == sortKey;
-    return GestureDetector(
-      onTap: sortKey != null ? () => _onSort(sortKey) : null,
-      child: Container(
-        width: width,
-        height: 44,
-        alignment: Alignment.centerLeft,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: const BoxDecoration(
-          border: Border(right: BorderSide(color: Color(0xFFE2E8F0))),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.3,
-                  color: isActive ? const Color(0xFF6366F1) : const Color(0xFF475569),
-                ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-              ),
-            ),
-            if (sortKey != null) ...[
-              const SizedBox(width: 4),
-              Icon(
-                isActive ? (_sortAscending ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded) : Icons.unfold_more_rounded,
-                size: 14,
-                color: isActive ? const Color(0xFF6366F1) : const Color(0xFFCBD5E1),
-              ),
-            ],
-          ],
-        ),
+  Widget _headerCell(String label, double width) {
+    return Container(
+      width: width,
+      height: 44,
+      alignment: Alignment.centerLeft,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: const BoxDecoration(
+        border: Border(right: BorderSide(color: Color(0xFFE2E8F0))),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 0.3, color: Color(0xFF475569)),
+        overflow: TextOverflow.ellipsis,
+        maxLines: 1,
       ),
     );
   }
@@ -4309,31 +4133,6 @@ class _IconBtn extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(6),
           child: Icon(icon, size: 17, color: color),
-        ),
-      ),
-    );
-  }
-}
-
-/// Small compact button used in the table scroll nav bars.
-class _NavBtn extends StatelessWidget {
-  final IconData icon;
-  final String tooltip;
-  final VoidCallback onTap;
-
-  const _NavBtn({required this.icon, required this.tooltip, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(6),
-        child: SizedBox(
-          width: 28,
-          height: 28,
-          child: Center(child: Icon(icon, size: 18, color: const Color(0xFF94A3B8))),
         ),
       ),
     );

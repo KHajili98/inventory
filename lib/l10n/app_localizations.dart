@@ -737,7 +737,7 @@ abstract class AppLocalizations {
   /// Search placeholder
   ///
   /// In en, this message translates to:
-  /// **'Search SKU, name, barcode, location…'**
+  /// **'Search name, barcode, location…'**
   String get searchSKUNameBarcode;
 
   /// No products found message

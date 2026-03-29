@@ -31,12 +31,30 @@ class InventoryProductsRepository {
   }
 
   /// Fetches the paginated list of inventory products.
-  Future<ApiResult<InventoryProductResponseModel>> fetchProducts({int page = 1, int pageSize = 10, String ordering = '-created_at'}) async {
+  ///
+  /// [search]       maps to the `search` query param (full-text search).
+  /// [statusFilter] maps to stock-status filters:
+  ///   - `'in_stock'`    → actual_quantity__gt=10
+  ///   - `'low_stock'`   → actual_quantity__gt=0 & actual_quantity__lte=10
+  ///   - `'out_of_stock'`→ actual_quantity=0
+  Future<ApiResult<InventoryProductResponseModel>> fetchProducts({
+    int page = 1,
+    int pageSize = 10,
+    String ordering = '-created_at',
+    String? search,
+    String? statusFilter,
+  }) async {
     try {
-      final response = await _dio.get<Map<String, dynamic>>(
-        ApiConstants.inventoryProducts,
-        queryParameters: {'page': page, 'page_size': pageSize, 'ordering': ordering},
-      );
+      final queryParameters = <String, dynamic>{
+        'page': page,
+        'page_size': pageSize,
+        'ordering': ordering,
+        if (search != null && search.isNotEmpty) 'search': search,
+        if (statusFilter == 'in_stock') 'actual_quantity__gt': 100,
+        if (statusFilter == 'low_stock') ...{'actual_quantity__gt': 1, 'actual_quantity__lte': 10},
+        if (statusFilter == 'out_of_stock') 'actual_quantity': 0,
+      };
+      final response = await _dio.get<Map<String, dynamic>>(ApiConstants.inventoryProducts, queryParameters: queryParameters);
 
       if (response.statusCode == 200) {
         final model = InventoryProductResponseModel.fromJson(response.data as Map<String, dynamic>);

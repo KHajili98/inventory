@@ -336,7 +336,7 @@ class AppLocalizationsAz extends AppLocalizations {
   String get totalUnits => 'Ümumi Vahidlər';
 
   @override
-  String get searchSKUNameBarcode => 'SKU, ad, barkod, yerləşmə axtarın…';
+  String get searchSKUNameBarcode => 'Ad, barkod, yerləşmə axtarın…';
 
   @override
   String get noProductsMatchSearch => 'Axtarışa uyğun məhsul tapılmadı.';

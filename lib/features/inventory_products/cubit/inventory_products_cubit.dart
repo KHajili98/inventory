@@ -14,27 +14,36 @@ class InventoryProductsCubit extends Cubit<InventoryProductsState> {
 
   static const int _pageSize = 10;
 
+  // ── Active server-side filters ───────────────────────────────────────────
+  String? _search;
+  String? _statusFilter;
+
+  /// Update search term and re-fetch from page 1.
+  Future<void> updateSearch(String? search) async {
+    _search = (search != null && search.trim().isEmpty) ? null : search?.trim();
+    await _fetchPage(1);
+  }
+
+  /// Update status filter and re-fetch from page 1.
+  Future<void> updateStatusFilter(String? statusFilter) async {
+    _statusFilter = statusFilter;
+    await _fetchPage(1);
+  }
+
   /// Fetch the first page of inventory products.
   Future<void> fetchProducts() async {
-    emit(const InventoryProductsLoading());
-
-    final result = await _repository.fetchProducts(page: 1, pageSize: _pageSize);
-
-    switch (result) {
-      case Success(:final data):
-        emit(
-          InventoryProductsLoaded(products: data.results, totalCount: data.count, hasMore: data.next != null, currentPage: 1, pageSize: _pageSize),
-        );
-      case Failure(:final message):
-        emit(InventoryProductsError(message));
-    }
+    await _fetchPage(1);
   }
 
   /// Fetch a specific page.
   Future<void> goToPage(int page) async {
+    await _fetchPage(page);
+  }
+
+  Future<void> _fetchPage(int page) async {
     emit(const InventoryProductsLoading());
 
-    final result = await _repository.fetchProducts(page: page, pageSize: _pageSize);
+    final result = await _repository.fetchProducts(page: page, pageSize: _pageSize, search: _search, statusFilter: _statusFilter);
 
     switch (result) {
       case Success(:final data):
@@ -42,7 +51,6 @@ class InventoryProductsCubit extends Cubit<InventoryProductsState> {
           InventoryProductsLoaded(products: data.results, totalCount: data.count, hasMore: data.next != null, currentPage: page, pageSize: _pageSize),
         );
       case Failure(:final message):
-        // Restore count context if available
         emit(InventoryProductsError(message));
     }
   }
@@ -55,7 +63,7 @@ class InventoryProductsCubit extends Cubit<InventoryProductsState> {
     emit(current.copyWith(isLoadingMore: true));
 
     final nextPage = current.currentPage + 1;
-    final result = await _repository.fetchProducts(page: nextPage, pageSize: _pageSize);
+    final result = await _repository.fetchProducts(page: nextPage, pageSize: _pageSize, search: _search, statusFilter: _statusFilter);
 
     switch (result) {
       case Success(:final data):
@@ -81,7 +89,7 @@ class InventoryProductsCubit extends Cubit<InventoryProductsState> {
     final page = current is InventoryProductsLoaded ? current.currentPage : 1;
     // If we're on page > 1 and some deletion happened, stay on the same page
     // (backend will return fewer items; that's fine)
-    final result = await _repository.fetchProducts(page: page, pageSize: _pageSize);
+    final result = await _repository.fetchProducts(page: page, pageSize: _pageSize, search: _search, statusFilter: _statusFilter);
 
     switch (result) {
       case Success(:final data):

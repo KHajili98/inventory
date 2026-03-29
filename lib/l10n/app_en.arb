@@ -535,7 +535,7 @@
     "description": "Total units stat"
   },
 
-  "searchSKUNameBarcode": "Search SKU, name, barcode, location…",
+  "searchSKUNameBarcode": "Search name, barcode, location…",
   "@searchSKUNameBarcode": {
     "description": "Search placeholder"
   },

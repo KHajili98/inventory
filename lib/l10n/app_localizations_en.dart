@@ -330,7 +330,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get totalUnits => 'Total Units';
 
   @override
-  String get searchSKUNameBarcode => 'Search SKU, name, barcode, location…';
+  String get searchSKUNameBarcode => 'Search name, barcode, location…';
 
   @override
   String get noProductsMatchSearch => 'No products match your search.';
