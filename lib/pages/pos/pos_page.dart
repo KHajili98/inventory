@@ -23,8 +23,7 @@ class _PosPageState extends State<PosPage> {
   bool _discountEnabled = false;
   double _globalDiscountPercent = 0.0;
   int? _selectedDiscountBadge;
-  bool _showSearchDropdown = false;
-  List<_Product> _filteredProducts = [];
+  _Product? _selectedDropdownProduct;
 
   PriceType _priceType = PriceType.retail;
   _Customer? _selectedCustomer;
@@ -58,21 +57,6 @@ class _PosPageState extends State<PosPage> {
     });
   }
 
-  void _onSearchChanged(String value) {
-    setState(() {
-      if (value.isEmpty) {
-        _showSearchDropdown = false;
-        _filteredProducts = [];
-      } else {
-        _filteredProducts = _products.where((product) {
-          final searchLower = value.toLowerCase();
-          return product.name.toLowerCase().contains(searchLower) || product.barcode.contains(value);
-        }).toList();
-        _showSearchDropdown = _filteredProducts.isNotEmpty;
-      }
-    });
-  }
-
   void _onSearchSubmitted(String value) {
     if (value.isEmpty) return;
 
@@ -83,32 +67,22 @@ class _PosPageState extends State<PosPage> {
       _addToCart(product);
       _searchController.clear();
       setState(() {
-        _showSearchDropdown = false;
-        _filteredProducts = [];
+        _selectedDropdownProduct = null;
       });
       // Keep focus on search
-      _searchFocusNode.requestFocus();
-    } else if (_filteredProducts.length == 1) {
-      // If only one product matches, add it
-      _addToCart(_filteredProducts[0]);
-      _searchController.clear();
-      setState(() {
-        _showSearchDropdown = false;
-        _filteredProducts = [];
-      });
       _searchFocusNode.requestFocus();
     }
   }
 
-  void _selectProductFromDropdown(_Product product) {
+  void _onDropdownChanged(_Product? product) {
+    if (product == null) return;
     _addToCart(product);
     _searchController.clear();
     setState(() {
-      _showSearchDropdown = false;
-      _filteredProducts = [];
+      _selectedDropdownProduct = null;
     });
     // Keep focus on search for next scan
-    _searchFocusNode.requestFocus();
+    Future.microtask(() => _searchFocusNode.requestFocus());
   }
 
   double _getCurrentPrice(_Product product) {
@@ -491,106 +465,102 @@ class _PosPageState extends State<PosPage> {
   }
 
   Widget _buildSearchBar() {
-    return Stack(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFB0BEC5)),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.search, color: Color(0xFF607D8B)),
-              const SizedBox(width: 12),
-              Expanded(
-                child: TextField(
-                  controller: _searchController,
-                  focusNode: _searchFocusNode,
-                  decoration: InputDecoration(
-                    hintText: 'Barkod oxut və ya axtar...',
-                    hintStyle: TextStyle(color: Colors.grey[400]),
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  onChanged: _onSearchChanged,
-                  onSubmitted: _onSearchSubmitted,
-                ),
+    // Get filtered products based on search
+    final filteredProducts = _searchController.text.isEmpty
+        ? _products
+        : _products.where((product) {
+            final searchLower = _searchController.text.toLowerCase();
+            return product.name.toLowerCase().contains(searchLower) || product.barcode.contains(_searchController.text);
+          }).toList();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFB0BEC5)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.search, color: Color(0xFF607D8B)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              focusNode: _searchFocusNode,
+              decoration: InputDecoration(
+                hintText: 'Barkod oxut və ya axtar...',
+                hintStyle: TextStyle(color: Colors.grey[400]),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
               ),
-              if (_searchController.text.isNotEmpty)
-                IconButton(
-                  icon: const Icon(Icons.clear, size: 20),
-                  onPressed: () {
-                    _searchController.clear();
-                    setState(() {
-                      _showSearchDropdown = false;
-                      _filteredProducts = [];
-                    });
-                    _searchFocusNode.requestFocus();
-                  },
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-            ],
+              onChanged: (value) => setState(() {}), // Trigger rebuild for dropdown
+              onSubmitted: _onSearchSubmitted,
+            ),
           ),
-        ),
-        // Dropdown with search results
-        if (_showSearchDropdown && _filteredProducts.isNotEmpty)
-          Positioned(
-            top: 50,
-            left: 0,
-            right: 0,
-            child: Material(
-              elevation: 8,
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                constraints: const BoxConstraints(maxHeight: 300),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFB0BEC5)),
-                ),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: _filteredProducts.length,
-                  itemBuilder: (context, index) {
-                    final product = _filteredProducts[index];
-                    final price = _getCurrentPrice(product);
-                    return InkWell(
-                      onTap: () => _selectProductFromDropdown(product),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        decoration: BoxDecoration(
-                          border: index < _filteredProducts.length - 1 ? const Border(bottom: BorderSide(color: Color(0xFFE0E0E0))) : null,
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(product.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                                  const SizedBox(height: 4),
-                                  Text('Barkod: ${product.barcode}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                                ],
+          if (_searchController.text.isNotEmpty) ...[
+            const SizedBox(width: 8),
+            IconButton(
+              icon: const Icon(Icons.clear, size: 20),
+              onPressed: () {
+                _searchController.clear();
+                setState(() {
+                  _selectedDropdownProduct = null;
+                });
+                _searchFocusNode.requestFocus();
+              },
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+          ],
+          const SizedBox(width: 8),
+          const Text('|', style: TextStyle(color: Color(0xFFB0BEC5), fontSize: 24)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<_Product>(
+                value: _selectedDropdownProduct,
+                hint: Text('Məhsul seçin...', style: TextStyle(color: Colors.grey[400], fontSize: 14)),
+                isExpanded: true,
+                icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF607D8B)),
+                items: filteredProducts.map((product) {
+                  final price = _getCurrentPrice(product);
+                  return DropdownMenuItem<_Product>(
+                    value: product,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                product.name,
+                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                            Text(
-                              '${price.toStringAsFixed(0)} ₼',
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF4CAF50)),
-                            ),
-                          ],
+                              Text('Barkod: ${product.barcode}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${price.toStringAsFixed(0)} ₼',
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF4CAF50)),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+                onChanged: _onDropdownChanged,
+                dropdownColor: Colors.white,
+                menuMaxHeight: 300,
               ),
             ),
           ),
-      ],
+        ],
+      ),
     );
   }
 
