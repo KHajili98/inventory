@@ -518,5 +518,11 @@
   "retailPriceStep": "3. Pərakəndə Qiymət",
   "retailPriceLabel": "AZN  pərakəndə qiymət",
   "confirmCalculation": "Hesablamanı Təsdiqlə",
-  "confirm": "Təsdiqlə"
+  "confirm": "Təsdiqlə",
+  "adjustPrices": "Qiymətləri Tənzimlə",
+  "editProductPrices": "Məhsul Qiymətlərini Redaktə Et",
+  "selectStock": "Stock seçin",
+  "selectStockHint": "Stock seçin...",
+  "top5Products": "Ən çox olan 5 məhsul",
+  "editPrices": "Qiymətləri Redaktə Et"
 }

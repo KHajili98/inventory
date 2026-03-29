@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:inventory/core/utils/responsive.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 import 'package:inventory/pages/finance/calculation_detail_page.dart';
+import 'package:inventory/pages/finance/edit_product_price_by_stock_page.dart';
 
 // ── Model ────────────────────────────────────────────────────────────────────
 
@@ -477,6 +478,17 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
                 ],
               ),
               const Spacer(),
+              FilledButton.icon(
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const EditProductPriceByStockPage())),
+                icon: const Icon(Icons.edit_outlined, size: 18),
+                label: Text(l10n.adjustPrices),
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF6366F1),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 18, vertical: 12),
+                  textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                ),
+              ),
             ],
           ),
           SizedBox(height: isMobile ? 16 : 20),

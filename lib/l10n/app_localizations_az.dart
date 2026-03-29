@@ -981,4 +981,22 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get confirm => 'Təsdiqlə';
+
+  @override
+  String get adjustPrices => 'Qiymətləri Tənzimlə';
+
+  @override
+  String get editProductPrices => 'Məhsul Qiymətlərini Redaktə Et';
+
+  @override
+  String get selectStock => 'Stock seçin';
+
+  @override
+  String get selectStockHint => 'Stock seçin...';
+
+  @override
+  String get top5Products => 'Ən çox olan 5 məhsul';
+
+  @override
+  String get editPrices => 'Qiymətləri Redaktə Et';
 }

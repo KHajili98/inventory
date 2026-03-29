@@ -1338,17 +1338,30 @@
   },
 
   "retailPriceLabel": "AZN  retail price",
-  "@retailPriceLabel": {
-    "description": "Retail price result label"
-  },
-
   "confirmCalculation": "Confirm Calculation",
-  "@confirmCalculation": {
-    "description": "Confirm calculation button text"
-  },
-
   "confirm": "Confirm",
-  "@confirm": {
-    "description": "Confirm button text"
+  "adjustPrices": "Adjust Prices",
+  "@adjustPrices": {
+    "description": "Button label to adjust prices"
+  },
+  "editProductPrices": "Edit Product Prices",
+  "@editProductPrices": {
+    "description": "Page title for editing product prices"
+  },
+  "selectStock": "Select Stock",
+  "@selectStock": {
+    "description": "Label for stock selection"
+  },
+  "selectStockHint": "Select stock...",
+  "@selectStockHint": {
+    "description": "Hint text for stock dropdown"
+  },
+  "top5Products": "Top 5 Products",
+  "@top5Products": {
+    "description": "Title for top 5 products section"
+  },
+  "editPrices": "Edit Prices",
+  "@editPrices": {
+    "description": "Button label to edit prices"
   }
 }

@@ -1922,23 +1922,59 @@ abstract class AppLocalizations {
   /// **'3. Retail Price'**
   String get retailPriceStep;
 
-  /// Retail price result label
+  /// No description provided for @retailPriceLabel.
   ///
   /// In en, this message translates to:
   /// **'AZN  retail price'**
   String get retailPriceLabel;
 
-  /// Confirm calculation button text
+  /// No description provided for @confirmCalculation.
   ///
   /// In en, this message translates to:
   /// **'Confirm Calculation'**
   String get confirmCalculation;
 
-  /// Confirm button text
+  /// No description provided for @confirm.
   ///
   /// In en, this message translates to:
   /// **'Confirm'**
   String get confirm;
+
+  /// Button label to adjust prices
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust Prices'**
+  String get adjustPrices;
+
+  /// Page title for editing product prices
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Product Prices'**
+  String get editProductPrices;
+
+  /// Label for stock selection
+  ///
+  /// In en, this message translates to:
+  /// **'Select Stock'**
+  String get selectStock;
+
+  /// Hint text for stock dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Select stock...'**
+  String get selectStockHint;
+
+  /// Title for top 5 products section
+  ///
+  /// In en, this message translates to:
+  /// **'Top 5 Products'**
+  String get top5Products;
+
+  /// Button label to edit prices
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Prices'**
+  String get editPrices;
 }
 
 class _AppLocalizationsDelegate

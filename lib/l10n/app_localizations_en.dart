@@ -976,4 +976,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get confirm => 'Confirm';
+
+  @override
+  String get adjustPrices => 'Adjust Prices';
+
+  @override
+  String get editProductPrices => 'Edit Product Prices';
+
+  @override
+  String get selectStock => 'Select Stock';
+
+  @override
+  String get selectStockHint => 'Select stock...';
+
+  @override
+  String get top5Products => 'Top 5 Products';
+
+  @override
+  String get editPrices => 'Edit Prices';
 }
