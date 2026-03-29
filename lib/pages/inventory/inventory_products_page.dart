@@ -2828,6 +2828,9 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
   int _step = 0;
   final Set<int> _selected = {};
 
+  // ── Inventory selection (shared for all imported rows) ───────────────────────
+  String? _selectedInventoryId;
+
   // ── Per-row controllers (keyed by item index in _detail.items) ───────────────
   final Map<int, TextEditingController> _barcodeCtrl = {};
   final Map<int, TextEditingController> _actualQtyCtrl = {};
@@ -2925,6 +2928,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
   Future<void> _importProducts() async {
     if (!_formKey.currentState!.validate()) return;
     final l10n = AppLocalizations.of(context)!;
+    if (_selectedInventoryId == null || _selectedInventoryId!.isEmpty) return;
     final items = _detail!.items;
     final selectedList = _selected.toList();
 
@@ -2980,6 +2984,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
         invoiceTotalPrice: invTotal,
         invoicePiecesPerCarton: invPcs,
         invoiceCartonCount: invCartons,
+        inventory: _selectedInventoryId,
       );
 
       // Post the product directly (no need to re-fetch invoice detail)
@@ -3323,6 +3328,16 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                 const SizedBox(width: 8),
                 Text(l10n.fillWarehouseDetails(selectedList.length), style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
               ],
+            ),
+          ),
+          // ── Inventory selection (applies to all imported rows) ──────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+            child: _InventoryDropdown(
+              selectedId: _selectedInventoryId,
+              enabled: !_importing,
+              required: true,
+              onChanged: (id) => setState(() => _selectedInventoryId = id),
             ),
           ),
           Expanded(
