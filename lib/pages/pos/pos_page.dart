@@ -402,13 +402,13 @@ class _PosPageState extends State<PosPage> {
         _searchFocusNode.requestFocus();
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF4A6C8F),
+        backgroundColor: const Color(0xFFF5F7FA),
         body: Column(
           children: [
             _buildTopBar(),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(24),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -417,15 +417,15 @@ class _PosPageState extends State<PosPage> {
                       child: Column(
                         children: [
                           _buildSearchBar(),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 16),
                           Expanded(child: _buildProductTable()),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 16),
                           _buildBottomButtons(),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    SizedBox(width: 360, child: _buildSummaryPanel()),
+                    const SizedBox(width: 24),
+                    SizedBox(width: 400, child: _buildSummaryPanel()),
                   ],
                 ),
               ),
@@ -438,28 +438,78 @@ class _PosPageState extends State<PosPage> {
 
   Widget _buildTopBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF5B7A9D), Color(0xFF4A6C8F)])),
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 2))],
+      ),
       child: SafeArea(
         bottom: false,
         child: Row(
           children: [
-            const Text(
-              'POS - Nizami Filialı Kassa',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [Color(0xFF667EEA), Color(0xFF764BA2)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.point_of_sale, color: Colors.white, size: 28),
+            ),
+            const SizedBox(width: 16),
+            const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'POS - Nizami Filialı Kassa',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
+                ),
+                SizedBox(height: 2),
+                Text('Satış Nöqtəsi', style: TextStyle(fontSize: 13, color: Color(0xFF718096))),
+              ],
             ),
             const Spacer(),
-            Text('Satıcı: $_currentUser', style: const TextStyle(fontSize: 14, color: Colors.white)),
+            _buildTopBarInfo(Icons.person_outline, 'Satıcı', _currentUser),
             const SizedBox(width: 24),
-            Text('Tarix: $_currentDate', style: const TextStyle(fontSize: 14, color: Colors.white)),
+            _buildTopBarInfo(Icons.calendar_today, 'Tarix', _currentDate),
             const SizedBox(width: 24),
-            ElevatedButton(
+            ElevatedButton.icon(
               onPressed: () {},
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.white.withValues(alpha: 0.2), foregroundColor: Colors.white),
-              child: const Text('Log out'),
+              icon: const Icon(Icons.logout, size: 18),
+              label: const Text('Çıxış'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFF7FAFC),
+                foregroundColor: const Color(0xFF4A5568),
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTopBarInfo(IconData icon, String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(color: const Color(0xFFF7FAFC), borderRadius: BorderRadius.circular(8)),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: const Color(0xFF667EEA)),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF718096))),
+              Text(
+                value,
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -474,35 +524,43 @@ class _PosPageState extends State<PosPage> {
           }).toList();
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFB0BEC5)),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 4))],
       ),
       child: Row(
         children: [
-          const Icon(Icons.search, color: Color(0xFF607D8B)),
-          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [Color(0xFF667EEA), Color(0xFF764BA2)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.search, color: Colors.white, size: 22),
+          ),
+          const SizedBox(width: 16),
           Expanded(
             child: TextField(
               controller: _searchController,
               focusNode: _searchFocusNode,
               decoration: InputDecoration(
-                hintText: 'Barkod oxut və ya axtar...',
-                hintStyle: TextStyle(color: Colors.grey[400]),
+                hintText: 'Barkod oxut və ya məhsul axtar...',
+                hintStyle: const TextStyle(color: Color(0xFFA0AEC0), fontSize: 15),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
               ),
+              style: const TextStyle(fontSize: 15, color: Color(0xFF2D3748)),
               onChanged: (value) => setState(() {}), // Trigger rebuild for dropdown
               onSubmitted: _onSearchSubmitted,
             ),
           ),
           if (_searchController.text.isNotEmpty) ...[
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
             IconButton(
-              icon: const Icon(Icons.clear, size: 20),
+              icon: const Icon(Icons.clear, size: 20, color: Color(0xFF718096)),
               onPressed: () {
                 _searchController.clear();
                 setState(() {
@@ -514,16 +572,16 @@ class _PosPageState extends State<PosPage> {
               constraints: const BoxConstraints(),
             ),
           ],
-          const SizedBox(width: 8),
-          const Text('|', style: TextStyle(color: Color(0xFFB0BEC5), fontSize: 24)),
-          const SizedBox(width: 8),
+          const SizedBox(width: 16),
+          Container(width: 1, height: 40, color: const Color(0xFFE2E8F0)),
+          const SizedBox(width: 16),
           Expanded(
             child: DropdownButtonHideUnderline(
               child: DropdownButton<_Product>(
                 value: _selectedDropdownProduct,
-                hint: Text('Məhsul seçin...', style: TextStyle(color: Colors.grey[400], fontSize: 14)),
+                hint: const Text('Siyahıdan seçin...', style: TextStyle(color: Color(0xFFA0AEC0), fontSize: 15)),
                 isExpanded: true,
-                icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF607D8B)),
+                icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF667EEA)),
                 items: filteredProducts.map((product) {
                   final price = _getCurrentPrice(product);
                   return DropdownMenuItem<_Product>(
@@ -537,17 +595,25 @@ class _PosPageState extends State<PosPage> {
                             children: [
                               Text(
                                 product.name,
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              Text('Barkod: ${product.barcode}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                              const SizedBox(height: 2),
+                              Text('Barkod: ${product.barcode}', style: const TextStyle(fontSize: 12, color: Color(0xFF718096))),
                             ],
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '${price.toStringAsFixed(0)} ₼',
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF4CAF50)),
+                        const SizedBox(width: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(colors: [Color(0xFF48BB78), Color(0xFF38A169)]),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '${price.toStringAsFixed(0)} ₼',
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
+                          ),
                         ),
                       ],
                     ),
@@ -568,16 +634,16 @@ class _PosPageState extends State<PosPage> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFB0BEC5)),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 4))],
       ),
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: const BoxDecoration(
-              color: Color(0xFF616161),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(7)),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [Color(0xFF667EEA), Color(0xFF764BA2)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             ),
             child: const Row(
               children: [
@@ -638,8 +704,24 @@ class _PosPageState extends State<PosPage> {
           ),
           Expanded(
             child: _cartItems.isEmpty
-                ? const Center(
-                    child: Text('Səbət boşdur', style: TextStyle(color: Colors.grey, fontSize: 16)),
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(color: const Color(0xFFF7FAFC), shape: BoxShape.circle),
+                          child: const Icon(Icons.shopping_cart_outlined, size: 64, color: Color(0xFFCBD5E0)),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Səbət boşdur',
+                          style: TextStyle(color: Color(0xFFA0AEC0), fontSize: 16, fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text('Məhsul əlavə etmək üçün axtar', style: TextStyle(color: Color(0xFFCBD5E0), fontSize: 13)),
+                      ],
+                    ),
                   )
                 : ListView.builder(
                     itemCount: _cartItems.length,
@@ -655,16 +737,21 @@ class _PosPageState extends State<PosPage> {
                       final total = priceAfterDiscount * item.quantity;
 
                       return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: index % 2 == 0 ? const Color(0xFFF5F5F5) : Colors.white,
-                          border: const Border(bottom: BorderSide(color: Color(0xFFE0E0E0))),
+                          color: const Color(0xFFF7FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
                         ),
                         child: Row(
                           children: [
                             Expanded(
                               flex: 3,
-                              child: Text(item.product.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                              child: Text(
+                                item.product.name,
+                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
+                              ),
                             ),
                             SizedBox(
                               width: 100,
@@ -674,13 +761,17 @@ class _PosPageState extends State<PosPage> {
                                   _buildQuantityButton(Icons.remove, () => _updateQuantity(index, item.quantity - 1)),
                                   Container(
                                     width: 40,
-                                    height: 32,
+                                    height: 36,
                                     alignment: Alignment.center,
                                     decoration: BoxDecoration(
-                                      border: Border.all(color: const Color(0xFFE0E0E0)),
-                                      borderRadius: BorderRadius.circular(4),
+                                      color: Colors.white,
+                                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
-                                    child: Text('${item.quantity}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                    child: Text(
+                                      '${item.quantity}',
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF2D3748)),
+                                    ),
                                   ),
                                   _buildQuantityButton(Icons.add, () => _updateQuantity(index, item.quantity + 1)),
                                 ],
@@ -688,7 +779,12 @@ class _PosPageState extends State<PosPage> {
                             ),
                             SizedBox(
                               width: 120,
-                              child: Center(child: Text('${unitPrice.toStringAsFixed(2)} ₼', style: const TextStyle(fontSize: 14))),
+                              child: Center(
+                                child: Text(
+                                  '${unitPrice.toStringAsFixed(2)} ₼',
+                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF4A5568)),
+                                ),
+                              ),
                             ),
                             // Discount fields (percent and amount)
                             SizedBox(
@@ -699,23 +795,33 @@ class _PosPageState extends State<PosPage> {
                                   // Percent field
                                   SizedBox(
                                     width: 50,
-                                    height: 32,
+                                    height: 36,
                                     child: TextField(
                                       controller: TextEditingController(
                                         text: item.discountPercent > 0 ? item.discountPercent.toStringAsFixed(0) : '',
                                       ),
                                       keyboardType: TextInputType.number,
                                       textAlign: TextAlign.center,
-                                      style: const TextStyle(fontSize: 12),
+                                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
                                       decoration: InputDecoration(
                                         contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                                        filled: true,
+                                        fillColor: Colors.white,
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(4),
-                                          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: const BorderSide(color: Color(0xFF667EEA), width: 2),
                                         ),
                                         isDense: true,
                                         hintText: '0',
-                                        hintStyle: TextStyle(fontSize: 12, color: Colors.grey[400]),
+                                        hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFCBD5E0)),
                                       ),
                                       onChanged: (value) {
                                         final percent = double.tryParse(value) ?? 0.0;
@@ -738,26 +844,39 @@ class _PosPageState extends State<PosPage> {
                                     ),
                                   ),
                                   const SizedBox(width: 4),
-                                  const Text('%', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                  const Text(
+                                    '%',
+                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF718096)),
+                                  ),
                                   const SizedBox(width: 8),
                                   // Amount field
                                   SizedBox(
                                     width: 60,
-                                    height: 32,
+                                    height: 36,
                                     child: TextField(
                                       controller: TextEditingController(text: discountAmount > 0 ? discountAmount.toStringAsFixed(2) : ''),
                                       keyboardType: TextInputType.number,
                                       textAlign: TextAlign.center,
-                                      style: const TextStyle(fontSize: 12),
+                                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
                                       decoration: InputDecoration(
                                         contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                                        filled: true,
+                                        fillColor: Colors.white,
                                         border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(4),
-                                          borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: const BorderSide(color: Color(0xFF667EEA), width: 2),
                                         ),
                                         isDense: true,
                                         hintText: '0',
-                                        hintStyle: TextStyle(fontSize: 12, color: Colors.grey[400]),
+                                        hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFCBD5E0)),
                                       ),
                                       onChanged: (value) {
                                         final amount = double.tryParse(value) ?? 0.0;
@@ -783,24 +902,37 @@ class _PosPageState extends State<PosPage> {
                                     ),
                                   ),
                                   const SizedBox(width: 4),
-                                  const Text('₼', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                  const Text(
+                                    '₼',
+                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF718096)),
+                                  ),
                                 ],
                               ),
                             ),
                             SizedBox(
                               width: 120,
                               child: Center(
-                                child: Text('${total.toStringAsFixed(2)} ₼', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(colors: [Color(0xFF48BB78), Color(0xFF38A169)]),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    '${total.toStringAsFixed(2)} ₼',
+                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+                                  ),
+                                ),
                               ),
                             ),
                             SizedBox(
                               width: 60,
                               child: Center(
                                 child: IconButton(
-                                  icon: const Icon(Icons.close, color: Colors.white, size: 18),
+                                  icon: const Icon(Icons.delete_outline, color: Colors.white, size: 20),
                                   style: IconButton.styleFrom(
-                                    backgroundColor: const Color(0xFFD32F2F),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                    backgroundColor: const Color(0xFFFC8181),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                     padding: const EdgeInsets.all(8),
                                   ),
                                   onPressed: () => _removeFromCart(index),
@@ -821,15 +953,15 @@ class _PosPageState extends State<PosPage> {
   Widget _buildQuantityButton(IconData icon, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
       child: Container(
         width: 28,
-        height: 32,
+        height: 36,
         decoration: BoxDecoration(
-          color: const Color(0xFFF5F5F5),
-          border: Border.all(color: const Color(0xFFE0E0E0)),
-          borderRadius: BorderRadius.circular(4),
+          gradient: const LinearGradient(colors: [Color(0xFF667EEA), Color(0xFF764BA2)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+          borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, size: 16),
+        child: Icon(icon, size: 18, color: Colors.white),
       ),
     );
   }
@@ -840,43 +972,46 @@ class _PosPageState extends State<PosPage> {
         Expanded(
           child: ElevatedButton.icon(
             onPressed: _cartItems.isEmpty ? null : _freezeOrder,
-            icon: const Icon(Icons.pause_circle_outline),
-            label: const Text('Sifarişi Dondur'),
+            icon: const Icon(Icons.pause_circle_outline, size: 20),
+            label: const Text('Sifarişi Dondur', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFFA726),
+              backgroundColor: const Color(0xFFED8936),
               foregroundColor: Colors.white,
-              disabledBackgroundColor: const Color(0xFFE0E0E0),
-              disabledForegroundColor: Colors.black38,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              disabledBackgroundColor: const Color(0xFFE2E8F0),
+              disabledForegroundColor: const Color(0xFFA0AEC0),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 0,
             ),
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 12),
         Expanded(
           child: ElevatedButton.icon(
             onPressed: _showFrozenOrdersDialog,
-            icon: Badge(label: Text('${_frozenOrders.length}'), isLabelVisible: _frozenOrders.isNotEmpty, child: const Icon(Icons.history)),
-            label: const Text('Donmuş Sifarişlər'),
+            icon: Badge(label: Text('${_frozenOrders.length}'), isLabelVisible: _frozenOrders.isNotEmpty, child: const Icon(Icons.history, size: 20)),
+            label: const Text('Donmuş Sifarişlər', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF42A5F5),
+              backgroundColor: const Color(0xFF4299E1),
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 0,
             ),
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 12),
         Expanded(
           child: ElevatedButton.icon(
             onPressed: _clearCart,
-            icon: const Icon(Icons.delete_outline),
-            label: const Text('Səbəti Təmizlə'),
+            icon: const Icon(Icons.delete_outline, size: 20),
+            label: const Text('Səbəti Təmizlə', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE0E0E0),
-              foregroundColor: Colors.black,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              backgroundColor: const Color(0xFFF7FAFC),
+              foregroundColor: const Color(0xFF718096),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 0,
             ),
           ),
         ),
@@ -892,35 +1027,57 @@ class _PosPageState extends State<PosPage> {
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFECEFF1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFB0BEC5)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Price Type
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Qiymət Növü', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
+                const Row(
+                  children: [
+                    Icon(Icons.receipt_long, size: 18, color: Color(0xFF667EEA)),
+                    SizedBox(width: 8),
+                    Text(
+                      'Qiymət Növü',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: const Color(0xFFB0BEC5)),
+                    color: const Color(0xFFF7FAFC),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<PriceType>(
                       value: _priceType,
                       isExpanded: true,
+                      icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF667EEA)),
                       items: const [
-                        DropdownMenuItem(value: PriceType.retail, child: Text('Pərakəndə')),
-                        DropdownMenuItem(value: PriceType.wholesale, child: Text('Topdan')),
+                        DropdownMenuItem(
+                          value: PriceType.retail,
+                          child: Text(
+                            'Pərakəndə',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: PriceType.wholesale,
+                          child: Text(
+                            'Topdan',
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
+                          ),
+                        ),
                       ],
                       onChanged: (value) {
                         if (value != null) setState(() => _priceType = value);
@@ -931,53 +1088,77 @@ class _PosPageState extends State<PosPage> {
               ],
             ),
           ),
+          Container(height: 1, color: const Color(0xFFE2E8F0)),
           // Discount
           Container(
-            padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(
-              border: Border(top: BorderSide(color: Color(0xFFB0BEC5))),
-            ),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    const Text('Endirim', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                    const Icon(Icons.local_offer, size: 18, color: Color(0xFF667EEA)),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Endirim',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
+                    ),
                     const Spacer(),
-                    Text('${_globalDiscountPercent.toStringAsFixed(0)}%', style: const TextStyle(fontSize: 14)),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: Checkbox(
-                        value: _discountEnabled,
-                        onChanged: _onDiscountEnabledChanged,
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(color: const Color(0xFFFED7D7), borderRadius: BorderRadius.circular(6)),
+                      child: Text(
+                        '${_globalDiscountPercent.toStringAsFixed(0)}%',
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFFC53030)),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: _discountEnabled ? const Color(0xFF667EEA) : const Color(0xFFE2E8F0),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: Checkbox(
+                          value: _discountEnabled,
+                          onChanged: _onDiscountEnabledChanged,
+                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          fillColor: WidgetStateProperty.all(Colors.transparent),
+                          checkColor: Colors.white,
+                          side: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: TextField(
                         controller: _discountController,
                         enabled: _discountEnabled,
                         keyboardType: TextInputType.number,
                         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
                         decoration: InputDecoration(
                           filled: true,
-                          fillColor: _discountEnabled ? Colors.white : const Color(0xFFF5F5F5),
+                          fillColor: _discountEnabled ? const Color(0xFFF7FAFC) : const Color(0xFFFAFAFA),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: Color(0xFFB0BEC5)),
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(color: Color(0xFFB0BEC5)),
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Color(0xFF667EEA), width: 2),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           isDense: true,
                         ),
                         onChanged: _onDiscountFieldChanged,
@@ -985,28 +1166,34 @@ class _PosPageState extends State<PosPage> {
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: const Color(0xFFB0BEC5)),
-                        borderRadius: BorderRadius.circular(4),
+                        color: const Color(0xFFF7FAFC),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text('%', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        '%',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF718096)),
+                      ),
                     ),
                     const SizedBox(width: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: const Color(0xFFB0BEC5)),
-                        borderRadius: BorderRadius.circular(4),
+                        color: const Color(0xFFF7FAFC),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text('₼', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        '₼',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF718096)),
+                      ),
                     ),
                   ],
                 ),
                 if (_discountEnabled) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Row(
                     children: [
                       Expanded(child: _buildPercentBadgeButton(5)),
@@ -1018,40 +1205,67 @@ class _PosPageState extends State<PosPage> {
               ],
             ),
           ),
+          Container(height: 1, color: const Color(0xFFE2E8F0)),
           // Summary
           Container(
-            padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(
-              border: Border(top: BorderSide(color: Color(0xFFB0BEC5))),
-            ),
+            padding: const EdgeInsets.all(20),
             child: Column(
               children: [
                 _buildSummaryRow('Ara Cəmi:', '${subtotal.toStringAsFixed(2)} ₼'),
-                if (discount > 0) _buildSummaryRow('Endirim (${_globalDiscountPercent.toStringAsFixed(0)}%):', '${discount.toStringAsFixed(2)} ₼'),
+                if (discount > 0)
+                  _buildSummaryRow('Endirim (${_globalDiscountPercent.toStringAsFixed(0)}%):', '${discount.toStringAsFixed(2)} ₼', isDiscount: true),
                 if (customerDiscount > 0 && _selectedCustomer != null)
-                  _buildSummaryRow('Müştəri Endirimi (${_selectedCustomer!.discountPercent}%):', '${customerDiscount.toStringAsFixed(2)} ₼'),
-                const Divider(thickness: 2, height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Ödəniləcək:', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                    Text('${total.toStringAsFixed(2)} ₼', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                  ],
+                  _buildSummaryRow(
+                    'Müştəri Endirimi (${_selectedCustomer!.discountPercent}%):',
+                    '${customerDiscount.toStringAsFixed(2)} ₼',
+                    isDiscount: true,
+                  ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Ödəniləcək:',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                      Text(
+                        '${total.toStringAsFixed(2)} ₼',
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
+          Container(height: 1, color: const Color(0xFFE2E8F0)),
           // Payment
           Container(
-            padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(
-              border: Border(top: BorderSide(color: Color(0xFFB0BEC5))),
-            ),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Ödəniş Metodu', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
+                const Row(
+                  children: [
+                    Icon(Icons.payment, size: 18, color: Color(0xFF667EEA)),
+                    SizedBox(width: 8),
+                    Text(
+                      'Ödəniş Metodu',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(child: _buildPaymentMethodButton(PaymentMethod.cash, Icons.money, 'Nağd')),
@@ -1066,7 +1280,7 @@ class _PosPageState extends State<PosPage> {
           ),
           // Buttons
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(20),
             child: Column(
               children: [
                 SizedBox(
@@ -1074,36 +1288,40 @@ class _PosPageState extends State<PosPage> {
                   child: ElevatedButton(
                     onPressed: _cartItems.isEmpty ? null : _completeSale,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4CAF50),
+                      backgroundColor: const Color(0xFF48BB78),
                       foregroundColor: Colors.white,
-                      disabledBackgroundColor: Colors.grey[300],
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                      disabledBackgroundColor: const Color(0xFFE2E8F0),
+                      disabledForegroundColor: const Color(0xFFA0AEC0),
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
                     ),
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.print),
-                        SizedBox(width: 8),
-                        Text('[SATIŞI TAMAMLA (F12)]', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                        Icon(Icons.print, size: 22),
+                        SizedBox(width: 12),
+                        Text('SATIŞI TAMAMLA (F12)', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
+                  child: ElevatedButton.icon(
                     onPressed: _showCustomerDialog,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF9E9E9E),
-                      foregroundColor: Colors.black87,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                    ),
-                    child: Text(
+                    icon: Icon(_selectedCustomer != null ? Icons.person : Icons.person_add_outlined, size: 20),
+                    label: Text(
                       _selectedCustomer != null ? 'Müştəri: ${_selectedCustomer!.name}' : 'Müştəri Seç',
-                      style: const TextStyle(fontSize: 14),
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _selectedCustomer != null ? const Color(0xFF9F7AEA) : const Color(0xFFF7FAFC),
+                      foregroundColor: _selectedCustomer != null ? Colors.white : const Color(0xFF718096),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
                     ),
                   ),
                 ),
@@ -1119,12 +1337,16 @@ class _PosPageState extends State<PosPage> {
     final isSelected = _selectedDiscountBadge == percent;
     return InkWell(
       onTap: _discountEnabled ? () => _onDiscountBadgeSelected(percent) : null,
+      borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF2196F3) : Colors.white,
-          border: Border.all(color: isSelected ? const Color(0xFF2196F3) : const Color(0xFFB0BEC5)),
-          borderRadius: BorderRadius.circular(6),
+          gradient: isSelected
+              ? const LinearGradient(colors: [Color(0xFF667EEA), Color(0xFF764BA2)], begin: Alignment.topLeft, end: Alignment.bottomRight)
+              : null,
+          color: isSelected ? null : const Color(0xFFF7FAFC),
+          border: Border.all(color: isSelected ? Colors.transparent : const Color(0xFFE2E8F0)),
+          borderRadius: BorderRadius.circular(10),
         ),
         child: Text(
           '$percent%',
@@ -1132,21 +1354,24 @@ class _PosPageState extends State<PosPage> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: isSelected ? Colors.white : (_discountEnabled ? Colors.black : Colors.grey),
+            color: isSelected ? Colors.white : (_discountEnabled ? const Color(0xFF2D3748) : const Color(0xFFA0AEC0)),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildSummaryRow(String label, String value) {
+  Widget _buildSummaryRow(String label, String value, {bool isDiscount = false}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontSize: 14)),
-          Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+          Text(label, style: const TextStyle(fontSize: 14, color: Color(0xFF4A5568))),
+          Text(
+            value,
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: isDiscount ? const Color(0xFFC53030) : const Color(0xFF2D3748)),
+          ),
         ],
       ),
     );
@@ -1156,23 +1381,27 @@ class _PosPageState extends State<PosPage> {
     final isSelected = _selectedPaymentMethod == method;
     return InkWell(
       onTap: () => setState(() => _selectedPaymentMethod = method),
+      borderRadius: BorderRadius.circular(10),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 4),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF90CAF9) : Colors.white,
-          border: Border.all(color: isSelected ? const Color(0xFF2196F3) : const Color(0xFFB0BEC5)),
-          borderRadius: BorderRadius.circular(6),
+          gradient: isSelected
+              ? const LinearGradient(colors: [Color(0xFF667EEA), Color(0xFF764BA2)], begin: Alignment.topLeft, end: Alignment.bottomRight)
+              : null,
+          color: isSelected ? null : const Color(0xFFF7FAFC),
+          border: Border.all(color: isSelected ? Colors.transparent : const Color(0xFFE2E8F0)),
+          borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
           children: [
-            Icon(icon, color: isSelected ? const Color(0xFF1976D2) : Colors.black54, size: 24),
-            const SizedBox(height: 4),
+            Icon(icon, color: isSelected ? Colors.white : const Color(0xFF718096), size: 26),
+            const SizedBox(height: 6),
             Text(
               label,
               style: TextStyle(
                 fontSize: 12,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? const Color(0xFF1976D2) : Colors.black,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                color: isSelected ? Colors.white : const Color(0xFF4A5568),
               ),
             ),
           ],
