@@ -608,4 +608,90 @@ class AppLocalizationsAz extends AppLocalizations {
   String barcodeGenerateFailed(String error) {
     return 'Barkod yaradıla bilmədi: $error';
   }
+
+  @override
+  String get addExpense => 'Xərc Əlavə Et';
+
+  @override
+  String get expenseCategory => 'Kateqoriya';
+
+  @override
+  String get expensePaymentType => 'Ödəniş Növü';
+
+  @override
+  String get expenseAmount => 'Məbləğ';
+
+  @override
+  String get expenseDate => 'Tarix';
+
+  @override
+  String get expenseDocument => 'Sənəd';
+
+  @override
+  String get expenseNote => 'Qeyd';
+
+  @override
+  String get expenseCategoryRent => 'İcarə';
+
+  @override
+  String get expenseCategoryCommunal => 'Kommunal';
+
+  @override
+  String get expenseCategorySalary => 'Maaş';
+
+  @override
+  String get expenseCategoryTransport => 'Daşınma';
+
+  @override
+  String get expenseCategoryCustoms => 'Gömrük';
+
+  @override
+  String get expenseCategoryOther => 'Digər';
+
+  @override
+  String get expensePaymentCash => 'Nəqd';
+
+  @override
+  String get expensePaymentCard => 'Kart';
+
+  @override
+  String get expensePaymentTransfer => 'Köçürmə';
+
+  @override
+  String get expenseSelectCategory => 'Kateqoriya seçin';
+
+  @override
+  String get expenseSelectPaymentType => 'Ödəniş növünü seçin';
+
+  @override
+  String get expenseAmountHint => '0.00';
+
+  @override
+  String get expenseNoteHint => 'Qeyd daxil edin…';
+
+  @override
+  String get expenseDocumentHint => 'Fayl seçin (şəkil, PDF)';
+
+  @override
+  String expenseDocumentSelected(Object name) {
+    return 'Seçildi: $name';
+  }
+
+  @override
+  String get expenseDocumentChoose => 'Fayl seçin';
+
+  @override
+  String get noExpensesYet => 'Hələ xərc yoxdur';
+
+  @override
+  String get addFirstExpense => 'İlk xərci əlavə etmək üçün düyməni basın';
+
+  @override
+  String get totalExpenses => 'Ümumi Xərclər';
+
+  @override
+  String get expenseCount => 'Xərc sayı';
+
+  @override
+  String get save => 'Saxla';
 }

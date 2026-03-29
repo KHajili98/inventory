@@ -388,5 +388,34 @@
     "placeholders": {
       "error": { "type": "String" }
     }
-  }
+  },
+
+  "addExpense": "Xərc Əlavə Et",
+  "expenseCategory": "Kateqoriya",
+  "expensePaymentType": "Ödəniş Növü",
+  "expenseAmount": "Məbləğ",
+  "expenseDate": "Tarix",
+  "expenseDocument": "Sənəd",
+  "expenseNote": "Qeyd",
+  "expenseCategoryRent": "İcarə",
+  "expenseCategoryCommunal": "Kommunal",
+  "expenseCategorySalary": "Maaş",
+  "expenseCategoryTransport": "Daşınma",
+  "expenseCategoryCustoms": "Gömrük",
+  "expenseCategoryOther": "Digər",
+  "expensePaymentCash": "Nəqd",
+  "expensePaymentCard": "Kart",
+  "expensePaymentTransfer": "Köçürmə",
+  "expenseSelectCategory": "Kateqoriya seçin",
+  "expenseSelectPaymentType": "Ödəniş növünü seçin",
+  "expenseAmountHint": "0.00",
+  "expenseNoteHint": "Qeyd daxil edin…",
+  "expenseDocumentHint": "Fayl seçin (şəkil, PDF)",
+  "expenseDocumentSelected": "Seçildi: {name}",
+  "expenseDocumentChoose": "Fayl seçin",
+  "noExpensesYet": "Hələ xərc yoxdur",
+  "addFirstExpense": "İlk xərci əlavə etmək üçün düyməni basın",
+  "totalExpenses": "Ümumi Xərclər",
+  "expenseCount": "Xərc sayı",
+  "save": "Saxla"
 }

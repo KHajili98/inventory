@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
-import 'package:inventory/pages/invoice/expense_tracking_page.dart';
+import 'package:inventory/pages/finance/expense_tracking_page.dart';
 import 'package:inventory/pages/invoice/finance_page.dart';
 import 'package:inventory/pages/inventory/inventory_products_page.dart';
 import 'package:inventory/pages/invoice/invoices_page.dart';

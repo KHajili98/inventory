@@ -1201,6 +1201,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to generate barcode: {error}'**
   String barcodeGenerateFailed(String error);
+
+  /// No description provided for @addExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Expense'**
+  String get addExpense;
+
+  /// No description provided for @expenseCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get expenseCategory;
+
+  /// No description provided for @expensePaymentType.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Type'**
+  String get expensePaymentType;
+
+  /// No description provided for @expenseAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get expenseAmount;
+
+  /// No description provided for @expenseDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get expenseDate;
+
+  /// No description provided for @expenseDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Document'**
+  String get expenseDocument;
+
+  /// No description provided for @expenseNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get expenseNote;
+
+  /// No description provided for @expenseCategoryRent.
+  ///
+  /// In en, this message translates to:
+  /// **'Rent'**
+  String get expenseCategoryRent;
+
+  /// No description provided for @expenseCategoryCommunal.
+  ///
+  /// In en, this message translates to:
+  /// **'Communal'**
+  String get expenseCategoryCommunal;
+
+  /// No description provided for @expenseCategorySalary.
+  ///
+  /// In en, this message translates to:
+  /// **'Salary'**
+  String get expenseCategorySalary;
+
+  /// No description provided for @expenseCategoryTransport.
+  ///
+  /// In en, this message translates to:
+  /// **'Transport'**
+  String get expenseCategoryTransport;
+
+  /// No description provided for @expenseCategoryCustoms.
+  ///
+  /// In en, this message translates to:
+  /// **'Customs'**
+  String get expenseCategoryCustoms;
+
+  /// No description provided for @expenseCategoryOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get expenseCategoryOther;
+
+  /// No description provided for @expensePaymentCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get expensePaymentCash;
+
+  /// No description provided for @expensePaymentCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Card'**
+  String get expensePaymentCard;
+
+  /// No description provided for @expensePaymentTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer'**
+  String get expensePaymentTransfer;
+
+  /// No description provided for @expenseSelectCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Select category'**
+  String get expenseSelectCategory;
+
+  /// No description provided for @expenseSelectPaymentType.
+  ///
+  /// In en, this message translates to:
+  /// **'Select payment type'**
+  String get expenseSelectPaymentType;
+
+  /// No description provided for @expenseAmountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'0.00'**
+  String get expenseAmountHint;
+
+  /// No description provided for @expenseNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a note…'**
+  String get expenseNoteHint;
+
+  /// No description provided for @expenseDocumentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select file (image, PDF)'**
+  String get expenseDocumentHint;
+
+  /// No description provided for @expenseDocumentSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected: {name}'**
+  String expenseDocumentSelected(Object name);
+
+  /// No description provided for @expenseDocumentChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose File'**
+  String get expenseDocumentChoose;
+
+  /// No description provided for @noExpensesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No expenses yet'**
+  String get noExpensesYet;
+
+  /// No description provided for @addFirstExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Press the button to add your first expense'**
+  String get addFirstExpense;
+
+  /// No description provided for @totalExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Expenses'**
+  String get totalExpenses;
+
+  /// No description provided for @expenseCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense Count'**
+  String get expenseCount;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
 }
 
 class _AppLocalizationsDelegate

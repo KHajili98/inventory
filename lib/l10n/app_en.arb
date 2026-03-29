@@ -988,5 +988,34 @@
     "placeholders": {
       "error": { "type": "String" }
     }
-  }
+  },
+
+  "addExpense": "Add Expense",
+  "expenseCategory": "Category",
+  "expensePaymentType": "Payment Type",
+  "expenseAmount": "Amount",
+  "expenseDate": "Date",
+  "expenseDocument": "Document",
+  "expenseNote": "Note",
+  "expenseCategoryRent": "Rent",
+  "expenseCategoryCommunal": "Communal",
+  "expenseCategorySalary": "Salary",
+  "expenseCategoryTransport": "Transport",
+  "expenseCategoryCustoms": "Customs",
+  "expenseCategoryOther": "Other",
+  "expensePaymentCash": "Cash",
+  "expensePaymentCard": "Card",
+  "expensePaymentTransfer": "Transfer",
+  "expenseSelectCategory": "Select category",
+  "expenseSelectPaymentType": "Select payment type",
+  "expenseAmountHint": "0.00",
+  "expenseNoteHint": "Enter a note…",
+  "expenseDocumentHint": "Select file (image, PDF)",
+  "expenseDocumentSelected": "Selected: {name}",
+  "expenseDocumentChoose": "Choose File",
+  "noExpensesYet": "No expenses yet",
+  "addFirstExpense": "Press the button to add your first expense",
+  "totalExpenses": "Total Expenses",
+  "expenseCount": "Expense Count",
+  "save": "Save"
 }

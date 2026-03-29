@@ -603,4 +603,90 @@ class AppLocalizationsEn extends AppLocalizations {
   String barcodeGenerateFailed(String error) {
     return 'Failed to generate barcode: $error';
   }
+
+  @override
+  String get addExpense => 'Add Expense';
+
+  @override
+  String get expenseCategory => 'Category';
+
+  @override
+  String get expensePaymentType => 'Payment Type';
+
+  @override
+  String get expenseAmount => 'Amount';
+
+  @override
+  String get expenseDate => 'Date';
+
+  @override
+  String get expenseDocument => 'Document';
+
+  @override
+  String get expenseNote => 'Note';
+
+  @override
+  String get expenseCategoryRent => 'Rent';
+
+  @override
+  String get expenseCategoryCommunal => 'Communal';
+
+  @override
+  String get expenseCategorySalary => 'Salary';
+
+  @override
+  String get expenseCategoryTransport => 'Transport';
+
+  @override
+  String get expenseCategoryCustoms => 'Customs';
+
+  @override
+  String get expenseCategoryOther => 'Other';
+
+  @override
+  String get expensePaymentCash => 'Cash';
+
+  @override
+  String get expensePaymentCard => 'Card';
+
+  @override
+  String get expensePaymentTransfer => 'Transfer';
+
+  @override
+  String get expenseSelectCategory => 'Select category';
+
+  @override
+  String get expenseSelectPaymentType => 'Select payment type';
+
+  @override
+  String get expenseAmountHint => '0.00';
+
+  @override
+  String get expenseNoteHint => 'Enter a note…';
+
+  @override
+  String get expenseDocumentHint => 'Select file (image, PDF)';
+
+  @override
+  String expenseDocumentSelected(Object name) {
+    return 'Selected: $name';
+  }
+
+  @override
+  String get expenseDocumentChoose => 'Choose File';
+
+  @override
+  String get noExpensesYet => 'No expenses yet';
+
+  @override
+  String get addFirstExpense => 'Press the button to add your first expense';
+
+  @override
+  String get totalExpenses => 'Total Expenses';
+
+  @override
+  String get expenseCount => 'Expense Count';
+
+  @override
+  String get save => 'Save';
 }
