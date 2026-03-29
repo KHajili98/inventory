@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inventory/core/utils/responsive.dart';
 import 'package:inventory/l10n/app_localizations.dart';
+import 'package:inventory/pages/finance/calculation_detail_page.dart';
 
 // ── Model ────────────────────────────────────────────────────────────────────
 
@@ -231,7 +232,10 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
       return ListView.separated(
         itemCount: rows.length,
         separatorBuilder: (_, __) => const SizedBox(height: 10),
-        itemBuilder: (context, i) => _buildMobileCard(rows[i]),
+        itemBuilder: (context, i) => GestureDetector(
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CalculationDetailPage(request: rows[i]))),
+          child: _buildMobileCard(rows[i]),
+        ),
       );
     }
 
@@ -298,74 +302,77 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
                 separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFE2E8F0)),
                 itemBuilder: (context, i) {
                   final r = rows[i];
-                  return Container(
-                    color: i.isEven ? Colors.white : const Color(0xFFFAFAFC),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 1,
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 30,
-                                height: 30,
-                                decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(8)),
-                                child: const Icon(Icons.description_outlined, size: 15, color: Color(0xFF6366F1)),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  r.name,
-                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
-                                  overflow: TextOverflow.ellipsis,
+                  return InkWell(
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CalculationDetailPage(request: r))),
+                    child: Container(
+                      color: i.isEven ? Colors.white : const Color(0xFFFAFAFC),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 1,
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(8)),
+                                  child: const Icon(Icons.description_outlined, size: 15, color: Color(0xFF6366F1)),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Text(
-                            r.source,
-                            style: const TextStyle(fontSize: 13, color: Color(0xFF334155)),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 14,
-                                backgroundColor: const Color(0xFF6366F1),
-                                child: Text(
-                                  r.user.isNotEmpty ? r.user[0].toUpperCase() : '?',
-                                  style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w700),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    r.name,
+                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  r.user,
-                                  style: const TextStyle(fontSize: 13, color: Color(0xFF334155)),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Text(r.createdAt, style: const TextStyle(fontSize: 13, color: Color(0xFF334155))),
-                        ),
-                        Expanded(
-                          flex: 1,
-                          child: Align(alignment: Alignment.centerLeft, child: _statusBadge(r.status)),
-                        ),
-                      ],
+                          Expanded(
+                            flex: 1,
+                            child: Text(
+                              r.source,
+                              style: const TextStyle(fontSize: 13, color: Color(0xFF334155)),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 14,
+                                  backgroundColor: const Color(0xFF6366F1),
+                                  child: Text(
+                                    r.user.isNotEmpty ? r.user[0].toUpperCase() : '?',
+                                    style: const TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w700),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    r.user,
+                                    style: const TextStyle(fontSize: 13, color: Color(0xFF334155)),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: Text(r.createdAt, style: const TextStyle(fontSize: 13, color: Color(0xFF334155))),
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: Align(alignment: Alignment.centerLeft, child: _statusBadge(r.status)),
+                          ),
+                        ],
+                      ),
                     ),
-                  );
+                  ); // InkWell
                 },
               ),
             ),
