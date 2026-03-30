@@ -85,7 +85,8 @@ class _StockPageState extends State<StockPage> {
       _colWholePrice +
       _colRetailPrice +
       _colStatus +
-      _colActions;
+      _colActions +
+      50;
 
   @override
   void initState() {
@@ -440,7 +441,7 @@ class _StockPageState extends State<StockPage> {
             _headerCell(l10n.wholesalePrice, _colWholePrice),
             _headerCell(l10n.retailPrice, _colRetailPrice),
             _headerCell(l10n.status, _colStatus),
-            _headerCell('', _colActions),
+            _headerCell(l10n.actions, _colActions),
           ],
         ),
       ),
@@ -453,7 +454,7 @@ class _StockPageState extends State<StockPage> {
       child: Text(
         text,
         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B), letterSpacing: 0.3),
-        overflow: TextOverflow.ellipsis,
+        softWrap: true,
       ),
     );
   }
