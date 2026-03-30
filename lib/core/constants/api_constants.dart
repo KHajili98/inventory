@@ -25,6 +25,12 @@ abstract class ApiConstants {
   // ── Barcode Generation ────────────────────────────────────────────────────────
   static const String generateBarcode = '/api/generate-barcode/';
 
+  // ── Product Requests ──────────────────────────────────────────────────────
+  static const String productRequests = '/api/requests/';
+
+  /// Single product request by UUID.
+  static String productRequestDetail(String id) => '/api/requests/$id/';
+
   // ── Timeouts ────────────────────────────────────────────────────────────────
   static const Duration connectTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(minutes: 3); // OCR can take ~75 s
