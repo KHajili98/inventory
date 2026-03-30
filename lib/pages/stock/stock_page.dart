@@ -185,51 +185,8 @@ class _StockPageState extends State<StockPage> {
                           ),
                         ),
                       ),
-                    if (!isMobile) const SizedBox(width: 12),
-                    if (!isMobile)
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (ctx) => BlocProvider(create: (_) => ProductRequestsCubit(), child: const AddStockProductRequest()),
-                          );
-                        },
-                        icon: const Icon(Icons.add_rounded, size: 20),
-                        label: Text(l10n.createStockRequest),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6366F1),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          elevation: 0,
-                        ),
-                      ),
                   ],
                 ),
-                if (isMobile) const SizedBox(height: 12),
-                if (isMobile)
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (ctx) => BlocProvider(create: (_) => ProductRequestsCubit(), child: const AddStockProductRequest()),
-                        );
-                      },
-                      icon: const Icon(Icons.add_rounded, size: 20),
-                      label: Text(l10n.createStockRequest),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6366F1),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        elevation: 0,
-                      ),
-                    ),
-                  ),
               ],
             ),
           ),
