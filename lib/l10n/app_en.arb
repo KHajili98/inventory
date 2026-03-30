@@ -1467,5 +1467,11 @@
   "@preparingHint": { "description": "Hint for inventory man when preparing" },
 
   "acceptingHint": "Enter the quantity you physically received",
-  "@acceptingHint": { "description": "Hint for seller when accepting delivery" }
+  "@acceptingHint": { "description": "Hint for seller when accepting delivery" },
+
+  "deleteRequest": "Delete Request",
+  "@deleteRequest": { "description": "Title for delete request dialog" },
+
+  "deleteRequestConfirm": "Are you sure you want to delete this request? This action cannot be undone.",
+  "@deleteRequestConfirm": { "description": "Confirmation text for deleting a request" }
 }

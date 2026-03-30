@@ -1069,4 +1069,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get acceptingHint => 'Enter the quantity you physically received';
+
+  @override
+  String get deleteRequest => 'Delete Request';
+
+  @override
+  String get deleteRequestConfirm =>
+      'Are you sure you want to delete this request? This action cannot be undone.';
 }

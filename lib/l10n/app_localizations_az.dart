@@ -1073,4 +1073,11 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get acceptingHint => 'Fiziki olaraq aldığınız miqdarı daxil edin';
+
+  @override
+  String get deleteRequest => 'Sorğunu Sil';
+
+  @override
+  String get deleteRequestConfirm =>
+      'Bu sorğunu silmək istədiyinizə əminsiniz? Bu əməliyyat geri alına bilməz.';
 }

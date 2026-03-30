@@ -551,5 +551,8 @@
   "markAsReady": "Çatdırılmağa Hazır Kimi İşarələ",
   "acceptDelivery": "Çatdırılmanı Qəbul Et",
   "preparingHint": "Göndərə biləcəyiniz miqdarı daxil edin (tələb ediləndən az ola bilər)",
-  "acceptingHint": "Fiziki olaraq aldığınız miqdarı daxil edin"
+  "acceptingHint": "Fiziki olaraq aldığınız miqdarı daxil edin",
+
+  "deleteRequest": "Sorğunu Sil",
+  "deleteRequestConfirm": "Bu sorğunu silmək istədiyinizə əminsiniz? Bu əməliyyat geri alına bilməz."
 }

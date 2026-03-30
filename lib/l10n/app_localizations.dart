@@ -2119,6 +2119,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter the quantity you physically received'**
   String get acceptingHint;
+
+  /// Title for delete request dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Request'**
+  String get deleteRequest;
+
+  /// Confirmation text for deleting a request
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this request? This action cannot be undone.'**
+  String get deleteRequestConfirm;
 }
 
 class _AppLocalizationsDelegate

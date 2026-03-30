@@ -43,6 +43,12 @@ class _ProductRequestsPageState extends State<ProductRequestsPage> {
     });
   }
 
+  void _deleteRequest(String requestId) {
+    setState(() {
+      _requests.removeWhere((r) => r.id == requestId);
+    });
+  }
+
   void _openCreateRequest() {
     final inventories = mockStockItems.map((i) => i.sourceInventoryName).toSet().toList()..sort();
     showDialog(
@@ -178,6 +184,7 @@ class _ProductRequestsPageState extends State<ProductRequestsPage> {
                       request: filtered[i],
                       currentUser: _currentUser,
                       onStatusChanged: _updateStatus,
+                      onDeleteRequest: _deleteRequest,
                       statusLabel: (s) => _statusLabel(context, s),
                     ),
                   ),
@@ -243,25 +250,27 @@ IconData _statusIcon(ProductRequestStatus status) {
 /// Which statuses a given role can transition to from the current status.
 List<ProductRequestStatus> _allowedTransitions(ProductRequestStatus current, AppUserRole role) {
   if (role == AppUserRole.seller) {
-    // Seller can only cancel (close) while still pending
-    if (current == ProductRequestStatus.pending) {
-      return [ProductRequestStatus.closed];
-    }
+    // Seller cannot change status when pending (can only delete)
+    // Seller can only accept when onWay — handled via dedicated _submitAccepting
+    // No generic status transitions available for seller
     return [];
   }
 
   // Inventory man drives the workflow forward
   switch (current) {
     case ProductRequestStatus.pending:
-      return [ProductRequestStatus.preparing, ProductRequestStatus.closed];
+      // Can only move to preparing (no close/delete via status — must use delete button)
+      return [ProductRequestStatus.preparing];
     case ProductRequestStatus.preparing:
       return [ProductRequestStatus.readyForDelivery, ProductRequestStatus.waitingForPricing];
     case ProductRequestStatus.readyForDelivery:
       return [ProductRequestStatus.onWay];
     case ProductRequestStatus.onWay:
-      return [ProductRequestStatus.closed];
+      // Inventory man cannot change status when onWay
+      return [];
     case ProductRequestStatus.waitingForPricing:
-      return [ProductRequestStatus.preparing, ProductRequestStatus.closed];
+      // Neither side can change status
+      return [];
     case ProductRequestStatus.closed:
       return [];
   }
@@ -370,9 +379,16 @@ class _RequestCard extends StatefulWidget {
   final ProductRequest request;
   final AppUser currentUser;
   final void Function(String id, ProductRequestStatus status, List<ProductRequestItem> items) onStatusChanged;
+  final void Function(String id) onDeleteRequest;
   final String Function(ProductRequestStatus) statusLabel;
 
-  const _RequestCard({required this.request, required this.currentUser, required this.onStatusChanged, required this.statusLabel});
+  const _RequestCard({
+    required this.request,
+    required this.currentUser,
+    required this.onStatusChanged,
+    required this.onDeleteRequest,
+    required this.statusLabel,
+  });
 
   @override
   State<_RequestCard> createState() => _RequestCardState();
@@ -427,6 +443,32 @@ class _RequestCardState extends State<_RequestCard> {
     }).toList();
     widget.onStatusChanged(widget.request.id, ProductRequestStatus.waitingForPricing, updatedItems);
     setState(() => _expanded = false);
+  }
+
+  bool _canDelete() {
+    // Both seller and inventory man can delete when status is pending
+    return widget.request.status == ProductRequestStatus.pending;
+  }
+
+  Future<void> _confirmDelete(BuildContext context, AppLocalizations l10n) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.deleteRequest),
+        content: Text(l10n.deleteRequestConfirm),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(l10n.cancel)),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: const Color(0xFFEF4444)),
+            child: Text(l10n.delete),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      widget.onDeleteRequest(widget.request.id);
+    }
   }
 
   @override
@@ -659,6 +701,25 @@ class _RequestCardState extends State<_RequestCard> {
                             child: Text(l10n.noActionsAvailable, style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
                           ),
                         ],
+                      ),
+                    ),
+                  ],
+
+                  // ── Delete button (shown when delete is allowed) ───────────
+                  if (_canDelete()) ...[
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => _confirmDelete(context, l10n),
+                        icon: const Icon(Icons.delete_outline_rounded, size: 17),
+                        label: Text(l10n.deleteRequest, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFFEF4444),
+                          side: const BorderSide(color: Color(0xFFEF4444)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
                       ),
                     ),
                   ],
