@@ -234,36 +234,42 @@ class _AddStockItemDialogState extends State<AddStockItemDialog> {
   }
 
   Widget _buildInventoryDropdown(AppLocalizations l10n) {
+    final inv = _selectedInventory;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFF1F5F9),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: _selectedInventory != null ? const Color(0xFF6366F1) : const Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.4)),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<InventoryModel>(
-          value: _selectedInventory,
-          isExpanded: true,
-          hint: Text(l10n.selectInventory, style: const TextStyle(fontSize: 14, color: Color(0xFF94A3B8))),
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
-          style: const TextStyle(fontSize: 14, color: Color(0xFF1E293B)),
-          onChanged: (inv) => setState(() => _selectedInventory = inv),
-          items: widget.inventories
-              .map(
-                (inv) => DropdownMenuItem<InventoryModel>(
-                  value: inv,
-                  child: Row(
-                    children: [
-                      Expanded(child: Text(inv.name, overflow: TextOverflow.ellipsis)),
-                      const SizedBox(width: 6),
-                      _InvTypeBadge(isStock: inv.isStock),
-                    ],
-                  ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+      child: Row(
+        children: [
+          const Icon(Icons.warehouse_rounded, size: 16, color: Color(0xFF6366F1)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              inv?.name ?? '—',
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF1E293B)),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(color: const Color(0xFF6366F1).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.lock_rounded, size: 10, color: Color(0xFF6366F1)),
+                SizedBox(width: 3),
+                Text(
+                  'Your inventory',
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFF6366F1)),
                 ),
-              )
-              .toList(),
-        ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -368,28 +374,6 @@ class _AddStockItemDialogState extends State<AddStockItemDialog> {
           validator: validator ?? (required ? (v) => (v == null || v.trim().isEmpty) ? 'Required' : null : null),
         ),
       ],
-    );
-  }
-}
-
-// ── Inventory type badge ──────────────────────────────────────────────────────
-
-class _InvTypeBadge extends StatelessWidget {
-  final bool isStock;
-  const _InvTypeBadge({required this.isStock});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: isStock ? const Color(0xFF6366F1).withValues(alpha: 0.1) : const Color(0xFF10B981).withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        isStock ? 'STOCK' : 'INV',
-        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: isStock ? const Color(0xFF6366F1) : const Color(0xFF10B981)),
-      ),
     );
   }
 }
