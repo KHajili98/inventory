@@ -10,11 +10,15 @@ import 'package:inventory/features/invoice_ocr/cubit/invoice_ocr_cubit.dart';
 import 'package:inventory/features/invoice_list/cubit/invoice_list_cubit.dart';
 
 void main() {
+  // Create AuthCubit first so we can wire it into the router's refreshListenable
+  final authCubit = AuthCubit();
+  appRouter = createRouter(authCubit);
+
   runApp(
     MultiBlocProvider(
       providers: [
+        BlocProvider.value(value: authCubit),
         BlocProvider(create: (_) => LocaleCubit()),
-        BlocProvider(create: (_) => AuthCubit()),
         BlocProvider(create: (_) => InvoiceOcrCubit()),
         BlocProvider(create: (_) => InvoiceListCubit()..fetchInvoices()),
       ],
