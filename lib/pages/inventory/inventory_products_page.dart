@@ -50,6 +50,19 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
 
   final ScrollController _vScrollController = ScrollController();
 
+  // ── Horizontal scroll step buttons ───────────────────────────────────────
+  static const double _hScrollStep = 300.0;
+
+  void _scrollLeft() {
+    final target = (_hScrollController.offset - _hScrollStep).clamp(0.0, _hScrollController.position.maxScrollExtent);
+    _hScrollController.animateTo(target, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+  }
+
+  void _scrollRight() {
+    final target = (_hScrollController.offset + _hScrollStep).clamp(0.0, _hScrollController.position.maxScrollExtent);
+    _hScrollController.animateTo(target, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+  }
+
   // ── Sync header horizontal scroll with body ───────────────────────────────
   bool _hSyncing = false;
   void _onHScroll() {
@@ -701,27 +714,42 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
               _ when products.isEmpty => Center(
                 child: Text(AppLocalizations.of(context)!.noProductsMatchSearch, style: const TextStyle(fontSize: 14, color: Color(0xFF94A3B8))),
               ),
-              _ => Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              _ => Stack(
                 children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      controller: _hScrollController,
-                      scrollDirection: Axis.horizontal,
-                      child: SizedBox(
-                        width: _tableWidth,
-                        child: Scrollbar(
+                  SingleChildScrollView(
+                    controller: _hScrollController,
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: _tableWidth,
+                      child: Scrollbar(
+                        controller: _vScrollController,
+                        thumbVisibility: true,
+                        trackVisibility: true,
+                        child: ListView.separated(
                           controller: _vScrollController,
-                          thumbVisibility: true,
-                          trackVisibility: true,
-                          child: ListView.separated(
-                            controller: _vScrollController,
-                            itemCount: products.length,
-                            separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                            itemBuilder: (_, i) => _buildProductRow(i, products[i]),
-                          ),
+                          itemCount: products.length,
+                          separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                          itemBuilder: (_, i) => _buildProductRow(i, products[i]),
                         ),
                       ),
+                    ),
+                  ),
+                  // ── Left scroll button ──────────────────────────────────
+                  Positioned(
+                    left: 8,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: _HScrollButton(icon: Icons.chevron_left_rounded, onTap: _scrollLeft, controller: _hScrollController, isLeft: true),
+                    ),
+                  ),
+                  // ── Right scroll button ─────────────────────────────────
+                  Positioned(
+                    right: 8,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: _HScrollButton(icon: Icons.chevron_right_rounded, onTap: _scrollRight, controller: _hScrollController, isLeft: false),
                     ),
                   ),
                 ],
@@ -827,20 +855,6 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SizedBox(
-              width: _colCheck,
-              child: Checkbox(
-                value: _selectedIds.length == products.length && products.isNotEmpty,
-                tristate: _selectedIds.isNotEmpty && _selectedIds.length < products.length,
-                onChanged: (v) => setState(() {
-                  if (v == true)
-                    _selectedIds.addAll(products.map((p) => p.id));
-                  else
-                    _selectedIds.clear();
-                }),
-                activeColor: const Color(0xFF6366F1),
-              ),
-            ),
             _headerCell('#', _colIdx),
             _headerCell(l10n.productCode, _colProductCode),
             _headerCell(l10n.productName, _colProductName),
@@ -904,20 +918,6 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
         color: rowBg,
         child: Row(
           children: [
-            SizedBox(
-              width: _colCheck,
-              height: 52,
-              child: Checkbox(
-                value: isSelected,
-                onChanged: (v) => setState(() {
-                  if (v == true)
-                    _selectedIds.add(product.id);
-                  else
-                    _selectedIds.remove(product.id);
-                }),
-                activeColor: const Color(0xFF6366F1),
-              ),
-            ),
             _cell('${index + 1}', _colIdx, style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
             // Product code
             _cell(
@@ -3239,19 +3239,6 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                   decoration: BoxDecoration(color: isSelected ? const Color(0xFFEEF2FF) : Colors.transparent, borderRadius: BorderRadius.circular(8)),
                   child: Row(
                     children: [
-                      SizedBox(
-                        width: 40,
-                        child: Checkbox(
-                          value: isSelected,
-                          onChanged: (v) => setState(() {
-                            if (v == true)
-                              _selected.add(i);
-                            else
-                              _selected.remove(i);
-                          }),
-                          activeColor: const Color(0xFF6366F1),
-                        ),
-                      ),
                       Expanded(
                         flex: 3,
                         child: Text(
@@ -4241,6 +4228,72 @@ class _PaginationBtn extends StatelessWidget {
           border: Border.all(color: enabled ? const Color(0xFFE2E8F0) : const Color(0xFFF1F5F9)),
         ),
         child: Icon(icon, size: 16, color: enabled ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Horizontal scroll button (auto-hides when at the boundary)
+// ═══════════════════════════════════════════════════════════════════════════════
+class _HScrollButton extends StatefulWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  final ScrollController controller;
+  final bool isLeft;
+
+  const _HScrollButton({required this.icon, required this.onTap, required this.controller, required this.isLeft});
+
+  @override
+  State<_HScrollButton> createState() => _HScrollButtonState();
+}
+
+class _HScrollButtonState extends State<_HScrollButton> {
+  bool _visible = true;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_update);
+    // Defer first check until layout is done
+    WidgetsBinding.instance.addPostFrameCallback((_) => _update());
+  }
+
+  void _update() {
+    if (!mounted || !widget.controller.hasClients) return;
+    final pos = widget.controller.position;
+    final shouldShow = widget.isLeft ? pos.pixels > 4 : pos.pixels < pos.maxScrollExtent - 4;
+    if (shouldShow != _visible) setState(() => _visible = shouldShow);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_update);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedOpacity(
+      opacity: _visible ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 180),
+      child: IgnorePointer(
+        ignoring: !_visible,
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 6, offset: const Offset(0, 2))],
+            ),
+            alignment: Alignment.center,
+            child: Icon(widget.icon, size: 18, color: const Color(0xFF475569)),
+          ),
+        ),
       ),
     );
   }
