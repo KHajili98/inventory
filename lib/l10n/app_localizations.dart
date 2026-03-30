@@ -2131,6 +2131,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you sure you want to delete this request? This action cannot be undone.'**
   String get deleteRequestConfirm;
+
+  /// Button / dialog title for adding a stock item manually
+  ///
+  /// In en, this message translates to:
+  /// **'Add Stock Item'**
+  String get addStockItem;
+
+  /// Title for delete stock item dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Stock Item'**
+  String get deleteStockItem;
+
+  /// Confirmation text for deleting a stock item
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this stock item? This action cannot be undone.'**
+  String get deleteStockItemConfirm;
+
+  /// Snackbar message after successful stock item deletion
+  ///
+  /// In en, this message translates to:
+  /// **'Stock item deleted'**
+  String get stockItemDeleted;
+
+  /// Snackbar message when stock item deletion fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete: {error}'**
+  String stockItemDeleteFailed(String error);
+
+  /// Snackbar message after successful stock item creation
+  ///
+  /// In en, this message translates to:
+  /// **'Stock item created successfully'**
+  String get stockItemCreated;
+
+  /// Snackbar message when stock item creation fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to create: {error}'**
+  String stockItemCreateFailed(String error);
+
+  /// Invoice price AZN field label in add stock dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice Price (AZN)'**
+  String get invoicePriceAznLabel;
+
+  /// Label shown when loading more items
+  ///
+  /// In en, this message translates to:
+  /// **'Loading more…'**
+  String get loadingMore;
 }
 
 class _AppLocalizationsDelegate

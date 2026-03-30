@@ -554,5 +554,15 @@
   "acceptingHint": "Fiziki olaraq aldığınız miqdarı daxil edin",
 
   "deleteRequest": "Sorğunu Sil",
-  "deleteRequestConfirm": "Bu sorğunu silmək istədiyinizə əminsiniz? Bu əməliyyat geri alına bilməz."
+  "deleteRequestConfirm": "Bu sorğunu silmək istədiyinizə əminsiniz? Bu əməliyyat geri alına bilməz.",
+
+  "addStockItem": "Stok Məhsulu Əlavə Et",
+  "deleteStockItem": "Stok Məhsulunu Sil",
+  "deleteStockItemConfirm": "Bu stok məhsulunu silmək istədiyinizə əminsiniz? Bu əməliyyat geri alına bilməz.",
+  "stockItemDeleted": "Stok məhsulu silindi",
+  "stockItemDeleteFailed": "Silmək mümkün olmadı: {error}",
+  "stockItemCreated": "Stok məhsulu uğurla yaradıldı",
+  "stockItemCreateFailed": "Yaratmaq mümkün olmadı: {error}",
+  "invoicePriceAznLabel": "Qaimə Qiyməti (AZN)",
+  "loadingMore": "Daha çox yüklənir…"
 }

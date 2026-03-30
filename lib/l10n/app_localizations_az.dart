@@ -1080,4 +1080,36 @@ class AppLocalizationsAz extends AppLocalizations {
   @override
   String get deleteRequestConfirm =>
       'Bu sorğunu silmək istədiyinizə əminsiniz? Bu əməliyyat geri alına bilməz.';
+
+  @override
+  String get addStockItem => 'Stok Məhsulu Əlavə Et';
+
+  @override
+  String get deleteStockItem => 'Stok Məhsulunu Sil';
+
+  @override
+  String get deleteStockItemConfirm =>
+      'Bu stok məhsulunu silmək istədiyinizə əminsiniz? Bu əməliyyat geri alına bilməz.';
+
+  @override
+  String get stockItemDeleted => 'Stok məhsulu silindi';
+
+  @override
+  String stockItemDeleteFailed(String error) {
+    return 'Silmək mümkün olmadı: $error';
+  }
+
+  @override
+  String get stockItemCreated => 'Stok məhsulu uğurla yaradıldı';
+
+  @override
+  String stockItemCreateFailed(String error) {
+    return 'Yaratmaq mümkün olmadı: $error';
+  }
+
+  @override
+  String get invoicePriceAznLabel => 'Qaimə Qiyməti (AZN)';
+
+  @override
+  String get loadingMore => 'Daha çox yüklənir…';
 }

@@ -1,10 +1,30 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:inventory/core/network/api_result.dart';
 import 'package:inventory/core/utils/responsive.dart';
-import 'package:inventory/features/product_requests/cubit/product_requests_cubit.dart';
+import 'package:inventory/features/auth/auth_cubit.dart';
+import 'package:inventory/features/inventory_products/data/models/inventory_model.dart';
+import 'package:inventory/features/inventory_products/data/repositories/inventory_repository.dart';
+import 'package:inventory/features/stocks/cubit/stocks_cubit.dart';
+import 'package:inventory/features/stocks/cubit/stocks_state.dart';
+import 'package:inventory/features/stocks/data/models/stock_product_response_model.dart';
 import 'package:inventory/l10n/app_localizations.dart';
-import 'package:inventory/models/stock_models.dart';
-import 'package:inventory/pages/requests/add_stock_product_request.dart';
+import 'package:inventory/pages/stock/add_stock_item_dialog.dart';
+
+// ── Stock status helper ───────────────────────────────────────────────────────
+
+enum _StockStatus { active, lowStock, outOfStock, pricePending }
+
+_StockStatus _resolveStatus(StockProductItemModel item) {
+  if (!item.priced) return _StockStatus.pricePending;
+  if (item.quantity == 0) return _StockStatus.outOfStock;
+  if (item.quantity <= 10) return _StockStatus.lowStock;
+  return _StockStatus.active;
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 class StockPage extends StatefulWidget {
   const StockPage({super.key});
@@ -14,27 +34,40 @@ class StockPage extends StatefulWidget {
 }
 
 class _StockPageState extends State<StockPage> {
-  final List<StockItem> _stockItems = mockStockItems;
-  List<StockItem> _filteredItems = mockStockItems;
-  String _selectedInventory = 'all';
-  String _searchQuery = '';
+  // ── cubit ────────────────────────────────────────────────────────────────
+  late final StocksCubit _cubit = StocksCubit();
 
-  // Table column widths
+  // ── inventories ──────────────────────────────────────────────────────────
+  List<InventoryModel> _inventories = [];
+  InventoryModel? _selectedInventory; // null = all
+
+  // ── search ───────────────────────────────────────────────────────────────
+  final TextEditingController _searchCtrl = TextEditingController();
+  Timer? _debounce;
+
+  // ── scroll ───────────────────────────────────────────────────────────────
+  final ScrollController _hScrollController = ScrollController();
+  final ScrollController _hHeaderController = ScrollController();
+  final ScrollController _vScrollController = ScrollController();
+  bool _hSyncing = false;
+
+  // ── table column widths ───────────────────────────────────────────────────
   static const double _colModelCode = 140.0;
   static const double _colProductName = 180.0;
   static const double _colGeneratedName = 200.0;
-  static const double _colProductCode = 120.0;
+  static const double _colProductCode = 130.0;
   static const double _colSize = 80.0;
-  static const double _colColor = 100.0;
+  static const double _colColor = 110.0;
   static const double _colColorCode = 100.0;
-  static const double _colQuantity = 100.0;
+  static const double _colQuantity = 90.0;
   static const double _colBarcode = 150.0;
-  static const double _colSource = 150.0;
-  static const double _colInvoicePrice = 130.0;
+  static const double _colInventory = 200.0;
+  static const double _colInvoicePrice = 150.0;
   static const double _colCostPrice = 120.0;
   static const double _colWholePrice = 140.0;
-  static const double _colRetailPrice = 120.0;
-  static const double _colStatus = 130.0;
+  static const double _colRetailPrice = 130.0;
+  static const double _colStatus = 140.0;
+  static const double _colActions = 60.0;
 
   static double get _tableWidth =>
       _colModelCode +
@@ -46,23 +79,20 @@ class _StockPageState extends State<StockPage> {
       _colColorCode +
       _colQuantity +
       _colBarcode +
-      _colSource +
+      _colInventory +
       _colInvoicePrice +
       _colCostPrice +
       _colWholePrice +
       _colRetailPrice +
-      _colStatus;
-
-  final ScrollController _hScrollController = ScrollController();
-  final ScrollController _hHeaderController = ScrollController();
-  final ScrollController _vScrollController = ScrollController();
-
-  bool _hSyncing = false;
+      _colStatus +
+      _colActions;
 
   @override
   void initState() {
     super.initState();
     _hScrollController.addListener(_onHScroll);
+    _loadInventories();
+    _cubit.fetchStocks();
   }
 
   @override
@@ -70,6 +100,9 @@ class _StockPageState extends State<StockPage> {
     _hScrollController.dispose();
     _hHeaderController.dispose();
     _vScrollController.dispose();
+    _searchCtrl.dispose();
+    _debounce?.cancel();
+    _cubit.close();
     super.dispose();
   }
 
@@ -83,248 +116,338 @@ class _StockPageState extends State<StockPage> {
     _hSyncing = false;
   }
 
-  void _filterItems() {
-    setState(() {
-      _filteredItems = _stockItems.where((item) {
-        final matchesInventory = _selectedInventory == 'all' || item.sourceInventoryName == _selectedInventory;
-        final matchesSearch =
-            _searchQuery.isEmpty ||
-            item.productName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            item.modelCode.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            item.barcode.contains(_searchQuery);
-        return matchesInventory && matchesSearch;
-      }).toList();
-    });
+  // ── data loading ──────────────────────────────────────────────────────────
+
+  Future<void> _loadInventories() async {
+    final result = await InventoryRepository.instance.fetchInventories(pageSize: 200);
+    if (!mounted) return;
+    if (result is Success<InventoryListResponse>) {
+      setState(() => _inventories = result.data.results);
+    }
   }
 
-  List<String> get _inventoryOptions {
-    final inventories = _stockItems.map((item) => item.sourceInventoryName).toSet().toList();
-    inventories.sort();
-    return ['all', ...inventories];
+  void _onSearchChanged(String value) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 400), _fetch);
   }
+
+  void _onInventoryChanged(InventoryModel? inv) {
+    setState(() => _selectedInventory = inv);
+    _fetch();
+  }
+
+  void _fetch() {
+    final search = _searchCtrl.text.trim().isEmpty ? null : _searchCtrl.text.trim();
+    _cubit.fetchStocks(search: search, inventoryId: _selectedInventory?.id);
+  }
+
+  // ── delete ────────────────────────────────────────────────────────────────
+
+  Future<void> _confirmDelete(StockProductItemModel item) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: Row(
+          children: [
+            const Icon(Icons.delete_rounded, color: Color(0xFFEF4444), size: 22),
+            const SizedBox(width: 10),
+            Text(l10n.deleteStockItem, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          ],
+        ),
+        content: Text(l10n.deleteStockItemConfirm, style: const TextStyle(fontSize: 14, color: Color(0xFF64748B))),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF64748B))),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final result = await _cubit.deleteStock(item.id);
+    if (!mounted) return;
+
+    switch (result) {
+      case Success():
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.stockItemDeleted), backgroundColor: const Color(0xFF10B981)));
+      case Failure(:final message):
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.stockItemDeleteFailed(message)), backgroundColor: const Color(0xFFEF4444)));
+    }
+  }
+
+  // ── add stock item ────────────────────────────────────────────────────────
+
+  Future<void> _openAddDialog() async {
+    final l10n = AppLocalizations.of(context)!;
+    final authState = context.read<AuthCubit>().state;
+    final loggedInInventoryId = authState is AuthAuthenticated ? authState.response.loggedInInventory?.id : null;
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (_) => AddStockItemDialog(inventories: _inventories, defaultInventoryId: loggedInInventoryId, cubit: _cubit),
+    );
+
+    if (result == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.stockItemCreated), backgroundColor: const Color(0xFF10B981)));
+    }
+  }
+
+  // ── build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isMobile = context.isMobile;
-    final summary = StockSummary.fromStockList(_stockItems);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      body: Column(
-        children: [
-          // Header with stats cards
-          Container(
-            padding: EdgeInsets.all(context.responsivePadding),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Stats cards
-                _buildStatsCards(context, summary, isMobile),
-                const SizedBox(height: 20),
-
-                // Inventory selector and search
-                Row(
-                  children: [
-                    Expanded(
-                      flex: isMobile ? 1 : 0,
-                      child: Container(
-                        constraints: BoxConstraints(maxWidth: isMobile ? double.infinity : 300),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: _selectedInventory,
-                            isExpanded: true,
-                            icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
-                            style: const TextStyle(fontSize: 14, color: Color(0xFF1E293B)),
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedInventory = value!;
-                                _filterItems();
-                              });
-                            },
-                            items: _inventoryOptions.map((inventory) {
-                              return DropdownMenuItem(
-                                value: inventory,
-                                child: Text(inventory == 'all' ? l10n.allInventories : inventory, style: const TextStyle(fontSize: 14)),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                      ),
-                    ),
-                    if (!isMobile) const SizedBox(width: 12),
-                    if (!isMobile)
-                      Expanded(
-                        child: Container(
-                          constraints: const BoxConstraints(maxWidth: 400),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
-                          ),
-                          child: TextField(
-                            onChanged: (value) {
-                              setState(() {
-                                _searchQuery = value;
-                                _filterItems();
-                              });
-                            },
-                            decoration: InputDecoration(
-                              hintText: l10n.searchStock,
-                              hintStyle: const TextStyle(fontSize: 14, color: Color(0xFF94A3B8)),
-                              prefixIcon: const Icon(Icons.search_rounded, size: 20, color: Color(0xFF64748B)),
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // Table
-          Expanded(
-            child: Container(
-              margin: EdgeInsets.symmetric(horizontal: context.responsivePadding),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 2))],
-              ),
+    return BlocProvider.value(
+      value: _cubit,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF8FAFC),
+        body: Column(
+          children: [
+            // ── Top controls ───────────────────────────────────────────────
+            Container(
+              padding: EdgeInsets.all(context.responsivePadding),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Table header
-                  SingleChildScrollView(
-                    controller: _hHeaderController,
-                    scrollDirection: Axis.horizontal,
-                    physics: const NeverScrollableScrollPhysics(),
-                    child: Container(
-                      width: _tableWidth + 32,
-                      decoration: const BoxDecoration(
-                        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
-                      ),
-                      child: _buildTableHeader(l10n),
-                    ),
+                  // ── Stats row ──────────────────────────────────────────
+                  BlocBuilder<StocksCubit, StocksState>(
+                    builder: (_, state) {
+                      if (state is StocksLoaded) {
+                        return _StatsRow(products: state.products, isMobile: isMobile, l10n: l10n);
+                      }
+                      return const SizedBox.shrink();
+                    },
                   ),
-
-                  // Table body
-                  Expanded(
-                    child: Scrollbar(
-                      controller: _vScrollController,
-                      thumbVisibility: true,
-                      child: SingleChildScrollView(
-                        controller: _vScrollController,
-                        child: SingleChildScrollView(
-                          controller: _hScrollController,
-                          scrollDirection: Axis.horizontal,
-                          child: SizedBox(
-                            width: _tableWidth,
-                            child: Column(children: _filteredItems.map((item) => _buildTableRow(item, l10n)).toList()),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                  const SizedBox(height: 16),
+                  // ── Filters + Add button ───────────────────────────────
+                  _buildFilterBar(l10n, isMobile),
                 ],
               ),
             ),
-          ),
-          const SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildStatsCards(BuildContext context, StockSummary summary, bool isMobile) {
-    final l10n = AppLocalizations.of(context)!;
-
-    final cards = [
-      _StatCard(
-        title: l10n.activeStockAmount,
-        value: summary.activeStockAmount.toString(),
-        icon: Icons.inventory_2_rounded,
-        color: const Color(0xFF10B981),
-        isMobile: isMobile,
-      ),
-      _StatCard(
-        title: l10n.activeProducts,
-        value: summary.activeProductQuantity.toString(),
-        icon: Icons.check_circle_rounded,
-        color: const Color(0xFF6366F1),
-        isMobile: isMobile,
-      ),
-      _StatCard(
-        title: l10n.pricePending,
-        value: summary.pricePendingProductsQuantity.toString(),
-        icon: Icons.pending_rounded,
-        color: const Color(0xFFF59E0B),
-        isMobile: isMobile,
-      ),
-      _StatCard(
-        title: l10n.lowStock,
-        value: summary.lowStockQuantity.toString(),
-        icon: Icons.warning_rounded,
-        color: const Color(0xFFEF4444),
-        isMobile: isMobile,
-      ),
-      _StatCard(
-        title: l10n.outOfStock,
-        value: summary.outOfStockQuantity.toString(),
-        icon: Icons.cancel_rounded,
-        color: const Color(0xFF64748B),
-        isMobile: isMobile,
-      ),
-    ];
-
-    if (isMobile) {
-      return Column(
-        children: cards.map((card) => Padding(padding: const EdgeInsets.only(bottom: 12), child: card)).toList(),
-      );
-    }
-
-    return Wrap(spacing: 16, runSpacing: 16, children: cards);
-  }
-
-  Widget _buildTableHeader(AppLocalizations l10n) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: const BoxDecoration(color: Color(0xFFF8FAFC)),
-      child: SizedBox(
-        width: _tableWidth, // Subtract horizontal padding
-        child: Row(
-          children: [
-            _buildHeaderCell(l10n.modelCode, _colModelCode),
-            _buildHeaderCell(l10n.productName, _colProductName),
-            _buildHeaderCell(l10n.generatedName, _colGeneratedName),
-            _buildHeaderCell(l10n.productCode, _colProductCode),
-            _buildHeaderCell(l10n.size, _colSize),
-            _buildHeaderCell(l10n.color, _colColor),
-            _buildHeaderCell(l10n.colorCode, _colColorCode),
-            _buildHeaderCell(l10n.quantity, _colQuantity),
-            _buildHeaderCell(l10n.barcode, _colBarcode),
-            _buildHeaderCell(l10n.sourceInventory, _colSource),
-            _buildHeaderCell(l10n.invoicePriceUsd, _colInvoicePrice),
-            _buildHeaderCell(l10n.costPrice, _colCostPrice),
-            _buildHeaderCell(l10n.wholesalePrice, _colWholePrice),
-            _buildHeaderCell(l10n.retailPrice, _colRetailPrice),
-            _buildHeaderCell(l10n.status, _colStatus),
+            // ── Table ──────────────────────────────────────────────────────
+            Expanded(
+              child: BlocBuilder<StocksCubit, StocksState>(
+                builder: (_, state) {
+                  if (state is StocksLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (state is StocksError) {
+                    return _ErrorView(message: state.message, onRetry: _fetch);
+                  }
+                  if (state is StocksLoaded) {
+                    if (state.products.isEmpty) {
+                      return _EmptyView(l10n: l10n);
+                    }
+                    return _buildTable(state, l10n);
+                  }
+                  return const Center(child: CircularProgressIndicator());
+                },
+              ),
+            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeaderCell(String text, double width) {
+  Widget _buildFilterBar(AppLocalizations l10n, bool isMobile) {
+    return Row(
+      children: [
+        // Inventory dropdown
+        Container(
+          constraints: BoxConstraints(maxWidth: isMobile ? double.infinity : 300),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<InventoryModel?>(
+              value: _selectedInventory,
+              isExpanded: true,
+              icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
+              style: const TextStyle(fontSize: 14, color: Color(0xFF1E293B)),
+              onChanged: _onInventoryChanged,
+              items: [
+                DropdownMenuItem<InventoryModel?>(value: null, child: Text(l10n.allInventories, style: const TextStyle(fontSize: 14))),
+                ..._inventories.map(
+                  (inv) => DropdownMenuItem<InventoryModel?>(
+                    value: inv,
+                    child: Text(inv.name, style: const TextStyle(fontSize: 14), overflow: TextOverflow.ellipsis),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        // Search
+        if (!isMobile)
+          Expanded(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 400),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: TextField(
+                controller: _searchCtrl,
+                onChanged: _onSearchChanged,
+                decoration: InputDecoration(
+                  hintText: l10n.searchStock,
+                  hintStyle: const TextStyle(fontSize: 14, color: Color(0xFF94A3B8)),
+                  prefixIcon: const Icon(Icons.search_rounded, size: 20, color: Color(0xFF64748B)),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                ),
+              ),
+            ),
+          ),
+        const Spacer(),
+        // Add button
+        ElevatedButton.icon(
+          onPressed: _openAddDialog,
+          icon: const Icon(Icons.add_rounded, size: 18),
+          label: Text(l10n.addStockItem, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF6366F1),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            elevation: 0,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTable(StocksLoaded state, AppLocalizations l10n) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: context.responsivePadding),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 2))],
+      ),
+      child: Column(
+        children: [
+          // Sticky header
+          SingleChildScrollView(
+            controller: _hHeaderController,
+            scrollDirection: Axis.horizontal,
+            physics: const NeverScrollableScrollPhysics(),
+            child: Container(
+              width: _tableWidth + 32,
+              decoration: const BoxDecoration(
+                border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+              ),
+              child: _buildTableHeader(l10n),
+            ),
+          ),
+          // Body
+          Expanded(
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (n) {
+                // Load more when near bottom
+                if (n is ScrollEndNotification && n.metrics.axis == Axis.vertical) {
+                  final pixels = n.metrics.pixels;
+                  final maxExtent = n.metrics.maxScrollExtent;
+                  if (maxExtent > 0 && pixels >= maxExtent - 200) {
+                    _cubit.loadMore();
+                  }
+                }
+                return false;
+              },
+              child: Scrollbar(
+                controller: _vScrollController,
+                thumbVisibility: true,
+                child: SingleChildScrollView(
+                  controller: _vScrollController,
+                  child: SingleChildScrollView(
+                    controller: _hScrollController,
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: _tableWidth,
+                      child: Column(
+                        children: [
+                          ...state.products.map((item) => _buildTableRow(item, l10n)),
+                          if (state.isLoadingMore)
+                            const Padding(
+                              padding: EdgeInsets.all(16),
+                              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                            ),
+                          if (!state.hasMore && state.products.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Text('${state.totalCount} items total', style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTableHeader(AppLocalizations l10n) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      color: const Color(0xFFF8FAFC),
+      child: SizedBox(
+        width: _tableWidth,
+        child: Row(
+          children: [
+            _headerCell(l10n.modelCode, _colModelCode),
+            _headerCell(l10n.productName, _colProductName),
+            _headerCell(l10n.generatedName, _colGeneratedName),
+            _headerCell(l10n.productCode, _colProductCode),
+            _headerCell(l10n.size, _colSize),
+            _headerCell(l10n.color, _colColor),
+            _headerCell(l10n.colorCode, _colColorCode),
+            _headerCell(l10n.quantity, _colQuantity),
+            _headerCell(l10n.barcode, _colBarcode),
+            _headerCell(l10n.sourceInventory, _colInventory),
+            _headerCell(l10n.invoicePriceAznLabel, _colInvoicePrice),
+            _headerCell(l10n.costPrice, _colCostPrice),
+            _headerCell(l10n.wholesalePrice, _colWholePrice),
+            _headerCell(l10n.retailPrice, _colRetailPrice),
+            _headerCell(l10n.status, _colStatus),
+            _headerCell('', _colActions),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _headerCell(String text, double width) {
     return SizedBox(
       width: width,
       child: Text(
@@ -335,38 +458,53 @@ class _StockPageState extends State<StockPage> {
     );
   }
 
-  Widget _buildTableRow(StockItem item, AppLocalizations l10n) {
+  Widget _buildTableRow(StockProductItemModel item, AppLocalizations l10n) {
+    final status = _resolveStatus(item);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: const BoxDecoration(
         border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
       ),
       child: SizedBox(
-        width: _tableWidth - 32, // Subtract horizontal padding
+        width: _tableWidth - 32,
         child: Row(
           children: [
-            _buildCell(item.modelCode, _colModelCode),
-            _buildCell(item.productName, _colProductName),
-            _buildCell(item.productGeneratedName, _colGeneratedName),
-            _buildCell(item.productCode, _colProductCode),
-            _buildCell(item.size, _colSize),
-            _buildCellWithColor(item.color, item.colorCode, _colColor),
-            _buildCell(item.colorCode, _colColorCode, isColorCode: true),
-            _buildCell(item.quantity.toString(), _colQuantity, bold: true),
-            _buildCell(item.barcode, _colBarcode),
-            _buildCell(item.sourceInventoryName, _colSource),
-            _buildCell(item.invoiceUnitPriceUsd?.toStringAsFixed(2) ?? '-', _colInvoicePrice),
-            _buildCell(item.costUnitPrice?.toStringAsFixed(2) ?? '-', _colCostPrice),
-            _buildCell(item.wholeUnitSalesPrice?.toStringAsFixed(2) ?? '-', _colWholePrice),
-            _buildCell(item.retailUnitPrice?.toStringAsFixed(2) ?? '-', _colRetailPrice),
-            _buildStatusCell(item.status, _colStatus, l10n),
+            _cell(item.modelCode ?? '—', _colModelCode),
+            _cell(item.productName ?? '—', _colProductName),
+            _cell(item.productGeneratedName ?? '—', _colGeneratedName),
+            _cell(item.productCode ?? '—', _colProductCode),
+            _cell(item.size ?? '—', _colSize),
+            _colorCell(item.color ?? '—', item.colorCode ?? '', _colColor),
+            _cell(item.colorCode ?? '—', _colColorCode, muted: true),
+            _cell('${item.quantity}', _colQuantity, bold: true),
+            _cell(item.barcode ?? '—', _colBarcode),
+            _cell(item.inventoryName, _colInventory),
+            _cell(item.invoiceUnitPriceAzn != null ? '₼ ${item.invoiceUnitPriceAzn!.toStringAsFixed(2)}' : '—', _colInvoicePrice),
+            _cell(item.costUnitPrice != null ? '₼ ${item.costUnitPrice!.toStringAsFixed(2)}' : '—', _colCostPrice),
+            _cell(item.wholeUnitSalesPrice != null ? '₼ ${item.wholeUnitSalesPrice!.toStringAsFixed(2)}' : '—', _colWholePrice),
+            _cell(item.retailUnitPrice != null ? '₼ ${item.retailUnitPrice!.toStringAsFixed(2)}' : '—', _colRetailPrice),
+            _statusCell(status, l10n, _colStatus),
+            SizedBox(
+              width: _colActions,
+              child: IconButton(
+                onPressed: () => _confirmDelete(item),
+                icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                color: const Color(0xFFEF4444),
+                style: IconButton.styleFrom(
+                  backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.08),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                tooltip: l10n.deleteStockItem,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCell(String text, double width, {bool bold = false, bool isColorCode = false}) {
+  Widget _cell(String text, double width, {bool bold = false, bool muted = false}) {
     return SizedBox(
       width: width,
       child: Text(
@@ -374,35 +512,36 @@ class _StockPageState extends State<StockPage> {
         style: TextStyle(
           fontSize: 13,
           fontWeight: bold ? FontWeight.w600 : FontWeight.normal,
-          color: isColorCode ? const Color(0xFF64748B) : const Color(0xFF1E293B),
+          color: muted ? const Color(0xFF94A3B8) : const Color(0xFF1E293B),
         ),
         overflow: TextOverflow.ellipsis,
       ),
     );
   }
 
-  Widget _buildCellWithColor(String colorName, String colorCode, double width) {
-    Color? color;
-    try {
-      color = Color(int.parse(colorCode.replaceFirst('#', '0xFF')));
-    } catch (e) {
-      color = Colors.grey;
+  Widget _colorCell(String colorName, String colorCode, double width) {
+    Color? swatch;
+    if (colorCode.startsWith('#') && colorCode.length == 7) {
+      try {
+        swatch = Color(int.parse(colorCode.replaceFirst('#', '0xFF')));
+      } catch (_) {}
     }
-
     return SizedBox(
       width: width,
       child: Row(
         children: [
-          Container(
-            width: 16,
-            height: 16,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+          if (swatch != null) ...[
+            Container(
+              width: 14,
+              height: 14,
+              decoration: BoxDecoration(
+                color: swatch,
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
+            const SizedBox(width: 6),
+          ],
           Expanded(
             child: Text(
               colorName,
@@ -415,47 +554,84 @@ class _StockPageState extends State<StockPage> {
     );
   }
 
-  Widget _buildStatusCell(StockStatus status, double width, AppLocalizations l10n) {
-    Color bgColor;
-    Color textColor;
-    String label;
+  Widget _statusCell(_StockStatus status, AppLocalizations l10n, double width) {
+    late Color bg;
+    late Color fg;
+    late String label;
 
     switch (status) {
-      case StockStatus.active:
-        bgColor = const Color(0xFFDCFCE7);
-        textColor = const Color(0xFF166534);
+      case _StockStatus.active:
+        bg = const Color(0xFFDCFCE7);
+        fg = const Color(0xFF166534);
         label = l10n.activeStatus;
-        break;
-      case StockStatus.lowStock:
-        bgColor = const Color(0xFFFEF3C7);
-        textColor = const Color(0xFF92400E);
+      case _StockStatus.lowStock:
+        bg = const Color(0xFFFEF3C7);
+        fg = const Color(0xFF92400E);
         label = l10n.lowStock;
-        break;
-      case StockStatus.outOfStock:
-        bgColor = const Color(0xFFF1F5F9);
-        textColor = const Color(0xFF475569);
+      case _StockStatus.outOfStock:
+        bg = const Color(0xFFF1F5F9);
+        fg = const Color(0xFF475569);
         label = l10n.outOfStock;
-        break;
-      case StockStatus.pricePending:
-        bgColor = const Color(0xFFFED7AA);
-        textColor = const Color(0xFF9A3412);
+      case _StockStatus.pricePending:
+        bg = const Color(0xFFFED7AA);
+        fg = const Color(0xFF9A3412);
         label = l10n.pricePending;
-        break;
     }
 
     return SizedBox(
-      // width: width,
+      width: width,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(6)),
+        decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(6)),
         child: Text(
           label,
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: textColor),
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: fg),
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
         ),
       ),
     );
+  }
+}
+
+// ── Stats row ─────────────────────────────────────────────────────────────────
+
+class _StatsRow extends StatelessWidget {
+  final List<StockProductItemModel> products;
+  final bool isMobile;
+  final AppLocalizations l10n;
+
+  const _StatsRow({required this.products, required this.isMobile, required this.l10n});
+
+  @override
+  Widget build(BuildContext context) {
+    int active = 0, lowStock = 0, outOfStock = 0, pricePending = 0;
+    for (final p in products) {
+      switch (_resolveStatus(p)) {
+        case _StockStatus.active:
+          active++;
+        case _StockStatus.lowStock:
+          lowStock++;
+        case _StockStatus.outOfStock:
+          outOfStock++;
+        case _StockStatus.pricePending:
+          pricePending++;
+      }
+    }
+
+    final cards = [
+      _StatCard(title: l10n.activeProducts, value: '$active', icon: Icons.check_circle_rounded, color: const Color(0xFF10B981), isMobile: isMobile),
+      _StatCard(title: l10n.lowStock, value: '$lowStock', icon: Icons.warning_rounded, color: const Color(0xFFF59E0B), isMobile: isMobile),
+      _StatCard(title: l10n.outOfStock, value: '$outOfStock', icon: Icons.cancel_rounded, color: const Color(0xFF64748B), isMobile: isMobile),
+      _StatCard(title: l10n.pricePending, value: '$pricePending', icon: Icons.pending_rounded, color: const Color(0xFFEF4444), isMobile: isMobile),
+    ];
+
+    if (isMobile) {
+      return Column(
+        children: cards.map((c) => Padding(padding: const EdgeInsets.only(bottom: 10), child: c)).toList(),
+      );
+    }
+    return Wrap(spacing: 14, runSpacing: 14, children: cards);
   }
 }
 
@@ -471,39 +647,91 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: isMobile ? double.infinity : 220,
-      padding: const EdgeInsets.all(18),
+      width: isMobile ? double.infinity : 200,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 2))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, color: color, size: 24),
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(9)),
+            child: Icon(icon, color: color, size: 20),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFF64748B)),
+                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF64748B)),
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
                   value,
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
                 ),
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Error / empty views ───────────────────────────────────────────────────────
+
+class _ErrorView extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+
+  const _ErrorView({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.error_outline_rounded, size: 48, color: Color(0xFFEF4444)),
+          const SizedBox(height: 12),
+          Text(
+            message,
+            style: const TextStyle(color: Color(0xFF64748B)),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: onRetry,
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6366F1), foregroundColor: Colors.white, elevation: 0),
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyView extends StatelessWidget {
+  final AppLocalizations l10n;
+  const _EmptyView({required this.l10n});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.inventory_2_outlined, size: 56, color: Colors.grey.shade300),
+          const SizedBox(height: 12),
+          Text(l10n.noProducts, style: const TextStyle(fontSize: 15, color: Color(0xFF94A3B8))),
         ],
       ),
     );

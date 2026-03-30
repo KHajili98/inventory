@@ -1076,4 +1076,36 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get deleteRequestConfirm =>
       'Are you sure you want to delete this request? This action cannot be undone.';
+
+  @override
+  String get addStockItem => 'Add Stock Item';
+
+  @override
+  String get deleteStockItem => 'Delete Stock Item';
+
+  @override
+  String get deleteStockItemConfirm =>
+      'Are you sure you want to delete this stock item? This action cannot be undone.';
+
+  @override
+  String get stockItemDeleted => 'Stock item deleted';
+
+  @override
+  String stockItemDeleteFailed(String error) {
+    return 'Failed to delete: $error';
+  }
+
+  @override
+  String get stockItemCreated => 'Stock item created successfully';
+
+  @override
+  String stockItemCreateFailed(String error) {
+    return 'Failed to create: $error';
+  }
+
+  @override
+  String get invoicePriceAznLabel => 'Invoice Price (AZN)';
+
+  @override
+  String get loadingMore => 'Loading more…';
 }

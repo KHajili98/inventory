@@ -1473,5 +1473,38 @@
   "@deleteRequest": { "description": "Title for delete request dialog" },
 
   "deleteRequestConfirm": "Are you sure you want to delete this request? This action cannot be undone.",
-  "@deleteRequestConfirm": { "description": "Confirmation text for deleting a request" }
+  "@deleteRequestConfirm": { "description": "Confirmation text for deleting a request" },
+
+  "addStockItem": "Add Stock Item",
+  "@addStockItem": { "description": "Button / dialog title for adding a stock item manually" },
+
+  "deleteStockItem": "Delete Stock Item",
+  "@deleteStockItem": { "description": "Title for delete stock item dialog" },
+
+  "deleteStockItemConfirm": "Are you sure you want to delete this stock item? This action cannot be undone.",
+  "@deleteStockItemConfirm": { "description": "Confirmation text for deleting a stock item" },
+
+  "stockItemDeleted": "Stock item deleted",
+  "@stockItemDeleted": { "description": "Snackbar message after successful stock item deletion" },
+
+  "stockItemDeleteFailed": "Failed to delete: {error}",
+  "@stockItemDeleteFailed": {
+    "description": "Snackbar message when stock item deletion fails",
+    "placeholders": { "error": { "type": "String" } }
+  },
+
+  "stockItemCreated": "Stock item created successfully",
+  "@stockItemCreated": { "description": "Snackbar message after successful stock item creation" },
+
+  "stockItemCreateFailed": "Failed to create: {error}",
+  "@stockItemCreateFailed": {
+    "description": "Snackbar message when stock item creation fails",
+    "placeholders": { "error": { "type": "String" } }
+  },
+
+  "invoicePriceAznLabel": "Invoice Price (AZN)",
+  "@invoicePriceAznLabel": { "description": "Invoice price AZN field label in add stock dialog" },
+
+  "loadingMore": "Loading more…",
+  "@loadingMore": { "description": "Label shown when loading more items" }
 }

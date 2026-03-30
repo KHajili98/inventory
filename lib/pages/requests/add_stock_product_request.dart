@@ -694,8 +694,8 @@ class _StockProductTileState extends State<_StockProductTile> {
       onToggle: () => setState(() => _expanded = !_expanded),
       name: p.displayName,
       barcode: p.barcode ?? '—',
-      subtitle: 'Code: ${p.productCode ?? '—'}  •  Qty: ${p.actualQuantity ?? 0}',
-      qtyLabel: '${p.actualQuantity ?? 0}',
+      subtitle: 'Code: ${p.productCode ?? '—'}  •  Qty: ${p.quantity}',
+      qtyLabel: '${p.barcode}',
       expandedContent: _ExpandedQtyRow(
         qtyCtrl: _qtyCtrl,
         l10n: l10n,

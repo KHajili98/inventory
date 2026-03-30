@@ -15,6 +15,27 @@ class StockProductResponseModel {
   );
 }
 
+/// Nested inventory details returned within each stock item.
+class StockInventoryDetails {
+  final String id;
+  final String name;
+  final String address;
+  final bool isStock;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  const StockInventoryDetails({required this.id, required this.name, required this.address, required this.isStock, this.createdAt, this.updatedAt});
+
+  factory StockInventoryDetails.fromJson(Map<String, dynamic> json) => StockInventoryDetails(
+    id: json['id'] as String,
+    name: json['name'] as String,
+    address: json['address'] as String? ?? '',
+    isStock: json['is_stock'] as bool? ?? false,
+    createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'] as String) : null,
+    updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at'] as String) : null,
+  );
+}
+
 class StockProductItemModel {
   final String id;
   final String? modelCode;
@@ -24,26 +45,17 @@ class StockProductItemModel {
   final String? size;
   final String? color;
   final String? colorCode;
-  final double? invoiceUnitPriceUsd;
-  final double? invoiceUnitPriceAzn;
-  final int? invoiceQuantity;
-  final double? invoiceTotalPrice;
-  final int? actualQuantity;
-  final double? actualTotalPrice;
-  final int? invoicePiecesPerCarton;
-  final int? invoiceCartonCount;
-  final int? actualPiecesPerCarton;
-  final int? actualCartonCount;
-  final String? invoice;
-  final String? inventory;
-  final String? inventoryName;
+  final int quantity;
   final String? barcode;
-  final String? barcodeType;
-  final bool? barcodePrinted;
-  final String? locationZone;
-  final String? locationRow;
-  final String? locationShelf;
-  final String? source;
+  final String? inventory;
+  final String? sourceProductUuid;
+  final String? sourceInventory;
+  final double? invoiceUnitPriceAzn;
+  final double? costUnitPrice;
+  final double? wholeUnitSalesPrice;
+  final double? retailUnitPrice;
+  final bool priced;
+  final StockInventoryDetails? inventoryDetails;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -56,31 +68,23 @@ class StockProductItemModel {
     this.size,
     this.color,
     this.colorCode,
-    this.invoiceUnitPriceUsd,
-    this.invoiceUnitPriceAzn,
-    this.invoiceQuantity,
-    this.invoiceTotalPrice,
-    this.actualQuantity,
-    this.actualTotalPrice,
-    this.invoicePiecesPerCarton,
-    this.invoiceCartonCount,
-    this.actualPiecesPerCarton,
-    this.actualCartonCount,
-    this.invoice,
-    this.inventory,
-    this.inventoryName,
+    required this.quantity,
     this.barcode,
-    this.barcodeType,
-    this.barcodePrinted,
-    this.locationZone,
-    this.locationRow,
-    this.locationShelf,
-    this.source,
+    this.inventory,
+    this.sourceProductUuid,
+    this.sourceInventory,
+    this.invoiceUnitPriceAzn,
+    this.costUnitPrice,
+    this.wholeUnitSalesPrice,
+    this.retailUnitPrice,
+    required this.priced,
+    this.inventoryDetails,
     this.createdAt,
     this.updatedAt,
   });
 
   String get displayName => productGeneratedName?.isNotEmpty == true ? productGeneratedName! : (productName ?? id);
+  String get inventoryName => inventoryDetails?.name ?? '';
 
   factory StockProductItemModel.fromJson(Map<String, dynamic> json) => StockProductItemModel(
     id: json['id'] as String,
@@ -91,27 +95,64 @@ class StockProductItemModel {
     size: json['size'] as String?,
     color: json['color'] as String?,
     colorCode: json['color_code'] as String?,
-    invoiceUnitPriceUsd: (json['invoice_unit_price_usd'] as num?)?.toDouble(),
-    invoiceUnitPriceAzn: (json['invoice_unit_price_azn'] as num?)?.toDouble(),
-    invoiceQuantity: (json['invoice_quantity'] as num?)?.toInt(),
-    invoiceTotalPrice: (json['invoice_total_price'] as num?)?.toDouble(),
-    actualQuantity: (json['actual_quantity'] as num?)?.toInt(),
-    actualTotalPrice: (json['actual_total_price'] as num?)?.toDouble(),
-    invoicePiecesPerCarton: (json['invoice_pieces_per_carton'] as num?)?.toInt(),
-    invoiceCartonCount: (json['invoice_carton_count'] as num?)?.toInt(),
-    actualPiecesPerCarton: (json['actual_pieces_per_carton'] as num?)?.toInt(),
-    actualCartonCount: (json['actual_carton_count'] as num?)?.toInt(),
-    invoice: json['invoice'] as String?,
-    inventory: json['inventory'] as String?,
-    inventoryName: json['inventory_name'] as String?,
+    quantity: (json['quantity'] as num?)?.toInt() ?? 0,
     barcode: json['barcode'] as String?,
-    barcodeType: json['barcode_type'] as String?,
-    barcodePrinted: json['barcode_printed'] as bool?,
-    locationZone: json['location_zone'] as String?,
-    locationRow: json['location_row'] as String?,
-    locationShelf: json['location_shelf'] as String?,
-    source: json['source'] as String?,
+    inventory: json['inventory'] as String?,
+    sourceProductUuid: json['source_product_uuid'] as String?,
+    sourceInventory: json['source_inventory'] as String?,
+    invoiceUnitPriceAzn: (json['invoice_unit_price_azn'] as num?)?.toDouble(),
+    costUnitPrice: (json['cost_unit_price'] as num?)?.toDouble(),
+    wholeUnitSalesPrice: (json['whole_unit_sales_price'] as num?)?.toDouble(),
+    retailUnitPrice: (json['retail_unit_price'] as num?)?.toDouble(),
+    priced: json['priced'] as bool? ?? false,
+    inventoryDetails: json['inventory_details'] != null ? StockInventoryDetails.fromJson(json['inventory_details'] as Map<String, dynamic>) : null,
     createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'] as String) : null,
     updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at'] as String) : null,
   );
+}
+
+/// Request model for POST /api/stocks/
+class CreateStockItemRequest {
+  final String? modelCode;
+  final String? productCode;
+  final String productName;
+  final String? size;
+  final String? color;
+  final String? colorCode;
+  final int quantity;
+  final String barcode;
+  final String inventory;
+  final double? invoiceUnitPriceAzn;
+
+  const CreateStockItemRequest({
+    this.modelCode,
+    this.productCode,
+    required this.productName,
+    this.size,
+    this.color,
+    this.colorCode,
+    required this.quantity,
+    required this.barcode,
+    required this.inventory,
+    this.invoiceUnitPriceAzn,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'model_code': modelCode ?? '',
+    'product_code': productCode ?? '',
+    'product_name': productName,
+    'size': size ?? '',
+    'color': color ?? '',
+    'color_code': colorCode ?? '',
+    'quantity': quantity,
+    'barcode': barcode,
+    'inventory': inventory,
+    'source_product_uuid': '',
+    'source_inventory': '',
+    'invoice_unit_price_azn': invoiceUnitPriceAzn ?? 0,
+    'cost_unit_price': null,
+    'whole_unit_sales_price': null,
+    'retail_unit_price': null,
+    'priced': false,
+  };
 }

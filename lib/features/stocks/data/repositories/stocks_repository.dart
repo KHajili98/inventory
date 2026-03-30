@@ -12,7 +12,13 @@ class StocksRepository {
   final Dio _dio = DioClient.instance;
 
   /// Fetches paginated stock products from GET /api/stocks/
-  Future<ApiResult<StockProductResponseModel>> fetchStocks({int page = 1, int pageSize = 10, String? search, String? inventoryId}) async {
+  Future<ApiResult<StockProductResponseModel>> fetchStocks({
+    int page = 1,
+    int pageSize = 10,
+    String? search,
+    String? inventoryId,
+    String? status,
+  }) async {
     try {
       final response = await _dio.get<Map<String, dynamic>>(
         ApiConstants.stocks,
@@ -21,11 +27,46 @@ class StocksRepository {
           'page_size': pageSize,
           if (search != null && search.isNotEmpty) 'search': search,
           if (inventoryId != null && inventoryId.isNotEmpty) 'inventory': inventoryId,
+          if (status != null && status.isNotEmpty) 'status': status,
         },
       );
 
       if (response.statusCode == 200) {
         return Success(StockProductResponseModel.fromJson(response.data as Map<String, dynamic>));
+      }
+
+      return Failure('Unexpected status: ${response.statusCode}', statusCode: response.statusCode);
+    } on DioException catch (e) {
+      return Failure(_parseDioError(e), statusCode: e.response?.statusCode);
+    } catch (e) {
+      return Failure(e.toString());
+    }
+  }
+
+  /// Creates a new stock item via POST /api/stocks/
+  Future<ApiResult<StockProductItemModel>> createStock(CreateStockItemRequest request) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(ApiConstants.stocks, data: request.toJson());
+
+      if (response.statusCode == 201) {
+        return Success(StockProductItemModel.fromJson(response.data as Map<String, dynamic>));
+      }
+
+      return Failure('Unexpected status: ${response.statusCode}', statusCode: response.statusCode);
+    } on DioException catch (e) {
+      return Failure(_parseDioError(e), statusCode: e.response?.statusCode);
+    } catch (e) {
+      return Failure(e.toString());
+    }
+  }
+
+  /// Deletes a stock item via DELETE /api/stocks/{id}/
+  Future<ApiResult<void>> deleteStock(String id) async {
+    try {
+      final response = await _dio.delete('${ApiConstants.stocks}$id/');
+
+      if (response.statusCode == 204 || response.statusCode == 200) {
+        return const Success(null);
       }
 
       return Failure('Unexpected status: ${response.statusCode}', statusCode: response.statusCode);
