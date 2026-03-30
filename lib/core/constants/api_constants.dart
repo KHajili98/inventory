@@ -3,6 +3,9 @@ abstract class ApiConstants {
 
   static const String baseUrl = 'http://13.53.43.184:8000';
 
+  // ── Auth ────────────────────────────────────────────────────────────────────
+  static const String login = '/api/auth/login/';
+
   // ── Endpoints ───────────────────────────────────────────────────────────────
   static const String uploadInvoice = '/api/invoices/upload/';
   static const String invoicesList = '/api/invoices-list/';

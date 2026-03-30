@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:inventory/features/auth/auth_cubit.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 import 'package:inventory/cubit/locale_cubit.dart';
 import 'package:inventory/core/utils/responsive.dart';
@@ -248,7 +249,13 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                         // ── Logout button ─────────────────────────────────────
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                          child: _LogoutButton(collapsed: _collapsed, onTap: () => context.go('/login')),
+                          child: _LogoutButton(
+                            collapsed: _collapsed,
+                            onTap: () async {
+                              await context.read<AuthCubit>().logout();
+                              if (context.mounted) context.go('/login');
+                            },
+                          ),
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -429,9 +436,10 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               child: InkWell(
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(context);
-                  context.go('/login');
+                  await context.read<AuthCubit>().logout();
+                  if (context.mounted) context.go('/login');
                 },
                 borderRadius: BorderRadius.circular(10),
                 child: Container(

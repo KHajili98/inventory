@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:inventory/core/constants/api_constants.dart';
+import 'package:inventory/features/auth/auth_service.dart';
+import 'package:inventory/router/app_router.dart';
 
 class DioClient {
   DioClient._();
@@ -47,11 +49,23 @@ class DioClient {
     dio.interceptors.addAll([
       PrettyDioLogger(requestHeader: true, requestBody: true, responseHeader: false, responseBody: true, error: true, compact: true, maxWidth: 120),
       InterceptorsWrapper(
-        onRequest: (options, handler) {
-          // On web, browser will send an OPTIONS preflight — no action needed here.
+        onRequest: (options, handler) async {
+          // Inject Bearer token for all requests except the login endpoint
+          if (!options.path.contains(ApiConstants.login)) {
+            final token = await AuthService.instance.getAccessToken();
+            if (token != null && token.isNotEmpty) {
+              options.headers['Authorization'] = 'Bearer $token';
+            }
+          }
           handler.next(options);
         },
-        onError: (DioException e, ErrorInterceptorHandler handler) {
+        onError: (DioException e, ErrorInterceptorHandler handler) async {
+          if (e.response?.statusCode == 401) {
+            // Clear stored session
+            await AuthService.instance.logout();
+            // Navigate to /login via GoRouter, replacing the entire stack
+            appRouter.go('/login');
+          }
           handler.next(e);
         },
       ),

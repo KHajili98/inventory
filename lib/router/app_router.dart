@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inventory/pages/auth/login_page.dart';
 import 'package:inventory/pages/finance/analytics_page.dart';
@@ -11,7 +12,12 @@ import 'package:inventory/pages/finance/price_calculation_page.dart';
 import 'package:inventory/pages/pos/pos_page.dart';
 import 'package:inventory/widgets/app_shell.dart';
 
+/// Global navigator key — used by the Dio interceptor to redirect on 401
+/// without needing a BuildContext.
+final rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final appRouter = GoRouter(
+  navigatorKey: rootNavigatorKey,
   initialLocation: '/login',
   routerNeglect: kIsWeb,
   debugLogDiagnostics: false,
