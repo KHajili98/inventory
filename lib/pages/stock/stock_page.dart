@@ -4,7 +4,7 @@ import 'package:inventory/core/utils/responsive.dart';
 import 'package:inventory/features/product_requests/cubit/product_requests_cubit.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 import 'package:inventory/models/stock_models.dart';
-import 'package:inventory/pages/inventory/add_stock_product_request.dart';
+import 'package:inventory/pages/requests/add_stock_product_request.dart';
 
 class StockPage extends StatefulWidget {
   const StockPage({super.key});

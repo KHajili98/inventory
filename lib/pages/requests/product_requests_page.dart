@@ -12,7 +12,7 @@ import 'package:inventory/features/product_requests/cubit/product_requests_state
 import 'package:inventory/features/product_requests/data/models/product_requests_response_model.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 import 'package:inventory/models/auth_models.dart';
-import 'package:inventory/pages/inventory/add_stock_product_request.dart';
+import 'package:inventory/pages/requests/add_stock_product_request.dart';
 
 class ProductRequestsPage extends StatelessWidget {
   const ProductRequestsPage({super.key});
