@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
+import 'package:inventory/pages/auth/login_page.dart';
 import 'package:inventory/pages/finance/analytics_page.dart';
 import 'package:inventory/pages/finance/expense_tracking_page.dart';
 import 'package:inventory/pages/inventory/inventory_products_page.dart';
@@ -11,10 +12,11 @@ import 'package:inventory/pages/pos/pos_page.dart';
 import 'package:inventory/widgets/app_shell.dart';
 
 final appRouter = GoRouter(
-  initialLocation: '/invoices',
+  initialLocation: '/login',
   routerNeglect: kIsWeb,
   debugLogDiagnostics: false,
   routes: [
+    GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
     ShellRoute(
       builder: (context, state, child) => AppShell(child: child),
       routes: [

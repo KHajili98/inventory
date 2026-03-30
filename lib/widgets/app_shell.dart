@@ -245,6 +245,15 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
                         ),
+                        // ── Logout button ─────────────────────────────────────
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          child: _LogoutButton(collapsed: _collapsed, onTap: () => context.go('/login')),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
+                        ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                           child: AnimatedSwitcher(
@@ -416,6 +425,32 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
 
             const Spacer(),
 
+            // Logout button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/login');
+                },
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.logout_rounded, color: Color(0xFFEF4444), size: 22),
+                      SizedBox(width: 14),
+                      Text(
+                        'Logout',
+                        style: TextStyle(color: Color(0xFFEF4444), fontSize: 15, fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
             Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -431,49 +466,64 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
       ),
     );
   }
+}
 
-  // Bottom navigation bar for mobile
-  Widget _buildBottomNav(BuildContext context, int selectedIndex, AppLocalizations l10n) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, -2))],
-      ),
-      child: SafeArea(
-        child: SizedBox(
-          height: 60,
+// ── Logout Button ─────────────────────────────────────────────────────────────
+
+class _LogoutButton extends StatefulWidget {
+  final bool collapsed;
+  final VoidCallback onTap;
+  const _LogoutButton({required this.collapsed, required this.onTap});
+
+  @override
+  State<_LogoutButton> createState() => _LogoutButtonState();
+}
+
+class _LogoutButtonState extends State<_LogoutButton> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final tile = MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          decoration: BoxDecoration(
+            color: _hovered ? Colors.red.withValues(alpha: 0.12) : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 11),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: List.generate(_navItems.length, (index) {
-              final item = _navItems[index];
-              final isSelected = index == selectedIndex;
-              return Expanded(
-                child: InkWell(
-                  onTap: () => context.go(item.path),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(item.icon, color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF94A3B8), size: 24),
-                      const SizedBox(height: 4),
-                      Text(
-                        _getNavLabel(context, item.labelKey),
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                          color: isSelected ? const Color(0xFF6366F1) : const Color(0xFF64748B),
+            children: [
+              const SizedBox(width: 3), // align with sidebar tiles
+              const SizedBox(width: 8),
+              const Icon(Icons.logout_rounded, color: Color(0xFFEF4444), size: 15),
+              ClipRect(
+                child: AnimatedSize(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeInOut,
+                  child: widget.collapsed
+                      ? const SizedBox.shrink()
+                      : const Padding(
+                          padding: EdgeInsets.only(left: 10),
+                          child: Text(
+                            'Logout',
+                            style: TextStyle(color: Color(0xFFEF4444), fontSize: 14, fontWeight: FontWeight.w500),
+                          ),
                         ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                    ],
-                  ),
                 ),
-              );
-            }),
+              ),
+            ],
           ),
         ),
       ),
     );
+
+    return widget.collapsed ? Tooltip(message: 'Logout', preferBelow: false, child: tile) : tile;
   }
 }
 
