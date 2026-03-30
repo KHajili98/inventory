@@ -6,6 +6,9 @@ abstract class ApiConstants {
   // ── Auth ────────────────────────────────────────────────────────────────────
   static const String login = '/api/auth/login/';
 
+  // ── Inventories ─────────────────────────────────────────────────────────────
+  static const String inventories = '/api/inventories/';
+
   // ── Endpoints ───────────────────────────────────────────────────────────────
   static const String uploadInvoice = '/api/invoices/upload/';
   static const String invoicesList = '/api/invoices-list/';
@@ -30,6 +33,8 @@ abstract class ApiConstants {
 
   /// Single product request by UUID.
   static String productRequestDetail(String id) => '/api/requests/$id/';
+
+  static String changeRequestStatus(String id) => '/api/requests/$id/change-status/';
 
   // ── Stocks ────────────────────────────────────────────────────────────────
   static const String stocks = '/api/stocks/';

@@ -44,9 +44,12 @@ class AuthService {
 
   // ── Login ────────────────────────────────────────────────────────────────────
 
-  Future<ApiResult<LoginResponse>> login({required String username, required String password}) async {
+  Future<ApiResult<LoginResponse>> login({required String username, required String password, required String loggedInInventoryId}) async {
     try {
-      final response = await DioClient.instance.post(ApiConstants.login, data: {'username': username, 'password': password});
+      final response = await DioClient.instance.post(
+        ApiConstants.login,
+        data: {'username': username, 'password': password, 'logged_in_inventory_id': loggedInInventoryId},
+      );
 
       final loginResponse = LoginResponse.fromJson(response.data as Map<String, dynamic>);
 

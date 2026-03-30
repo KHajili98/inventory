@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:inventory/core/constants/api_constants.dart';
 import 'package:inventory/core/network/api_result.dart';
 import 'package:inventory/core/network/dio_client.dart';
 import 'package:inventory/features/inventory_products/data/models/inventory_model.dart';
@@ -25,7 +26,7 @@ class InventoryRepository {
         if (search != null && search.trim().isNotEmpty) 'search': search.trim(),
       };
 
-      final response = await _dio.get<Map<String, dynamic>>('/api/inventories/', queryParameters: queryParameters);
+      final response = await _dio.get<Map<String, dynamic>>(ApiConstants.inventories, queryParameters: queryParameters);
 
       if (response.statusCode == 200) {
         final model = InventoryListResponse.fromJson(response.data as Map<String, dynamic>);

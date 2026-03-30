@@ -41,9 +41,9 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> login({required String username, required String password}) async {
+  Future<void> login({required String username, required String password, required String loggedInInventoryId}) async {
     emit(AuthLoading());
-    final result = await _service.login(username: username, password: password);
+    final result = await _service.login(username: username, password: password, loggedInInventoryId: loggedInInventoryId);
     switch (result) {
       case Success<LoginResponse>(:final data):
         emit(AuthAuthenticated(data.user));

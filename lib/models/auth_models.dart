@@ -101,16 +101,34 @@ class AuthUser {
 
 // ── Login Response ────────────────────────────────────────────────────────────
 
+class LoginInventory {
+  final String id;
+  final String name;
+  final String address;
+  final bool isStock;
+
+  const LoginInventory({required this.id, required this.name, required this.address, required this.isStock});
+
+  factory LoginInventory.fromJson(Map<String, dynamic> json) => LoginInventory(
+    id: json['id'] as String,
+    name: json['name'] as String,
+    address: json['address'] as String? ?? '',
+    isStock: json['is_stock'] as bool? ?? false,
+  );
+}
+
 class LoginResponse {
   final AuthUser user;
   final String access;
   final String refresh;
+  final LoginInventory? loggedInInventory;
 
-  const LoginResponse({required this.user, required this.access, required this.refresh});
+  const LoginResponse({required this.user, required this.access, required this.refresh, this.loggedInInventory});
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) => LoginResponse(
     user: AuthUser.fromJson(json['user'] as Map<String, dynamic>),
     access: json['access'] as String,
     refresh: json['refresh'] as String,
+    loggedInInventory: json['logged_in_inventory'] != null ? LoginInventory.fromJson(json['logged_in_inventory'] as Map<String, dynamic>) : null,
   );
 }

@@ -79,8 +79,36 @@ class ProductRequestsCubit extends Cubit<ProductRequestsState> {
   }
 
   /// Update the status of a request optimistically, then confirm via API.
-  Future<ApiResult<ProductRequestModel>> updateStatus(String id, String newStatus) async {
-    final result = await _repository.updateStatus(id, newStatus);
+  Future<ApiResult<ProductRequestModel>> updateRequest({
+    required String id,
+    required String sourceInventory,
+    required String destinationInventory,
+    required List<Map<String, dynamic>> products,
+  }) async {
+    final result = await _repository.updateRequest(
+      id: id,
+      sourceInventory: sourceInventory,
+      destinationInventory: destinationInventory,
+      products: products,
+    );
+
+    if (result is Success<ProductRequestModel>) {
+      final current = state;
+      if (current is ProductRequestsLoaded) {
+        final updated = current.requests.map((r) => r.id == id ? result.data : r).toList();
+        emit(current.copyWith(requests: updated));
+      }
+    }
+
+    return result;
+  }
+
+  /// Change the status of a request.
+  Future<ApiResult<ProductRequestModel>> changeStatus({
+    required String id,
+    required String newStatus,
+  }) async {
+    final result = await _repository.changeStatus(id: id, newStatus: newStatus);
 
     if (result is Success<ProductRequestModel>) {
       final current = state;
