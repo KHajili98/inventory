@@ -47,7 +47,6 @@ class DioClient {
     );
 
     dio.interceptors.addAll([
-      PrettyDioLogger(requestHeader: true, requestBody: true, responseHeader: false, responseBody: true, error: true, compact: true, maxWidth: 120),
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           // Inject Bearer token for all requests except the login endpoint
@@ -69,6 +68,9 @@ class DioClient {
           handler.next(e);
         },
       ),
+      // Logger is added AFTER the auth interceptor so it prints the final
+      // headers including the Authorization token.
+      PrettyDioLogger(requestHeader: true, requestBody: true, responseHeader: false, responseBody: true, error: true, compact: true, maxWidth: 120),
     ]);
 
     return dio;
