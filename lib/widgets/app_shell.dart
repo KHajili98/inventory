@@ -30,6 +30,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
     _NavItem(labelKey: 'invoices', icon: Icons.receipt_long_rounded, path: '/invoices'),
     _NavItem(labelKey: 'inventoryProducts', icon: Icons.inventory_2_rounded, path: '/inventory-products'),
     _NavItem(labelKey: 'stock', icon: Icons.warehouse_rounded, path: '/stock'),
+    _NavItem(labelKey: 'productRequests', icon: Icons.swap_horiz_rounded, path: '/product-requests'),
     _NavItem(
       labelKey: 'finance',
       icon: Icons.account_balance_wallet_rounded,
@@ -60,6 +61,8 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
         return l10n.inventoryProducts;
       case 'stock':
         return l10n.stock;
+      case 'productRequests':
+        return l10n.productRequests;
       case 'finance':
         return l10n.finance;
       case 'priceCalculation':

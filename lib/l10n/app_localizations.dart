@@ -1981,6 +1981,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Edit Prices'**
   String get editPrices;
+
+  /// Product Requests navigation label
+  ///
+  /// In en, this message translates to:
+  /// **'Product Requests'**
+  String get productRequests;
+
+  /// Subtitle for product requests page
+  ///
+  /// In en, this message translates to:
+  /// **'Track and manage stock transfer requests'**
+  String get productRequestsSubtitle;
+
+  /// Button to create a new request
+  ///
+  /// In en, this message translates to:
+  /// **'Create Request'**
+  String get createRequest;
+
+  /// All requests filter chip
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get allRequests;
+
+  /// Search requests placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Search requests…'**
+  String get searchRequests;
+
+  /// No requests found message
+  ///
+  /// In en, this message translates to:
+  /// **'No requests found'**
+  String get noRequestsFound;
+
+  /// Status pending label
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get statusPending;
+
+  /// Status preparing label
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing'**
+  String get statusPreparing;
+
+  /// Status ready for delivery label
+  ///
+  /// In en, this message translates to:
+  /// **'Ready for Delivery'**
+  String get statusReadyForDelivery;
+
+  /// Status on the way label
+  ///
+  /// In en, this message translates to:
+  /// **'On the Way'**
+  String get statusOnWay;
+
+  /// Status waiting for pricing label
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for Pricing'**
+  String get statusWaitingForPricing;
+
+  /// Status closed label
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get statusClosed;
+
+  /// Created by label
+  ///
+  /// In en, this message translates to:
+  /// **'Created by'**
+  String get createdBy;
+
+  /// Update status section label
+  ///
+  /// In en, this message translates to:
+  /// **'Update Status'**
+  String get updateStatus;
+
+  /// No actions available message
+  ///
+  /// In en, this message translates to:
+  /// **'No actions available for your role at this stage'**
+  String get noActionsAvailable;
+
+  /// Prepared quantity column header
+  ///
+  /// In en, this message translates to:
+  /// **'Prepared Qty'**
+  String get preparedQty;
+
+  /// Accepted quantity column header
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted Qty'**
+  String get acceptedQty;
+
+  /// Requested quantity column header
+  ///
+  /// In en, this message translates to:
+  /// **'Requested'**
+  String get requestedQty;
+
+  /// Sent quantity column header
+  ///
+  /// In en, this message translates to:
+  /// **'Sent'**
+  String get sentQty;
+
+  /// Button to mark request as ready for delivery
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as Ready for Delivery'**
+  String get markAsReady;
+
+  /// Button for seller to accept delivery
+  ///
+  /// In en, this message translates to:
+  /// **'Accept Delivery'**
+  String get acceptDelivery;
+
+  /// Hint for inventory man when preparing
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the quantity you can actually send (may be less than requested)'**
+  String get preparingHint;
+
+  /// Hint for seller when accepting delivery
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the quantity you physically received'**
+  String get acceptingHint;
 }
 
 class _AppLocalizationsDelegate

@@ -1368,5 +1368,104 @@
   "editPrices": "Edit Prices",
   "@editPrices": {
     "description": "Button label to edit prices"
-  }
+  },
+
+  "productRequests": "Product Requests",
+  "@productRequests": {
+    "description": "Product Requests navigation label"
+  },
+
+  "productRequestsSubtitle": "Track and manage stock transfer requests",
+  "@productRequestsSubtitle": {
+    "description": "Subtitle for product requests page"
+  },
+
+  "createRequest": "Create Request",
+  "@createRequest": {
+    "description": "Button to create a new request"
+  },
+
+  "allRequests": "All",
+  "@allRequests": {
+    "description": "All requests filter chip"
+  },
+
+  "searchRequests": "Search requests…",
+  "@searchRequests": {
+    "description": "Search requests placeholder"
+  },
+
+  "noRequestsFound": "No requests found",
+  "@noRequestsFound": {
+    "description": "No requests found message"
+  },
+
+  "statusPending": "Pending",
+  "@statusPending": {
+    "description": "Status pending label"
+  },
+
+  "statusPreparing": "Preparing",
+  "@statusPreparing": {
+    "description": "Status preparing label"
+  },
+
+  "statusReadyForDelivery": "Ready for Delivery",
+  "@statusReadyForDelivery": {
+    "description": "Status ready for delivery label"
+  },
+
+  "statusOnWay": "On the Way",
+  "@statusOnWay": {
+    "description": "Status on the way label"
+  },
+
+  "statusWaitingForPricing": "Waiting for Pricing",
+  "@statusWaitingForPricing": {
+    "description": "Status waiting for pricing label"
+  },
+
+  "statusClosed": "Closed",
+  "@statusClosed": {
+    "description": "Status closed label"
+  },
+
+  "createdBy": "Created by",
+  "@createdBy": {
+    "description": "Created by label"
+  },
+
+  "updateStatus": "Update Status",
+  "@updateStatus": {
+    "description": "Update status section label"
+  },
+
+  "noActionsAvailable": "No actions available for your role at this stage",
+  "@noActionsAvailable": {
+    "description": "No actions available message"
+  },
+
+  "preparedQty": "Prepared Qty",
+  "@preparedQty": { "description": "Prepared quantity column header" },
+
+  "acceptedQty": "Accepted Qty",
+  "@acceptedQty": { "description": "Accepted quantity column header" },
+
+  "requestedQty": "Requested",
+  "@requestedQty": { "description": "Requested quantity column header" },
+
+  "sentQty": "Sent",
+  "@sentQty": { "description": "Sent quantity column header" },
+
+  "markAsReady": "Mark as Ready for Delivery",
+  "@markAsReady": { "description": "Button to mark request as ready for delivery" },
+
+  "acceptDelivery": "Accept Delivery",
+  "@acceptDelivery": { "description": "Button for seller to accept delivery" },
+
+  "preparingHint": "Enter the quantity you can actually send (may be less than requested)",
+  "@preparingHint": { "description": "Hint for inventory man when preparing" },
+
+  "acceptingHint": "Enter the quantity you physically received",
+  "@acceptingHint": { "description": "Hint for seller when accepting delivery" }
 }

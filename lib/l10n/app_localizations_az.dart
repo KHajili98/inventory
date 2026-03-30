@@ -1002,4 +1002,75 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get editPrices => 'Qiymətləri Redaktə Et';
+
+  @override
+  String get productRequests => 'Məhsul Sorğuları';
+
+  @override
+  String get productRequestsSubtitle => 'Stok köçürmə sorğularını izləyin';
+
+  @override
+  String get createRequest => 'Sorğu Yarat';
+
+  @override
+  String get allRequests => 'Hamısı';
+
+  @override
+  String get searchRequests => 'Sorğularda axtar…';
+
+  @override
+  String get noRequestsFound => 'Sorğu tapılmadı';
+
+  @override
+  String get statusPending => 'Gözləyir';
+
+  @override
+  String get statusPreparing => 'Hazırlanır';
+
+  @override
+  String get statusReadyForDelivery => 'Çatdırılmağa Hazır';
+
+  @override
+  String get statusOnWay => 'Yoldadır';
+
+  @override
+  String get statusWaitingForPricing => 'Qiymət Gözlənilir';
+
+  @override
+  String get statusClosed => 'Bağlandı';
+
+  @override
+  String get createdBy => 'Yaradan';
+
+  @override
+  String get updateStatus => 'Statusu Yenilə';
+
+  @override
+  String get noActionsAvailable =>
+      'Bu mərhələdə rolunuz üçün heç bir əməliyyat yoxdur';
+
+  @override
+  String get preparedQty => 'Hazırlanan Miqdar';
+
+  @override
+  String get acceptedQty => 'Qəbul Edilən Miqdar';
+
+  @override
+  String get requestedQty => 'Tələb Edilən';
+
+  @override
+  String get sentQty => 'Göndərilən';
+
+  @override
+  String get markAsReady => 'Çatdırılmağa Hazır Kimi İşarələ';
+
+  @override
+  String get acceptDelivery => 'Çatdırılmanı Qəbul Et';
+
+  @override
+  String get preparingHint =>
+      'Göndərə biləcəyiniz miqdarı daxil edin (tələb ediləndən az ola bilər)';
+
+  @override
+  String get acceptingHint => 'Fiziki olaraq aldığınız miqdarı daxil edin';
 }

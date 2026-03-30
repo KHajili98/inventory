@@ -997,4 +997,76 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editPrices => 'Edit Prices';
+
+  @override
+  String get productRequests => 'Product Requests';
+
+  @override
+  String get productRequestsSubtitle =>
+      'Track and manage stock transfer requests';
+
+  @override
+  String get createRequest => 'Create Request';
+
+  @override
+  String get allRequests => 'All';
+
+  @override
+  String get searchRequests => 'Search requests…';
+
+  @override
+  String get noRequestsFound => 'No requests found';
+
+  @override
+  String get statusPending => 'Pending';
+
+  @override
+  String get statusPreparing => 'Preparing';
+
+  @override
+  String get statusReadyForDelivery => 'Ready for Delivery';
+
+  @override
+  String get statusOnWay => 'On the Way';
+
+  @override
+  String get statusWaitingForPricing => 'Waiting for Pricing';
+
+  @override
+  String get statusClosed => 'Closed';
+
+  @override
+  String get createdBy => 'Created by';
+
+  @override
+  String get updateStatus => 'Update Status';
+
+  @override
+  String get noActionsAvailable =>
+      'No actions available for your role at this stage';
+
+  @override
+  String get preparedQty => 'Prepared Qty';
+
+  @override
+  String get acceptedQty => 'Accepted Qty';
+
+  @override
+  String get requestedQty => 'Requested';
+
+  @override
+  String get sentQty => 'Sent';
+
+  @override
+  String get markAsReady => 'Mark as Ready for Delivery';
+
+  @override
+  String get acceptDelivery => 'Accept Delivery';
+
+  @override
+  String get preparingHint =>
+      'Enter the quantity you can actually send (may be less than requested)';
+
+  @override
+  String get acceptingHint => 'Enter the quantity you physically received';
 }

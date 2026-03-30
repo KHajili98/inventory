@@ -526,5 +526,30 @@
   "selectStock": "Stock seçin",
   "selectStockHint": "Stock seçin...",
   "top5Products": "Ən çox olan 5 məhsul",
-  "editPrices": "Qiymətləri Redaktə Et"
+  "editPrices": "Qiymətləri Redaktə Et",
+
+  "productRequests": "Məhsul Sorğuları",
+  "productRequestsSubtitle": "Stok köçürmə sorğularını izləyin",
+  "createRequest": "Sorğu Yarat",
+  "allRequests": "Hamısı",
+  "searchRequests": "Sorğularda axtar…",
+  "noRequestsFound": "Sorğu tapılmadı",
+  "statusPending": "Gözləyir",
+  "statusPreparing": "Hazırlanır",
+  "statusReadyForDelivery": "Çatdırılmağa Hazır",
+  "statusOnWay": "Yoldadır",
+  "statusWaitingForPricing": "Qiymət Gözlənilir",
+  "statusClosed": "Bağlandı",
+  "createdBy": "Yaradan",
+  "updateStatus": "Statusu Yenilə",
+  "noActionsAvailable": "Bu mərhələdə rolunuz üçün heç bir əməliyyat yoxdur",
+
+  "preparedQty": "Hazırlanan Miqdar",
+  "acceptedQty": "Qəbul Edilən Miqdar",
+  "requestedQty": "Tələb Edilən",
+  "sentQty": "Göndərilən",
+  "markAsReady": "Çatdırılmağa Hazır Kimi İşarələ",
+  "acceptDelivery": "Çatdırılmanı Qəbul Et",
+  "preparingHint": "Göndərə biləcəyiniz miqdarı daxil edin (tələb ediləndən az ola bilər)",
+  "acceptingHint": "Fiziki olaraq aldığınız miqdarı daxil edin"
 }
