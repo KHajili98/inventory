@@ -54,6 +54,24 @@ class ProductRequestsCubit extends Cubit<ProductRequestsState> {
     }
   }
 
+  /// Create a new product request and prepend it to the loaded list.
+  Future<ApiResult<ProductRequestModel>> createRequest({
+    required String sourceInventory,
+    required String destinationInventory,
+    required List<Map<String, dynamic>> products,
+  }) async {
+    final result = await _repository.createRequest(sourceInventory: sourceInventory, destinationInventory: destinationInventory, products: products);
+
+    if (result is Success<ProductRequestModel>) {
+      final current = state;
+      if (current is ProductRequestsLoaded) {
+        emit(current.copyWith(requests: [result.data, ...current.requests], totalCount: current.totalCount + 1));
+      }
+    }
+
+    return result;
+  }
+
   /// Refresh — re-fetches the first page keeping the current status filter.
   Future<void> refresh() async {
     final currentFilter = state is ProductRequestsLoaded ? (state as ProductRequestsLoaded).statusFilter : null;

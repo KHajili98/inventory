@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:inventory/core/utils/responsive.dart';
+import 'package:inventory/features/product_requests/cubit/product_requests_cubit.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 import 'package:inventory/models/stock_models.dart';
 import 'package:inventory/pages/inventory/add_stock_product_request.dart';
@@ -189,10 +191,8 @@ class _StockPageState extends State<StockPage> {
                         onPressed: () {
                           showDialog(
                             context: context,
-                            builder: (context) => AddStockProductRequest(
-                              availableStockItems: _stockItems,
-                              inventories: _inventoryOptions.where((inv) => inv != 'all').toList(),
-                            ),
+                            barrierDismissible: false,
+                            builder: (ctx) => BlocProvider(create: (_) => ProductRequestsCubit(), child: const AddStockProductRequest()),
                           );
                         },
                         icon: const Icon(Icons.add_rounded, size: 20),
@@ -215,10 +215,8 @@ class _StockPageState extends State<StockPage> {
                       onPressed: () {
                         showDialog(
                           context: context,
-                          builder: (context) => AddStockProductRequest(
-                            availableStockItems: _stockItems,
-                            inventories: _inventoryOptions.where((inv) => inv != 'all').toList(),
-                          ),
+                          barrierDismissible: false,
+                          builder: (ctx) => BlocProvider(create: (_) => ProductRequestsCubit(), child: const AddStockProductRequest()),
                         );
                       },
                       icon: const Icon(Icons.add_rounded, size: 20),

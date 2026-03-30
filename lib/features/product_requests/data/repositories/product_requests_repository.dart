@@ -35,6 +35,31 @@ class ProductRequestsRepository {
     }
   }
 
+  /// Creates a new product request via POST /api/requests/
+  Future<ApiResult<ProductRequestModel>> createRequest({
+    required String sourceInventory,
+    required String destinationInventory,
+    required List<Map<String, dynamic>> products,
+  }) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        ApiConstants.productRequests,
+        data: {'source_inventory': sourceInventory, 'destination_inventory': destinationInventory, 'products': products},
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final model = ProductRequestModel.fromJson(response.data as Map<String, dynamic>);
+        return Success(model);
+      }
+
+      return Failure('Unexpected status: ${response.statusCode}', statusCode: response.statusCode);
+    } on DioException catch (e) {
+      return Failure(_parseDioError(e), statusCode: e.response?.statusCode);
+    } catch (e) {
+      return Failure(e.toString());
+    }
+  }
+
   /// Updates the status of a product request by UUID.
   Future<ApiResult<ProductRequestModel>> updateStatus(String id, String newStatus) async {
     try {

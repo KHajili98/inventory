@@ -8,7 +8,6 @@ import 'package:inventory/features/product_requests/cubit/product_requests_state
 import 'package:inventory/features/product_requests/data/models/product_requests_response_model.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 import 'package:inventory/models/product_request_models.dart';
-import 'package:inventory/models/stock_models.dart';
 import 'package:inventory/pages/inventory/add_stock_product_request.dart';
 
 class ProductRequestsPage extends StatelessWidget {
@@ -92,11 +91,13 @@ class _ProductRequestsViewState extends State<_ProductRequestsView> {
   }
 
   void _openCreateRequest() {
-    final inventories = mockStockItems.map((i) => i.sourceInventoryName).toSet().toList()..sort();
-    showDialog(
+    showDialog<bool>(
       context: context,
-      builder: (_) => AddStockProductRequest(availableStockItems: mockStockItems, inventories: inventories),
-    ).then((_) => context.read<ProductRequestsCubit>().refresh());
+      barrierDismissible: false,
+      builder: (_) => BlocProvider.value(value: context.read<ProductRequestsCubit>(), child: const AddStockProductRequest()),
+    ).then((created) {
+      if (created == true) context.read<ProductRequestsCubit>().refresh();
+    });
   }
 
   @override

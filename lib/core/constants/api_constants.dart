@@ -31,6 +31,9 @@ abstract class ApiConstants {
   /// Single product request by UUID.
   static String productRequestDetail(String id) => '/api/requests/$id/';
 
+  // ── Stocks ────────────────────────────────────────────────────────────────
+  static const String stocks = '/api/stocks/';
+
   // ── Timeouts ────────────────────────────────────────────────────────────────
   static const Duration connectTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(minutes: 3); // OCR can take ~75 s
