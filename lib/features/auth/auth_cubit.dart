@@ -12,8 +12,8 @@ class AuthInitial extends AuthState {}
 class AuthLoading extends AuthState {}
 
 class AuthAuthenticated extends AuthState {
-  final AuthUser user;
-  AuthAuthenticated(this.user);
+  final LoginResponse response;
+  AuthAuthenticated(this.response);
 }
 
 class AuthUnauthenticated extends AuthState {}
@@ -32,10 +32,10 @@ class AuthCubit extends Cubit<AuthState> {
 
   /// Check stored session on app start
   Future<void> checkSession() async {
-    final user = await _service.getUser();
+    final loginResponse = await _service.getLoginResponse();
     final token = await _service.getAccessToken();
-    if (user != null && token != null && token.isNotEmpty) {
-      emit(AuthAuthenticated(user));
+    if (loginResponse != null && token != null && token.isNotEmpty) {
+      emit(AuthAuthenticated(loginResponse));
     } else {
       emit(AuthUnauthenticated());
     }
@@ -46,7 +46,7 @@ class AuthCubit extends Cubit<AuthState> {
     final result = await _service.login(username: username, password: password, loggedInInventoryId: loggedInInventoryId);
     switch (result) {
       case Success<LoginResponse>(:final data):
-        emit(AuthAuthenticated(data.user));
+        emit(AuthAuthenticated(data));
       case Failure<LoginResponse>(:final message):
         emit(AuthError(message));
     }

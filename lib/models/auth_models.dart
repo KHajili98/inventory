@@ -115,6 +115,8 @@ class LoginInventory {
     address: json['address'] as String? ?? '',
     isStock: json['is_stock'] as bool? ?? false,
   );
+
+  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'address': address, 'is_stock': isStock};
 }
 
 class LoginResponse {
@@ -131,4 +133,6 @@ class LoginResponse {
     refresh: json['refresh'] as String,
     loggedInInventory: json['logged_in_inventory'] != null ? LoginInventory.fromJson(json['logged_in_inventory'] as Map<String, dynamic>) : null,
   );
+
+  Map<String, dynamic> toJson() => {'user': user.toJson(), 'access': access, 'refresh': refresh, 'logged_in_inventory': loggedInInventory?.toJson()};
 }

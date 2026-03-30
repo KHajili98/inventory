@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:inventory/core/network/api_result.dart';
+import 'package:inventory/features/auth/auth_cubit.dart';
 import 'package:inventory/features/inventory_products/cubit/inventory_products_cubit.dart';
 import 'package:inventory/features/inventory_products/cubit/inventory_products_state.dart';
 import 'package:inventory/features/inventory_products/data/models/inventory_model.dart';
@@ -270,6 +271,11 @@ class _AddStockProductRequestState extends State<AddStockProductRequest> {
       return _ErrorCard(message: _inventoriesError!, onRetry: _loadInventories);
     }
 
+    // Exclude the inventory the user is currently logged into from source options.
+    final authState = context.read<AuthCubit>().state;
+    final loggedInInventoryId = authState is AuthAuthenticated ? authState.response.loggedInInventory?.id : null;
+    final sourceInventories = loggedInInventoryId == null ? _inventories : _inventories.where((inv) => inv.id != loggedInInventoryId).toList();
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -277,7 +283,7 @@ class _AddStockProductRequestState extends State<AddStockProductRequest> {
           child: _InventoryDropdown(
             label: l10n.from,
             hint: l10n.selectInventory,
-            inventories: _inventories,
+            inventories: sourceInventories,
             value: _sourceInventory,
             onChanged: _onSourceChanged,
           ),

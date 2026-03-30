@@ -90,9 +90,9 @@ class _ProductRequestsViewState extends State<_ProductRequestsView> {
   }
 
   /// Returns the logged-in user from AuthCubit, or null if not authenticated.
-  AuthUser? _loggedInUser(BuildContext context) {
+  LoginResponse? _loggedInUser(BuildContext context) {
     final authState = context.read<AuthCubit>().state;
-    if (authState is AuthAuthenticated) return authState.user;
+    if (authState is AuthAuthenticated) return authState.response;
     return null;
   }
 
@@ -272,7 +272,7 @@ class _ProductRequestsViewState extends State<_ProductRequestsView> {
                               }
                               return _ApiRequestCard(
                                 request: filtered[i],
-                                authUserId: loggedInUser?.id ?? '',
+                                authUserId: loggedInUser?.user.id ?? '',
                                 onDeleteRequest: _onDeleteRequest,
                                 statusLabel: (s) => _apiStatusLabel(context, s),
                               );

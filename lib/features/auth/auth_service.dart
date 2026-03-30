@@ -13,6 +13,7 @@ class AuthService {
   static const _keyAccessToken = 'auth_access_token';
   static const _keyRefreshToken = 'auth_refresh_token';
   static const _keyUser = 'auth_user';
+  static const _loginResponse = 'login_response';
 
   // ── Token accessors ──────────────────────────────────────────────────────────
 
@@ -32,6 +33,17 @@ class AuthService {
     if (raw == null) return null;
     try {
       return AuthUser.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<LoginResponse?> getLoginResponse() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_loginResponse);
+    if (raw == null) return null;
+    try {
+      return LoginResponse.fromJson(jsonDecode(raw) as Map<String, dynamic>);
     } catch (_) {
       return null;
     }
@@ -90,6 +102,7 @@ class AuthService {
     await prefs.remove(_keyAccessToken);
     await prefs.remove(_keyRefreshToken);
     await prefs.remove(_keyUser);
+    await prefs.remove(_loginResponse);
   }
 
   // ── Private ──────────────────────────────────────────────────────────────────
@@ -99,5 +112,6 @@ class AuthService {
     await prefs.setString(_keyAccessToken, response.access);
     await prefs.setString(_keyRefreshToken, response.refresh);
     await prefs.setString(_keyUser, jsonEncode(response.user.toJson()));
+    await prefs.setString(_loginResponse, jsonEncode(response.toJson()));
   }
 }
