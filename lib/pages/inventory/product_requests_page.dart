@@ -1,9 +1,12 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:inventory/core/network/api_result.dart';
 import 'package:inventory/core/utils/responsive.dart';
 import 'package:inventory/features/auth/auth_cubit.dart';
+import 'package:inventory/features/auth/auth_service.dart';
 import 'package:inventory/features/product_requests/cubit/product_requests_cubit.dart';
 import 'package:inventory/features/product_requests/cubit/product_requests_state.dart';
 import 'package:inventory/features/product_requests/data/models/product_requests_response_model.dart';
@@ -32,11 +35,15 @@ class _ProductRequestsViewState extends State<_ProductRequestsView> {
   String? _statusFilter;
 
   final ScrollController _scrollController = ScrollController();
+  LoginResponse? loggedInUser;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      loggedInUser = await _loggedInUser();
+    });
   }
 
   @override
@@ -90,16 +97,13 @@ class _ProductRequestsViewState extends State<_ProductRequestsView> {
   }
 
   /// Returns the logged-in user from AuthCubit, or null if not authenticated.
-  LoginResponse? _loggedInUser(BuildContext context) {
-    final authState = context.read<AuthCubit>().state;
-    if (authState is AuthAuthenticated) return authState.response;
-    return null;
+  Future<LoginResponse?> _loggedInUser() async {
+    return await AuthService.instance.getLoginResponse();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final loggedInUser = _loggedInUser(context);
 
     return BlocBuilder<ProductRequestsCubit, ProductRequestsState>(
       builder: (context, state) {
@@ -272,7 +276,7 @@ class _ProductRequestsViewState extends State<_ProductRequestsView> {
                               }
                               return _ApiRequestCard(
                                 request: filtered[i],
-                                authUserId: loggedInUser?.user.id ?? '',
+                                loginResponse: loggedInUser!,
                                 onDeleteRequest: _onDeleteRequest,
                                 statusLabel: (s) => _apiStatusLabel(context, s),
                               );
@@ -362,7 +366,7 @@ List<String> _allowedApiTransitions(String current, {required bool isSeller}) {
     case 'pending':
       return ['preparing'];
     case 'preparing':
-      return ['ready_for_delivery', 'waiting_for_pricing'];
+      return ['ready_for_delivery'];
     case 'ready_for_delivery':
       return ['on_way'];
     default:
@@ -376,11 +380,11 @@ class _ApiRequestCard extends StatefulWidget {
   final ProductRequestModel request;
 
   /// The id of the currently logged-in user.
-  final String authUserId;
+  final LoginResponse loginResponse;
   final Future<void> Function(String id) onDeleteRequest;
   final String Function(String status) statusLabel;
 
-  const _ApiRequestCard({required this.request, required this.authUserId, required this.onDeleteRequest, required this.statusLabel});
+  const _ApiRequestCard({required this.request, required this.loginResponse, required this.onDeleteRequest, required this.statusLabel});
 
   @override
   State<_ApiRequestCard> createState() => _ApiRequestCardState();
@@ -395,11 +399,19 @@ class _ApiRequestCardState extends State<_ApiRequestCard> {
   late final Map<String, TextEditingController> _qtyControllers;
 
   /// True when the logged-in user is the creator of this request (seller flow).
-  bool get _isSeller => widget.authUserId == widget.request.creatorUserId;
+  bool get _isSeller =>
+      widget.loginResponse.user.id == widget.request.creatorUserId &&
+      widget.loginResponse.loggedInInventory?.id == widget.request.destinationInventory;
 
   @override
   void initState() {
     super.initState();
+    widget.loginResponse.user.id == widget.request.creatorUserId && widget.loginResponse.loggedInInventory?.id == widget.request.destinationInventory;
+    log("widget.loginResponse.user.id  = ${widget.loginResponse.user.id}");
+    log("widget.request.creatorUserId  = ${widget.request.creatorUserId}");
+    log("widget.loginResponse.loggedInInventory?.id  = ${widget.loginResponse.loggedInInventory?.id}");
+    log("widget.request.destinationInventory  = ${widget.request.destinationInventory}");
+    log('- isSeller: $_isSeller');
     _initControllers();
   }
 

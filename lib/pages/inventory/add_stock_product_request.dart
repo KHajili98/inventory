@@ -86,8 +86,13 @@ class _AddStockProductRequestState extends State<AddStockProductRequest> {
 
     switch (result) {
       case Success(:final data):
+        // Auto-select the logged-in user's inventory as the destination.
+        final authState = context.read<AuthCubit>().state;
+        final loggedInInventoryId = authState is AuthAuthenticated ? authState.response.loggedInInventory?.id : null;
+        final destination = loggedInInventoryId != null ? data.results.where((inv) => inv.id == loggedInInventoryId).firstOrNull : null;
         setState(() {
           _inventories = data.results;
+          _destinationInventory = destination;
           _inventoriesLoading = false;
         });
       case Failure(:final message):
@@ -290,13 +295,7 @@ class _AddStockProductRequestState extends State<AddStockProductRequest> {
         ),
         const SizedBox(width: 16),
         Expanded(
-          child: _InventoryDropdown(
-            label: l10n.to,
-            hint: l10n.selectInventory,
-            inventories: _inventories,
-            value: _destinationInventory,
-            onChanged: (inv) => setState(() => _destinationInventory = inv),
-          ),
+          child: _LockedInventoryField(label: l10n.to, inventory: _destinationInventory),
         ),
       ],
     );
@@ -487,6 +486,95 @@ class _AddStockProductRequestState extends State<AddStockProductRequest> {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ── Locked inventory field (destination — always the logged-in user's inventory) ──
+
+class _LockedInventoryField extends StatelessWidget {
+  final String label;
+  final InventoryModel? inventory;
+
+  const _LockedInventoryField({required this.label, required this.inventory});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              label,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(color: const Color(0xFF6366F1).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.lock_rounded, size: 10, color: Color(0xFF6366F1)),
+                  SizedBox(width: 3),
+                  Text(
+                    'Your inventory',
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFF6366F1)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.4)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+          child: Row(
+            children: [
+              const Icon(Icons.warehouse_rounded, size: 16, color: Color(0xFF6366F1)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  inventory?.name ?? '—',
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF1E293B)),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (inventory != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: inventory!.isStock ? const Color(0xFF6366F1).withValues(alpha: 0.1) : const Color(0xFF10B981).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    inventory!.isStock ? 'STOCK' : 'INV',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: inventory!.isStock ? const Color(0xFF6366F1) : const Color(0xFF10B981),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        if (inventory != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4, left: 2),
+            child: Text(
+              inventory!.address.isEmpty ? '—' : inventory!.address,
+              style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+      ],
     );
   }
 }
