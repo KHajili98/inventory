@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:inventory/features/auth/auth_service.dart';
+import 'package:inventory/models/auth_models.dart';
 
 enum PriceType { retail, wholesale }
 
@@ -30,8 +32,10 @@ class _PosPageState extends State<PosPage> {
   _Customer? _selectedCustomer;
   PaymentMethod _selectedPaymentMethod = PaymentMethod.card;
 
-  final String _currentUser = 'Əhməd R.';
   final String _currentDate = DateFormat('dd.MM.yyyy').format(DateTime.now());
+
+  AuthUser? _authUser;
+  LoginInventory? _loggedInInventory;
 
   final List<_Product> _products = [
     _Product(id: '1', name: 'iPhone 15 Pro, Qara', retailPrice: 2350, wholesalePrice: 2200, costPrice: 2000, barcode: '123456789'),
@@ -56,6 +60,17 @@ class _PosPageState extends State<PosPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _searchFocusNode.requestFocus();
     });
+    _loadAuthData();
+  }
+
+  Future<void> _loadAuthData() async {
+    final loginResponse = await AuthService.instance.getLoginResponse();
+    if (loginResponse != null && mounted) {
+      setState(() {
+        _authUser = loginResponse.user;
+        _loggedInInventory = loginResponse.loggedInInventory;
+      });
+    }
   }
 
   void _onSearchSubmitted(String value) {
@@ -464,6 +479,9 @@ class _PosPageState extends State<PosPage> {
   }
 
   Widget _buildTopBar() {
+    final String currentUser = _authUser != null ? '${_authUser!.firstName} ${_authUser!.lastName[0]}.' : '—';
+    final String inventoryName = _loggedInInventory?.name ?? 'Kassa';
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
       decoration: BoxDecoration(
@@ -487,16 +505,16 @@ class _PosPageState extends State<PosPage> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'POS - Nizami Filialı Kassa',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
+                Text(
+                  'POS - $inventoryName',
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
                 ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
                     const Icon(Icons.person_outline, size: 14, color: Color(0xFF667EEA)),
                     const SizedBox(width: 4),
-                    Text(_currentUser, style: const TextStyle(fontSize: 13, color: Color(0xFF718096))),
+                    Text(currentUser, style: const TextStyle(fontSize: 13, color: Color(0xFF718096))),
                     const SizedBox(width: 16),
                     const Icon(Icons.calendar_today, size: 14, color: Color(0xFF667EEA)),
                     const SizedBox(width: 4),
