@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:inventory/core/utils/route_logger.dart';
 import 'package:inventory/features/auth/auth_cubit.dart';
 import 'package:inventory/features/auth/auth_service.dart';
 import 'package:inventory/pages/auth/login_page.dart';
@@ -35,6 +36,7 @@ GoRouter createRouter(AuthCubit authCubit) {
     initialLocation: '/login',
     routerNeglect: kIsWeb,
     debugLogDiagnostics: false,
+    observers: [RouteLogger()],
     refreshListenable: _AuthNotifier(authCubit),
     redirect: (context, state) async {
       final location = state.matchedLocation;
@@ -52,6 +54,7 @@ GoRouter createRouter(AuthCubit authCubit) {
     routes: [
       GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
       ShellRoute(
+        observers: [RouteLogger()],
         builder: (context, state, child) => AppShell(child: child),
         routes: [
           GoRoute(path: '/pos', builder: (context, state) => const PosPage()),

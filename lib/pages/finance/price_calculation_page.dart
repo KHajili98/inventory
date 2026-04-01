@@ -139,7 +139,12 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
                       ),
                       const Spacer(),
                       FilledButton.icon(
-                        onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const EditProductPriceByStockPage())),
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            settings: const RouteSettings(name: 'EditProductPriceByStockPage'),
+                            builder: (_) => const EditProductPriceByStockPage(),
+                          ),
+                        ),
                         icon: const Icon(Icons.edit_outlined, size: 18),
                         label: Text(l10n.adjustPrices),
                         style: FilledButton.styleFrom(
@@ -333,6 +338,7 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
     return InkWell(
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute(
+          settings: const RouteSettings(name: 'CalculationDetailPage'),
           builder: (_) => CalculationDetailPage(item: item, onSuccess: () => _cubit.removeItem(item.id)),
         ),
       ),
