@@ -1,33 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:inventory/core/network/api_result.dart';
 import 'package:inventory/core/utils/responsive.dart';
+import 'package:inventory/features/stocks/data/models/stock_product_response_model.dart';
+import 'package:inventory/features/stocks/data/repositories/stocks_repository.dart';
 import 'package:inventory/l10n/app_localizations.dart';
-import 'package:inventory/pages/finance/price_calculation_page.dart';
 
-// ── Mock product model ───────────────────────────────────────────────────────
+// ── Custom formatter: max 10 digits, max 2 decimal places ────────────────────
 
-class CalcProduct {
-  final String generatedName;
-  final String barcode;
-  final int receivedQty;
-  final double invoicePerPrice;
-  final String color;
+class _DecimalInputFormatter extends TextInputFormatter {
+  final int maxDigits;
+  final int maxDecimals;
 
-  const CalcProduct({
-    required this.generatedName,
-    required this.barcode,
-    required this.receivedQty,
-    required this.invoicePerPrice,
-    required this.color,
-  });
+  const _DecimalInputFormatter({this.maxDigits = 10, this.maxDecimals = 3});
+
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    final text = newValue.text;
+
+    // Allow clearing
+    if (text.isEmpty) return newValue;
+
+    // Only digits and a single dot
+    if (!RegExp(r'^\d*\.?\d*$').hasMatch(text)) return oldValue;
+
+    // Only one leading dot → reject
+    if (text == '.') return oldValue;
+
+    final parts = text.split('.');
+    final intPart = parts[0];
+    final decPart = parts.length > 1 ? parts[1] : null;
+
+    // Integer digits must not exceed maxDigits
+    if (intPart.length > maxDigits) return oldValue;
+
+    // Decimal part must not exceed maxDecimals digits
+    if (decPart != null && decPart.length > maxDecimals) return oldValue;
+
+    return newValue;
+  }
 }
-
-const List<CalcProduct> _mockProducts = [
-  CalcProduct(generatedName: 'Qara köynək L', barcode: '4006381333931', receivedQty: 50, invoicePerPrice: 10.00, color: 'Qara'),
-  CalcProduct(generatedName: 'Ağ köynək M', barcode: '4006381333948', receivedQty: 30, invoicePerPrice: 12.50, color: 'Ağ'),
-  CalcProduct(generatedName: 'Mavi cins XL', barcode: '4006381333955', receivedQty: 20, invoicePerPrice: 25.00, color: 'Mavi'),
-  CalcProduct(generatedName: 'Qırmızı dress S', barcode: '4006381333962', receivedQty: 15, invoicePerPrice: 18.00, color: 'Qırmızı'),
-];
 
 // ── Per-product calculation state ────────────────────────────────────────────
 
@@ -35,21 +47,18 @@ class _ProductCalcState {
   // Cost price block
   final TextEditingController costPctCtrl = TextEditingController();
   final TextEditingController costAmtCtrl = TextEditingController();
-  bool costLocked = false; // becomes true once both filled
 
   // Wholesale block
   final TextEditingController wholePctCtrl = TextEditingController();
   final TextEditingController wholeAmtCtrl = TextEditingController();
-  bool wholeLocked = false;
 
   // Retail block
   final TextEditingController retailPctCtrl = TextEditingController();
   final TextEditingController retailAmtCtrl = TextEditingController();
-  bool retailLocked = false;
 
-  double? costPrice; // maya qiymet
-  double? wholePrice; // topdan qiymet
-  double? retailPrice; // perakende qiymet
+  double? costPrice;
+  double? wholePrice;
+  double? retailPrice;
 
   void dispose() {
     costPctCtrl.dispose();
@@ -66,36 +75,25 @@ class _ProductCalcState {
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 class CalculationDetailPage extends StatefulWidget {
-  final PriceRequest request;
+  final StockProductItemModel item;
 
-  const CalculationDetailPage({super.key, required this.request});
+  const CalculationDetailPage({super.key, required this.item});
 
   @override
   State<CalculationDetailPage> createState() => _CalculationDetailPageState();
 }
 
 class _CalculationDetailPageState extends State<CalculationDetailPage> {
-  late final List<_ProductCalcState> _states;
-
-  @override
-  void initState() {
-    super.initState();
-    _states = List.generate(_mockProducts.length, (_) => _ProductCalcState());
-  }
+  late final _ProductCalcState _state = _ProductCalcState();
 
   @override
   void dispose() {
-    for (final s in _states) {
-      s.dispose();
-    }
+    _state.dispose();
     super.dispose();
   }
 
-  bool get _allComplete => _states.every((s) => s.isComplete);
-
   // ── Sync helpers ─────────────────────────────────────────────────────────
 
-  /// When percent changes → compute amount, and vice versa.
   void _onPctChanged(double base, TextEditingController pctCtrl, TextEditingController amtCtrl, VoidCallback onDone) {
     final pct = double.tryParse(pctCtrl.text);
     if (pct == null) return;
@@ -121,8 +119,72 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
   }
 
   String _fmt(double v) {
-    if (v == v.truncateToDouble()) return v.toInt().toString();
-    return v.toStringAsFixed(2).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+    // Round to 3 decimal places to avoid floating-point noise (e.g. 12.2000000001)
+    final rounded = double.parse(v.toStringAsFixed(3));
+    if (rounded == rounded.truncateToDouble()) return rounded.toInt().toString();
+    return rounded.toStringAsFixed(3).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+  }
+
+  static double _round3(double v) => double.parse(v.toStringAsFixed(3));
+
+  Future<void> _submitPrices() async {
+    final l10n = AppLocalizations.of(context)!;
+    final s = _state;
+
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final result = await StocksRepository.instance.pricingStock(
+      item: widget.item,
+      costUnitPrice: s.costPrice!,
+      wholeUnitSalesPrice: s.wholePrice!,
+      retailUnitPrice: s.retailPrice!,
+    );
+
+    if (!mounted) return;
+    Navigator.of(context).pop(); // close loading
+
+    switch (result) {
+      case Success():
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.confirmationTitle),
+            backgroundColor: const Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+        Navigator.of(context).pop(); // back to list
+      case Failure(:final message):
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Row(
+              children: [
+                Icon(Icons.error_outline_rounded, color: Color(0xFFEF4444)),
+                SizedBox(width: 10),
+                Text('Error', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+              ],
+            ),
+            content: Text(message, style: const TextStyle(fontSize: 14, color: Color(0xFF475569))),
+            actions: [
+              FilledButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF6366F1),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+    }
   }
 
   // ── Confirm dialog ────────────────────────────────────────────────────────
@@ -150,7 +212,7 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
           FilledButton(
             onPressed: () {
               Navigator.of(ctx).pop();
-              Navigator.of(context).pop(); // back to request list
+              _submitPrices();
             },
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFF6366F1),
@@ -164,108 +226,120 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
     );
   }
 
-  // ── Product table header ──────────────────────────────────────────────────
+  // ── Item info header ──────────────────────────────────────────────────────
 
-  Widget _buildProductTableHeader() {
-    final l10n = AppLocalizations.of(context)!;
-    const style = TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF475569));
-    return Container(
-      color: const Color(0xFFF8FAFC),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Row(
-        children: [
-          Expanded(flex: 2, child: Text(l10n.productNameColumn, style: style)),
-          Expanded(flex: 2, child: Text(l10n.barcodeColumn, style: style)),
-          Expanded(flex: 1, child: Text(l10n.quantityColumn, style: style)),
-          Expanded(flex: 1, child: Text(l10n.invoicePriceAzn, style: style)),
-          Expanded(flex: 1, child: Text(l10n.colorColumn, style: style)),
-        ],
-      ),
-    );
-  }
+  Widget _buildItemInfoHeader(AppLocalizations l10n) {
+    final item = widget.item;
+    final invoicePrice = item.invoiceUnitPriceAzn;
 
-  Widget _buildProductTableRow(CalcProduct p, int index) {
-    final isEven = index.isEven;
-    return Container(
-      color: isEven ? Colors.white : const Color(0xFFFAFAFC),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Row(
-              children: [
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(7)),
-                  child: const Icon(Icons.inventory_2_outlined, size: 14, color: Color(0xFF6366F1)),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    p.generatedName,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              p.barcode,
-              style: const TextStyle(fontSize: 13, color: Color(0xFF334155), fontFamily: 'monospace'),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Text('${p.receivedQty}', style: const TextStyle(fontSize: 13, color: Color(0xFF334155))),
-          ),
-          Expanded(
-            flex: 1,
-            child: Text(
-              '${p.invoicePerPrice.toStringAsFixed(2)} ₼',
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Row(
-              children: [
-                Container(
-                  width: 12,
-                  height: 12,
-                  margin: const EdgeInsets.only(right: 6),
-                  decoration: BoxDecoration(
-                    color: _colorFromName(p.color),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                ),
-                Text(p.color, style: const TextStyle(fontSize: 13, color: Color(0xFF334155))),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Color _colorFromName(String name) {
-    switch (name.toLowerCase()) {
-      case 'qara':
-        return Colors.black87;
-      case 'ağ':
-        return Colors.white;
-      case 'mavi':
-        return Colors.blue;
-      case 'qırmızı':
-        return Colors.red;
-      default:
-        return Colors.grey.shade300;
+    // Color swatch
+    Color? swatch;
+    final code = item.colorCode ?? '';
+    if (code.startsWith('#') && code.length == 7) {
+      try {
+        swatch = Color(int.parse(code.replaceFirst('#', '0xFF')));
+      } catch (_) {}
     }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(9)),
+                child: const Icon(Icons.inventory_2_outlined, size: 18, color: Color(0xFF6366F1)),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  item.productGeneratedName ?? item.productName ?? item.id,
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          const Divider(height: 1, color: Color(0xFFE2E8F0)),
+          const SizedBox(height: 14),
+          // Details grid
+          Wrap(
+            spacing: 24,
+            runSpacing: 10,
+            children: [
+              if (item.modelCode != null) _infoChip(l10n.modelCode, item.modelCode!),
+              if (item.productCode != null) _infoChip(l10n.productCode, item.productCode!),
+              if (item.barcode != null) _infoChip(l10n.barcode, item.barcode!),
+              if (item.size != null) _infoChip(l10n.size, item.size!),
+              _infoChipWidget(
+                l10n.color,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (swatch != null) ...[
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: swatch,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                    ],
+                    Text(item.color ?? '—', style: const TextStyle(fontSize: 13, color: Color(0xFF1E293B))),
+                  ],
+                ),
+              ),
+              _infoChip(l10n.quantity, '${item.quantity}'),
+              _infoChip(l10n.sourceInventory, item.inventoryName.isNotEmpty ? item.inventoryName : '—'),
+              _infoChip(l10n.invoicePriceAznLabel, invoicePrice != null ? '₼ ${invoicePrice.toStringAsFixed(2)}' : '—', highlight: true),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoChip(String label, String value, {bool highlight = false}) {
+    return _infoChipWidget(
+      label,
+      Text(
+        value,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: highlight ? FontWeight.w700 : FontWeight.normal,
+          color: highlight ? const Color(0xFF6366F1) : const Color(0xFF1E293B),
+        ),
+      ),
+    );
+  }
+
+  Widget _infoChipWidget(String label, Widget valueWidget) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8), fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 2),
+        valueWidget,
+      ],
+    );
   }
 
   // ── Calculation block ─────────────────────────────────────────────────────
@@ -289,9 +363,9 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: accentColor.withOpacity(0.04),
+          color: accentColor.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: accentColor.withOpacity(0.2)),
+          border: Border.all(color: accentColor.withValues(alpha: 0.2)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -301,7 +375,10 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: accentColor),
             ),
             const SizedBox(height: 10),
-            Row(
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 // Base price chip
                 Container(
@@ -316,12 +393,9 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
                   ),
                 ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: Text(
-                    '+',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8)),
-                  ),
+                const Text(
+                  '+',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8)),
                 ),
                 // Percent field
                 SizedBox(
@@ -330,7 +404,7 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
                     controller: pctCtrl,
                     enabled: enabled,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))],
+                    inputFormatters: [const _DecimalInputFormatter(maxDigits: 10, maxDecimals: 3)],
                     onChanged: (_) => onPctChanged(),
                     style: const TextStyle(fontSize: 13),
                     decoration: InputDecoration(
@@ -355,7 +429,6 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
                 // Amount field
                 SizedBox(
                   width: 90,
@@ -363,7 +436,7 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
                     controller: amtCtrl,
                     enabled: enabled,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))],
+                    inputFormatters: [const _DecimalInputFormatter(maxDigits: 10, maxDecimals: 3)],
                     onChanged: (_) => onAmtChanged(),
                     style: const TextStyle(fontSize: 13),
                     decoration: InputDecoration(
@@ -388,12 +461,9 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
                     ),
                   ),
                 ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: Text(
-                    '=',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8)),
-                  ),
+                const Text(
+                  '=',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8)),
                 ),
                 // Result
                 Text(
@@ -408,142 +478,105 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
     );
   }
 
-  // ── Per-product card ─────────────────────────────────────────────────────
+  // ── Calculation card ──────────────────────────────────────────────────────
 
-  Widget _buildProductCalcCard(int index) {
-    final l10n = AppLocalizations.of(context)!;
-    final p = _mockProducts[index];
-    final s = _states[index];
+  Widget _buildCalcCard(AppLocalizations l10n) {
+    final s = _state;
+    final invoicePrice = widget.item.invoiceUnitPriceAzn ?? 0.0;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
       ),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Product info header
-          _buildProductTableHeader(),
-          const Divider(height: 1, color: Color(0xFFE2E8F0)),
-          _buildProductTableRow(p, 0),
-          const Divider(height: 1, color: Color(0xFFE2E8F0)),
+          Text(
+            l10n.priceCalculationTitle,
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+          ),
+          const SizedBox(height: 14),
 
-          // Calculation section
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.priceCalculationTitle,
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
-                ),
-                const SizedBox(height: 12),
+          // 1. Cost price
+          _buildCalcBlock(
+            title: l10n.costPriceStep,
+            basePrice: invoicePrice,
+            resultLabel: l10n.costPriceLabel,
+            resultValue: s.costPrice,
+            enabled: true,
+            pctCtrl: s.costPctCtrl,
+            amtCtrl: s.costAmtCtrl,
+            accentColor: const Color(0xFF6366F1),
+            onPctChanged: () {
+              _onPctChanged(invoicePrice, s.costPctCtrl, s.costAmtCtrl, () {
+                final amt = double.tryParse(s.costAmtCtrl.text);
+                setState(() => s.costPrice = amt != null ? _round3(invoicePrice + amt) : null);
+              });
+            },
+            onAmtChanged: () {
+              _onAmtChanged(invoicePrice, s.costPctCtrl, s.costAmtCtrl, () {
+                final amt = double.tryParse(s.costAmtCtrl.text);
+                setState(() => s.costPrice = amt != null ? _round3(invoicePrice + amt) : null);
+              });
+            },
+          ),
+          const SizedBox(height: 10),
 
-                // 1. Cost price (maya qiymet)
-                _buildCalcBlock(
-                  title: l10n.costPriceStep,
-                  basePrice: p.invoicePerPrice,
-                  resultLabel: l10n.costPriceLabel,
-                  resultValue: s.costPrice,
-                  enabled: true,
-                  pctCtrl: s.costPctCtrl,
-                  amtCtrl: s.costAmtCtrl,
-                  accentColor: const Color(0xFF6366F1),
-                  onPctChanged: () {
-                    _onPctChanged(p.invoicePerPrice, s.costPctCtrl, s.costAmtCtrl, () {
-                      final pct = double.tryParse(s.costPctCtrl.text);
-                      final amt = double.tryParse(s.costAmtCtrl.text);
-                      setState(() {
-                        if (pct != null && amt != null) {
-                          s.costPrice = p.invoicePerPrice + amt;
-                        } else {
-                          s.costPrice = null;
-                        }
-                      });
-                    });
-                  },
-                  onAmtChanged: () {
-                    _onAmtChanged(p.invoicePerPrice, s.costPctCtrl, s.costAmtCtrl, () {
-                      final amt = double.tryParse(s.costAmtCtrl.text);
-                      setState(() {
-                        if (amt != null) {
-                          s.costPrice = p.invoicePerPrice + amt;
-                        } else {
-                          s.costPrice = null;
-                        }
-                      });
-                    });
-                  },
-                ),
-                const SizedBox(height: 10),
+          // 2. Wholesale
+          _buildCalcBlock(
+            title: l10n.wholesalePriceStep,
+            basePrice: s.costPrice ?? 0,
+            resultLabel: l10n.wholesalePriceLabel,
+            resultValue: s.wholePrice,
+            enabled: s.costPrice != null,
+            pctCtrl: s.wholePctCtrl,
+            amtCtrl: s.wholeAmtCtrl,
+            accentColor: const Color(0xFF0EA5E9),
+            onPctChanged: () {
+              if (s.costPrice == null) return;
+              _onPctChanged(s.costPrice!, s.wholePctCtrl, s.wholeAmtCtrl, () {
+                final amt = double.tryParse(s.wholeAmtCtrl.text);
+                setState(() => s.wholePrice = amt != null ? _round3(s.costPrice! + amt) : null);
+              });
+            },
+            onAmtChanged: () {
+              if (s.costPrice == null) return;
+              _onAmtChanged(s.costPrice!, s.wholePctCtrl, s.wholeAmtCtrl, () {
+                final amt = double.tryParse(s.wholeAmtCtrl.text);
+                setState(() => s.wholePrice = amt != null ? _round3(s.costPrice! + amt) : null);
+              });
+            },
+          ),
+          const SizedBox(height: 10),
 
-                // 2. Wholesale (topdan)
-                _buildCalcBlock(
-                  title: l10n.wholesalePriceStep,
-                  basePrice: s.costPrice ?? 0,
-                  resultLabel: l10n.wholesalePriceLabel,
-                  resultValue: s.wholePrice,
-                  enabled: s.costPrice != null,
-                  pctCtrl: s.wholePctCtrl,
-                  amtCtrl: s.wholeAmtCtrl,
-                  accentColor: const Color(0xFF0EA5E9),
-                  onPctChanged: () {
-                    if (s.costPrice == null) return;
-                    _onPctChanged(s.costPrice!, s.wholePctCtrl, s.wholeAmtCtrl, () {
-                      final amt = double.tryParse(s.wholeAmtCtrl.text);
-                      setState(() {
-                        s.wholePrice = amt != null ? s.costPrice! + amt : null;
-                      });
-                    });
-                  },
-                  onAmtChanged: () {
-                    if (s.costPrice == null) return;
-                    _onAmtChanged(s.costPrice!, s.wholePctCtrl, s.wholeAmtCtrl, () {
-                      final amt = double.tryParse(s.wholeAmtCtrl.text);
-                      setState(() {
-                        s.wholePrice = amt != null ? s.costPrice! + amt : null;
-                      });
-                    });
-                  },
-                ),
-                const SizedBox(height: 10),
-
-                // 3. Retail (perakende)
-                _buildCalcBlock(
-                  title: l10n.retailPriceStep,
-                  basePrice: s.costPrice ?? 0,
-                  resultLabel: l10n.retailPriceLabel,
-                  resultValue: s.retailPrice,
-                  enabled: s.costPrice != null,
-                  pctCtrl: s.retailPctCtrl,
-                  amtCtrl: s.retailAmtCtrl,
-                  accentColor: const Color(0xFF10B981),
-                  onPctChanged: () {
-                    if (s.costPrice == null) return;
-                    _onPctChanged(s.costPrice!, s.retailPctCtrl, s.retailAmtCtrl, () {
-                      final amt = double.tryParse(s.retailAmtCtrl.text);
-                      setState(() {
-                        s.retailPrice = amt != null ? s.costPrice! + amt : null;
-                      });
-                    });
-                  },
-                  onAmtChanged: () {
-                    if (s.costPrice == null) return;
-                    _onAmtChanged(s.costPrice!, s.retailPctCtrl, s.retailAmtCtrl, () {
-                      final amt = double.tryParse(s.retailAmtCtrl.text);
-                      setState(() {
-                        s.retailPrice = amt != null ? s.costPrice! + amt : null;
-                      });
-                    });
-                  },
-                ),
-              ],
-            ),
+          // 3. Retail
+          _buildCalcBlock(
+            title: l10n.retailPriceStep,
+            basePrice: s.costPrice ?? 0,
+            resultLabel: l10n.retailPriceLabel,
+            resultValue: s.retailPrice,
+            enabled: s.costPrice != null,
+            pctCtrl: s.retailPctCtrl,
+            amtCtrl: s.retailAmtCtrl,
+            accentColor: const Color(0xFF10B981),
+            onPctChanged: () {
+              if (s.costPrice == null) return;
+              _onPctChanged(s.costPrice!, s.retailPctCtrl, s.retailAmtCtrl, () {
+                final amt = double.tryParse(s.retailAmtCtrl.text);
+                setState(() => s.retailPrice = amt != null ? _round3(s.costPrice! + amt) : null);
+              });
+            },
+            onAmtChanged: () {
+              if (s.costPrice == null) return;
+              _onAmtChanged(s.costPrice!, s.retailPctCtrl, s.retailAmtCtrl, () {
+                final amt = double.tryParse(s.retailAmtCtrl.text);
+                setState(() => s.retailPrice = amt != null ? _round3(s.costPrice! + amt) : null);
+              });
+            },
           ),
         ],
       ),
@@ -556,7 +589,7 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isMobile = context.isMobile;
-    final allDone = _allComplete;
+    final allDone = _state.isComplete;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -572,10 +605,11 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.request.name,
+              widget.item.productGeneratedName ?? widget.item.productName ?? widget.item.id,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+              overflow: TextOverflow.ellipsis,
             ),
-            Text(widget.request.source, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+            if (widget.item.inventoryName.isNotEmpty) Text(widget.item.inventoryName, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
           ],
         ),
         bottom: PreferredSize(
@@ -607,7 +641,7 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
       ),
       body: Padding(
         padding: EdgeInsets.all(isMobile ? 16 : 24),
-        child: ListView.builder(itemCount: _mockProducts.length, itemBuilder: (context, i) => _buildProductCalcCard(i)),
+        child: ListView(children: [_buildItemInfoHeader(l10n), const SizedBox(height: 16), _buildCalcCard(l10n), const SizedBox(height: 24)]),
       ),
     );
   }

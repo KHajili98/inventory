@@ -62,6 +62,48 @@ class StocksRepository {
     }
   }
 
+  /// Updates prices for a stock item via PUT /api/stocks/{id}/
+  Future<ApiResult<StockProductItemModel>> pricingStock({
+    required StockProductItemModel item,
+    required double costUnitPrice,
+    required double wholeUnitSalesPrice,
+    required double retailUnitPrice,
+  }) async {
+    try {
+      final response = await _dio.put<Map<String, dynamic>>(
+        '${ApiConstants.stocks}${item.id}/',
+        data: {
+          'model_code': item.modelCode ?? '',
+          'product_code': item.productCode ?? '',
+          'product_name': item.productName ?? '',
+          'size': item.size ?? '',
+          'color': item.color ?? '',
+          'color_code': item.colorCode ?? '',
+          'quantity': item.quantity,
+          'barcode': item.barcode ?? '',
+          'inventory': item.inventory ?? '',
+          'source_product_uuid': item.sourceProductUuid ?? '',
+          'source_inventory': item.sourceInventory ?? '',
+          'invoice_unit_price_azn': item.invoiceUnitPriceAzn ?? 0,
+          'cost_unit_price': costUnitPrice,
+          'whole_unit_sales_price': wholeUnitSalesPrice,
+          'retail_unit_price': retailUnitPrice,
+          'priced': true,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return Success(StockProductItemModel.fromJson(response.data as Map<String, dynamic>));
+      }
+
+      return Failure('Unexpected status: ${response.statusCode}', statusCode: response.statusCode);
+    } on DioException catch (e) {
+      return Failure(_parseDioError(e), statusCode: e.response?.statusCode);
+    } catch (e) {
+      return Failure(e.toString());
+    }
+  }
+
   /// Deletes a stock item via DELETE /api/stocks/{id}/
   Future<ApiResult<void>> deleteStock(String id) async {
     try {

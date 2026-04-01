@@ -7,6 +7,7 @@ import 'package:inventory/features/price_calculation/cubit/price_calculation_cub
 import 'package:inventory/features/price_calculation/cubit/price_calculation_state.dart';
 import 'package:inventory/features/stocks/data/models/stock_product_response_model.dart';
 import 'package:inventory/l10n/app_localizations.dart';
+import 'package:inventory/pages/finance/calculation_detail_page.dart';
 import 'package:inventory/pages/finance/edit_product_price_by_stock_page.dart';
 
 // ── Page ─────────────────────────────────────────────────────────────────────
@@ -329,30 +330,33 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
   }
 
   Widget _buildTableRow(StockProductItemModel item, AppLocalizations l10n) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
-      ),
-      child: SizedBox(
-        width: _tableWidth - 32,
-        child: Row(
-          children: [
-            _cell(item.modelCode ?? '—', _colModelCode),
-            _cell(item.productName ?? '—', _colProductName),
-            _cell(item.productGeneratedName ?? '—', _colGeneratedName),
-            _cell(item.productCode ?? '—', _colProductCode),
-            _cell(item.size ?? '—', _colSize),
-            _colorCell(item.color ?? '—', item.colorCode ?? '', _colColor),
-            _cell(item.colorCode ?? '—', _colColorCode, muted: true),
-            _cell('${item.quantity}', _colQuantity, bold: true),
-            _cell(item.barcode ?? '—', _colBarcode),
-            _cell(item.inventoryName, _colInventory),
-            _cell(item.invoiceUnitPriceAzn != null ? '₼ ${item.invoiceUnitPriceAzn!.toStringAsFixed(2)}' : '—', _colInvoicePrice),
-            _cell(item.costUnitPrice != null ? '₼ ${item.costUnitPrice!.toStringAsFixed(2)}' : '—', _colCostPrice),
-            _cell(item.wholeUnitSalesPrice != null ? '₼ ${item.wholeUnitSalesPrice!.toStringAsFixed(2)}' : '—', _colWholePrice),
-            _cell(item.retailUnitPrice != null ? '₼ ${item.retailUnitPrice!.toStringAsFixed(2)}' : '—', _colRetailPrice),
-          ],
+    return InkWell(
+      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CalculationDetailPage(item: item))),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
+        ),
+        child: SizedBox(
+          width: _tableWidth - 32,
+          child: Row(
+            children: [
+              _cell(item.modelCode ?? '—', _colModelCode),
+              _cell(item.productName ?? '—', _colProductName),
+              _cell(item.productGeneratedName ?? '—', _colGeneratedName),
+              _cell(item.productCode ?? '—', _colProductCode),
+              _cell(item.size ?? '—', _colSize),
+              _colorCell(item.color ?? '—', item.colorCode ?? '', _colColor),
+              _cell(item.colorCode ?? '—', _colColorCode, muted: true),
+              _cell('${item.quantity}', _colQuantity, bold: true),
+              _cell(item.barcode ?? '—', _colBarcode),
+              _cell(item.inventoryName, _colInventory),
+              _cell(item.invoiceUnitPriceAzn != null ? '₼ ${item.invoiceUnitPriceAzn!.toStringAsFixed(2)}' : '—', _colInvoicePrice),
+              _cell(item.costUnitPrice != null ? '₼ ${item.costUnitPrice!.toStringAsFixed(2)}' : '—', _colCostPrice),
+              _cell(item.wholeUnitSalesPrice != null ? '₼ ${item.wholeUnitSalesPrice!.toStringAsFixed(2)}' : '—', _colWholePrice),
+              _cell(item.retailUnitPrice != null ? '₼ ${item.retailUnitPrice!.toStringAsFixed(2)}' : '—', _colRetailPrice),
+            ],
+          ),
         ),
       ),
     );
