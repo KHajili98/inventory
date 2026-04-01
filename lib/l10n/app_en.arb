@@ -1587,5 +1587,83 @@
   "@invalidNumber": { "description": "Validation error for invalid numbers" },
 
   "discountRange": "Discount must be between 0 and 100",
-  "@discountRange": { "description": "Validation error for discount range" }
+  "@discountRange": { "description": "Validation error for discount range" },
+
+  "sellingTransactions": "Transactions",
+  "@sellingTransactions": { "description": "Selling transactions navigation label" },
+
+  "sellingTransactionsSubtitle": "View and filter sales transaction history",
+  "@sellingTransactionsSubtitle": { "description": "Selling transactions page subtitle" },
+
+  "noTransactionsFound": "No transactions found",
+  "@noTransactionsFound": { "description": "Empty state for transaction list" },
+
+  "adjustFiltersOrSearch": "Try adjusting your filters or search query",
+  "@adjustFiltersOrSearch": { "description": "Hint when no transactions match filters" },
+
+  "receiptNumber": "Receipt",
+  "@receiptNumber": { "description": "Receipt number column header" },
+
+  "seller": "Seller",
+  "@seller": { "description": "Seller column header" },
+
+  "paymentMethod": "Payment",
+  "@paymentMethod": { "description": "Payment method column header" },
+
+  "priceType": "Price Type",
+  "@priceType": { "description": "Price type column header" },
+
+  "discountAmount": "Discount",
+  "@discountAmount": { "description": "Discount amount column header" },
+
+  "allPaymentMethods": "All Payments",
+  "@allPaymentMethods": { "description": "All payment methods filter option" },
+
+  "allPriceTypes": "All Price Types",
+  "@allPriceTypes": { "description": "All price types filter option" },
+
+  "paymentCash": "Cash",
+  "@paymentCash": { "description": "Cash payment method" },
+
+  "paymentCard": "Card",
+  "@paymentCard": { "description": "Card payment method" },
+
+  "paymentTransfer": "Transfer",
+  "@paymentTransfer": { "description": "Transfer payment method" },
+
+  "priceRetailSale": "Retail",
+  "@priceRetailSale": { "description": "Retail sale price type" },
+
+  "priceWholeSale": "Wholesale",
+  "@priceWholeSale": { "description": "Wholesale price type" },
+
+  "transactionDetail": "Transaction Detail",
+  "@transactionDetail": { "description": "Transaction detail popup title" },
+
+  "store": "Store",
+  "@store": { "description": "Store label in transaction detail" },
+
+  "customer": "Customer",
+  "@customer": { "description": "Customer label in transaction detail" },
+
+  "noCustomer": "No customer",
+  "@noCustomer": { "description": "No customer label" },
+
+  "transactionItems": "Items",
+  "@transactionItems": { "description": "Transaction items section header" },
+
+  "productId": "Product ID",
+  "@productId": { "description": "Product ID label in transaction item" },
+
+  "count": "Count",
+  "@count": { "description": "Count label in transaction item" },
+
+  "totalTransactions": "Total Transactions",
+  "@totalTransactions": { "description": "Total transactions stat label" },
+
+  "totalRevenue": "Total Revenue",
+  "@totalRevenue": { "description": "Total revenue stat label" },
+
+  "searchTransactions": "Search by receipt, seller…",
+  "@searchTransactions": { "description": "Search transactions placeholder" }
 }

@@ -13,6 +13,7 @@ import 'package:inventory/pages/stock/stock_page.dart';
 import 'package:inventory/pages/invoice/invoices_page.dart';
 import 'package:inventory/pages/finance/price_calculation_page.dart';
 import 'package:inventory/pages/pos/pos_page.dart';
+import 'package:inventory/pages/pos/transactions/transaction_list_page.dart';
 import 'package:inventory/pages/customers/loyal_customers_page.dart';
 import 'package:inventory/widgets/app_shell.dart';
 
@@ -59,6 +60,7 @@ GoRouter createRouter(AuthCubit authCubit) {
         builder: (context, state, child) => AppShell(child: child),
         routes: [
           GoRoute(path: '/pos', builder: (context, state) => const PosPage()),
+          GoRoute(path: '/pos/transactions', builder: (context, state) => const TransactionListPage()),
           GoRoute(path: '/invoices', builder: (context, state) => const InvoicesPage()),
           GoRoute(path: '/inventory-products', builder: (context, state) => const InventoryProductsPage()),
           GoRoute(path: '/stock', builder: (context, state) => const StockPage()),

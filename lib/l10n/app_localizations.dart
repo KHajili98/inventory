@@ -2341,6 +2341,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Discount must be between 0 and 100'**
   String get discountRange;
+
+  /// Selling transactions navigation label
+  ///
+  /// In en, this message translates to:
+  /// **'Transactions'**
+  String get sellingTransactions;
+
+  /// Selling transactions page subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'View and filter sales transaction history'**
+  String get sellingTransactionsSubtitle;
+
+  /// Empty state for transaction list
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions found'**
+  String get noTransactionsFound;
+
+  /// Hint when no transactions match filters
+  ///
+  /// In en, this message translates to:
+  /// **'Try adjusting your filters or search query'**
+  String get adjustFiltersOrSearch;
+
+  /// Receipt number column header
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt'**
+  String get receiptNumber;
+
+  /// Seller column header
+  ///
+  /// In en, this message translates to:
+  /// **'Seller'**
+  String get seller;
+
+  /// Payment method column header
+  ///
+  /// In en, this message translates to:
+  /// **'Payment'**
+  String get paymentMethod;
+
+  /// Price type column header
+  ///
+  /// In en, this message translates to:
+  /// **'Price Type'**
+  String get priceType;
+
+  /// Discount amount column header
+  ///
+  /// In en, this message translates to:
+  /// **'Discount'**
+  String get discountAmount;
+
+  /// All payment methods filter option
+  ///
+  /// In en, this message translates to:
+  /// **'All Payments'**
+  String get allPaymentMethods;
+
+  /// All price types filter option
+  ///
+  /// In en, this message translates to:
+  /// **'All Price Types'**
+  String get allPriceTypes;
+
+  /// Cash payment method
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get paymentCash;
+
+  /// Card payment method
+  ///
+  /// In en, this message translates to:
+  /// **'Card'**
+  String get paymentCard;
+
+  /// Transfer payment method
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer'**
+  String get paymentTransfer;
+
+  /// Retail sale price type
+  ///
+  /// In en, this message translates to:
+  /// **'Retail'**
+  String get priceRetailSale;
+
+  /// Wholesale price type
+  ///
+  /// In en, this message translates to:
+  /// **'Wholesale'**
+  String get priceWholeSale;
+
+  /// Transaction detail popup title
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Detail'**
+  String get transactionDetail;
+
+  /// Store label in transaction detail
+  ///
+  /// In en, this message translates to:
+  /// **'Store'**
+  String get store;
+
+  /// Customer label in transaction detail
+  ///
+  /// In en, this message translates to:
+  /// **'Customer'**
+  String get customer;
+
+  /// No customer label
+  ///
+  /// In en, this message translates to:
+  /// **'No customer'**
+  String get noCustomer;
+
+  /// Transaction items section header
+  ///
+  /// In en, this message translates to:
+  /// **'Items'**
+  String get transactionItems;
+
+  /// Product ID label in transaction item
+  ///
+  /// In en, this message translates to:
+  /// **'Product ID'**
+  String get productId;
+
+  /// Count label in transaction item
+  ///
+  /// In en, this message translates to:
+  /// **'Count'**
+  String get count;
+
+  /// Total transactions stat label
+  ///
+  /// In en, this message translates to:
+  /// **'Total Transactions'**
+  String get totalTransactions;
+
+  /// Total revenue stat label
+  ///
+  /// In en, this message translates to:
+  /// **'Total Revenue'**
+  String get totalRevenue;
+
+  /// Search transactions placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Search by receipt, seller…'**
+  String get searchTransactions;
 }
 
 class _AppLocalizationsDelegate

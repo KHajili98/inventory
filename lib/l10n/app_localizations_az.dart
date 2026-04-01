@@ -1193,4 +1193,84 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get discountRange => 'Endirim 0 ilə 100 arasında olmalıdır';
+
+  @override
+  String get sellingTransactions => 'Əməliyyatlar';
+
+  @override
+  String get sellingTransactionsSubtitle =>
+      'Satış əməliyyatlarının tarixçəsini görün və filtrləyin';
+
+  @override
+  String get noTransactionsFound => 'Əməliyyat tapılmadı';
+
+  @override
+  String get adjustFiltersOrSearch =>
+      'Filtr və ya axtarış sorğusunu dəyişməyə çalışın';
+
+  @override
+  String get receiptNumber => 'Qəbz';
+
+  @override
+  String get seller => 'Satıcı';
+
+  @override
+  String get paymentMethod => 'Ödəniş';
+
+  @override
+  String get priceType => 'Qiymət Növü';
+
+  @override
+  String get discountAmount => 'Endirim';
+
+  @override
+  String get allPaymentMethods => 'Bütün Ödənişlər';
+
+  @override
+  String get allPriceTypes => 'Bütün Qiymət Növləri';
+
+  @override
+  String get paymentCash => 'Nağd';
+
+  @override
+  String get paymentCard => 'Kart';
+
+  @override
+  String get paymentTransfer => 'Köçürmə';
+
+  @override
+  String get priceRetailSale => 'Pərakəndə';
+
+  @override
+  String get priceWholeSale => 'Topdansatış';
+
+  @override
+  String get transactionDetail => 'Əməliyyat Təfərrüatı';
+
+  @override
+  String get store => 'Mağaza';
+
+  @override
+  String get customer => 'Müştəri';
+
+  @override
+  String get noCustomer => 'Müştəri yoxdur';
+
+  @override
+  String get transactionItems => 'Məhsullar';
+
+  @override
+  String get productId => 'Məhsul ID';
+
+  @override
+  String get count => 'Say';
+
+  @override
+  String get totalTransactions => 'Ümumi Əməliyyatlar';
+
+  @override
+  String get totalRevenue => 'Ümumi Gəlir';
+
+  @override
+  String get searchTransactions => 'Qəbz, satıcı ilə axtar…';
 }

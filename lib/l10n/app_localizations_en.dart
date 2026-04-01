@@ -1189,4 +1189,84 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get discountRange => 'Discount must be between 0 and 100';
+
+  @override
+  String get sellingTransactions => 'Transactions';
+
+  @override
+  String get sellingTransactionsSubtitle =>
+      'View and filter sales transaction history';
+
+  @override
+  String get noTransactionsFound => 'No transactions found';
+
+  @override
+  String get adjustFiltersOrSearch =>
+      'Try adjusting your filters or search query';
+
+  @override
+  String get receiptNumber => 'Receipt';
+
+  @override
+  String get seller => 'Seller';
+
+  @override
+  String get paymentMethod => 'Payment';
+
+  @override
+  String get priceType => 'Price Type';
+
+  @override
+  String get discountAmount => 'Discount';
+
+  @override
+  String get allPaymentMethods => 'All Payments';
+
+  @override
+  String get allPriceTypes => 'All Price Types';
+
+  @override
+  String get paymentCash => 'Cash';
+
+  @override
+  String get paymentCard => 'Card';
+
+  @override
+  String get paymentTransfer => 'Transfer';
+
+  @override
+  String get priceRetailSale => 'Retail';
+
+  @override
+  String get priceWholeSale => 'Wholesale';
+
+  @override
+  String get transactionDetail => 'Transaction Detail';
+
+  @override
+  String get store => 'Store';
+
+  @override
+  String get customer => 'Customer';
+
+  @override
+  String get noCustomer => 'No customer';
+
+  @override
+  String get transactionItems => 'Items';
+
+  @override
+  String get productId => 'Product ID';
+
+  @override
+  String get count => 'Count';
+
+  @override
+  String get totalTransactions => 'Total Transactions';
+
+  @override
+  String get totalRevenue => 'Total Revenue';
+
+  @override
+  String get searchTransactions => 'Search by receipt, seller…';
 }

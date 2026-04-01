@@ -1,6 +1,5 @@
 /// Models for POST /api/selling-transactions/complete-payment/
 library;
-
 // ── Enums ─────────────────────────────────────────────────────────────────────
 
 enum SellingPriceType {
@@ -240,5 +239,23 @@ class SellingTransactionResponse {
     createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'] as String) : null,
     updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at'] as String) : null,
     items: (json['items'] as List<dynamic>? ?? []).map((e) => SellingTransactionItemResponse.fromJson(e as Map<String, dynamic>)).toList(),
+  );
+}
+
+// ── Paginated list response ────────────────────────────────────────────────────
+
+class SellingTransactionListResponse {
+  final int count;
+  final String? next;
+  final String? previous;
+  final List<SellingTransactionResponse> results;
+
+  const SellingTransactionListResponse({required this.count, this.next, this.previous, required this.results});
+
+  factory SellingTransactionListResponse.fromJson(Map<String, dynamic> json) => SellingTransactionListResponse(
+    count: (json['count'] as num).toInt(),
+    next: json['next'] as String?,
+    previous: json['previous'] as String?,
+    results: (json['results'] as List<dynamic>? ?? []).map((e) => SellingTransactionResponse.fromJson(e as Map<String, dynamic>)).toList(),
   );
 }

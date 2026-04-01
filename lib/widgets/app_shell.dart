@@ -27,7 +27,12 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
   static const Curve _curve = Curves.easeInOut;
 
   static const _navItems = [
-    _NavItem(labelKey: 'pos', icon: Icons.point_of_sale_rounded, path: '/pos'),
+    _NavItem(
+      labelKey: 'pos',
+      icon: Icons.point_of_sale_rounded,
+      path: '/pos',
+      subItems: [_SubNavItem(labelKey: 'sellingTransactions', path: '/pos/transactions')],
+    ),
     _NavItem(labelKey: 'invoices', icon: Icons.receipt_long_rounded, path: '/invoices'),
     _NavItem(labelKey: 'inventoryProducts', icon: Icons.inventory_2_rounded, path: '/inventory-products'),
     _NavItem(labelKey: 'stock', icon: Icons.warehouse_rounded, path: '/stock'),
@@ -57,6 +62,8 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
     switch (key) {
       case 'pos':
         return l10n.pos;
+      case 'sellingTransactions':
+        return l10n.sellingTransactions;
       case 'invoices':
         return l10n.invoices;
       case 'inventoryProducts':
