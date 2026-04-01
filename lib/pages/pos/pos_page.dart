@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:inventory/core/network/api_result.dart';
 import 'package:inventory/features/auth/auth_service.dart';
+import 'package:inventory/features/loyal_customers/data/models/customer_model.dart';
+import 'package:inventory/features/loyal_customers/data/repositories/customers_repository.dart';
 import 'package:inventory/features/stocks/data/models/stock_product_response_model.dart';
 import 'package:inventory/features/stocks/data/repositories/stocks_repository.dart';
 import 'package:inventory/models/auth_models.dart';
@@ -31,7 +33,7 @@ class _PosPageState extends State<PosPage> {
   bool _discountIsPercent = true; // true for %, false for ₼
 
   PriceType _priceType = PriceType.retail;
-  _Customer? _selectedCustomer;
+  CustomerModel? _selectedCustomer;
   PaymentMethod _selectedPaymentMethod = PaymentMethod.card;
 
   final String _currentDate = DateFormat('dd.MM.yyyy').format(DateTime.now());
@@ -243,7 +245,7 @@ class _PosPageState extends State<PosPage> {
     final subtotal = _calculateSubtotal();
     final discount = _calculateTotalDiscount();
     final afterDiscount = subtotal - discount;
-    return afterDiscount * _selectedCustomer!.discountPercent / 100;
+    return afterDiscount * _selectedCustomer!.discountPercentage / 100;
   }
 
   double _calculateTotal() {
@@ -287,84 +289,14 @@ class _PosPageState extends State<PosPage> {
   }
 
   void _showCustomerDialog() {
-    final cardController = TextEditingController();
-    _Customer? tempCustomer;
-
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Müştəri Seç'),
-          content: SizedBox(
-            width: 400,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: cardController,
-                  decoration: const InputDecoration(labelText: 'Loayallıq Kartı Nömrəsi', border: OutlineInputBorder(), hintText: 'Məsələn: 12345'),
-                  onChanged: (value) {
-                    if (value == '12345') {
-                      setDialogState(() {
-                        tempCustomer = _Customer(id: '1', name: 'Elvin Məmmədov', loyaltyCard: '12345', discountPercent: 10);
-                      });
-                    } else {
-                      setDialogState(() {
-                        tempCustomer = null;
-                      });
-                    }
-                  },
-                ),
-                if (tempCustomer != null) ...[
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE8F5E9),
-                      border: Border.all(color: const Color(0xFF4CAF50)),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          '✓ Müştəri Tapıldı',
-                          style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2E7D32)),
-                        ),
-                        const SizedBox(height: 8),
-                        Text('Ad: ${tempCustomer!.name}'),
-                        Text('Endirim: ${tempCustomer!.discountPercent}%'),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Future.microtask(() => _searchFocusNode.requestFocus());
-              },
-              child: const Text('Ləğv et'),
-            ),
-            ElevatedButton(
-              onPressed: tempCustomer != null
-                  ? () {
-                      setState(() {
-                        _selectedCustomer = tempCustomer;
-                      });
-                      Navigator.pop(context);
-                      Future.microtask(() => _searchFocusNode.requestFocus());
-                    }
-                  : null,
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4CAF50), foregroundColor: Colors.white),
-              child: const Text('Seç'),
-            ),
-          ],
-        ),
+      barrierColor: Colors.black.withOpacity(0.4),
+      builder: (context) => _CustomerSearchDialog(
+        onCustomerSelected: (customer) {
+          setState(() => _selectedCustomer = customer);
+          Future.microtask(() => _searchFocusNode.requestFocus());
+        },
       ),
     );
   }
@@ -1187,7 +1119,7 @@ class _PosPageState extends State<PosPage> {
                     ),
                   if (customerDiscount > 0 && _selectedCustomer != null)
                     _buildSummaryRow(
-                      'Müştəri Endirimi (${_selectedCustomer!.discountPercent}%):',
+                      'Müştəri Endirimi (${_selectedCustomer!.discountPercentage.toStringAsFixed(0)}%):',
                       '${customerDiscount.toStringAsFixed(2)} ₼',
                       isDiscount: true,
                     ),
@@ -1243,7 +1175,7 @@ class _PosPageState extends State<PosPage> {
                         children: [
                           Icon(Icons.print, size: 22),
                           SizedBox(width: 12),
-                          Text('SATIŞI TAMAMLA (F12)', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                          Text('SATIŞI TAMAMLA', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                         ],
                       ),
                     ),
@@ -1255,7 +1187,7 @@ class _PosPageState extends State<PosPage> {
                       onPressed: _showCustomerDialog,
                       icon: Icon(_selectedCustomer != null ? Icons.person : Icons.person_add_outlined, size: 20),
                       label: Text(
-                        _selectedCustomer != null ? 'Müştəri: ${_selectedCustomer!.name}' : 'Müştəri Seç',
+                        _selectedCustomer != null ? 'Müştəri: ${_selectedCustomer!.fullName}' : 'Müştəri Seç',
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                       ),
                       style: ElevatedButton.styleFrom(
@@ -1377,11 +1309,419 @@ class _CartItem {
   _CartItem({required this.product, required this.quantity, this.discountPercent = 0.0});
 }
 
-class _Customer {
-  final String id;
-  final String name;
-  final String loyaltyCard;
-  final double discountPercent;
+// ── Customer Search Dialog ────────────────────────────────────────────────────
 
-  _Customer({required this.id, required this.name, required this.loyaltyCard, required this.discountPercent});
+class _CustomerSearchDialog extends StatefulWidget {
+  final ValueChanged<CustomerModel?> onCustomerSelected;
+
+  const _CustomerSearchDialog({required this.onCustomerSelected});
+
+  @override
+  State<_CustomerSearchDialog> createState() => _CustomerSearchDialogState();
+}
+
+class _CustomerSearchDialogState extends State<_CustomerSearchDialog> {
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  Timer? _debounce;
+
+  List<CustomerModel> _results = [];
+  bool _isLoading = false;
+  bool _hasSearched = false;
+  CustomerModel? _selectedCustomer;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _focusNode.requestFocus());
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _searchController.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    _debounce?.cancel();
+    if (value.trim().isEmpty) {
+      setState(() {
+        _results = [];
+        _hasSearched = false;
+        _isLoading = false;
+      });
+      return;
+    }
+    setState(() => _isLoading = true);
+    _debounce = Timer(const Duration(milliseconds: 400), () => _search(value.trim()));
+  }
+
+  Future<void> _search(String query) async {
+    final result = await CustomersRepository.instance.fetchCustomers(search: query, pageSize: 20);
+    if (!mounted) return;
+    switch (result) {
+      case Success(:final data):
+        setState(() {
+          _results = data.results;
+          _isLoading = false;
+          _hasSearched = true;
+        });
+      case Failure():
+        setState(() {
+          _results = [];
+          _isLoading = false;
+          _hasSearched = true;
+        });
+    }
+  }
+
+  void _selectCustomer(CustomerModel customer) {
+    setState(() => _selectedCustomer = customer);
+  }
+
+  void _confirm() {
+    widget.onCustomerSelected(_selectedCustomer);
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: Colors.white,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 60),
+      child: SizedBox(
+        width: 520,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ── Header ──────────────────────────────────────────────────────
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(colors: [Color(0xFF667EEA), Color(0xFF764BA2)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(10)),
+                    child: const Icon(Icons.person_search, color: Colors.white, size: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Müştəri Axtarışı',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                        Text('Ad, soyad, telefon və ya kart nömrəsi ilə axtarın', style: TextStyle(fontSize: 12, color: Colors.white70)),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+
+            // ── Search field ─────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF7FAFC),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 16),
+                    _isLoading
+                        ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF667EEA)))
+                        : const Icon(Icons.search, color: Color(0xFF667EEA), size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        focusNode: _focusNode,
+                        style: const TextStyle(fontSize: 15, color: Color(0xFF2D3748)),
+                        decoration: const InputDecoration(
+                          hintText: 'Ad, soyad, telefon və ya kart nömrəsi...',
+                          hintStyle: TextStyle(color: Color(0xFFA0AEC0), fontSize: 14),
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        onChanged: _onSearchChanged,
+                      ),
+                    ),
+                    if (_searchController.text.isNotEmpty)
+                      IconButton(
+                        icon: const Icon(Icons.clear, size: 18, color: Color(0xFF718096)),
+                        onPressed: () {
+                          _searchController.clear();
+                          _onSearchChanged('');
+                          _focusNode.requestFocus();
+                        },
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                      )
+                    else
+                      const SizedBox(width: 12),
+                  ],
+                ),
+              ),
+            ),
+
+            // ── Results list ─────────────────────────────────────────────
+            ConstrainedBox(constraints: const BoxConstraints(maxHeight: 360, minHeight: 120), child: _buildResultsBody()),
+
+            // ── Footer ───────────────────────────────────────────────────
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF7FAFC),
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
+                border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+              ),
+              child: Row(
+                children: [
+                  if (_selectedCustomer != null)
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEBF4FF),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFF667EEA).withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.check_circle, color: Color(0xFF667EEA), size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _selectedCustomer!.fullName,
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    const Expanded(
+                      child: Text('Müştəri seçilməyib', style: TextStyle(fontSize: 13, color: Color(0xFFA0AEC0))),
+                    ),
+                  const SizedBox(width: 12),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF718096),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    child: const Text('Ləğv et'),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    onPressed: _selectedCustomer != null ? _confirm : null,
+                    icon: const Icon(Icons.person_add, size: 18),
+                    label: const Text('Seç', style: TextStyle(fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF667EEA),
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: const Color(0xFFE2E8F0),
+                      disabledForegroundColor: const Color(0xFFA0AEC0),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      elevation: 0,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResultsBody() {
+    if (!_hasSearched && !_isLoading) {
+      return _buildEmptyState(
+        icon: Icons.manage_search_rounded,
+        iconColor: const Color(0xFF667EEA),
+        bgColor: const Color(0xFFEBF4FF),
+        title: 'Axtarışa başlayın',
+        subtitle: 'Ad, soyad, telefon və ya loayallıq kart nömrəsini daxil edin',
+      );
+    }
+
+    if (_isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40),
+          child: CircularProgressIndicator(color: Color(0xFF667EEA)),
+        ),
+      );
+    }
+
+    if (_results.isEmpty) {
+      return _buildEmptyState(
+        icon: Icons.person_off_outlined,
+        iconColor: const Color(0xFFA0AEC0),
+        bgColor: const Color(0xFFF7FAFC),
+        title: 'Müştəri tapılmadı',
+        subtitle: 'Başqa açar söz ilə yenidən cəhd edin',
+      );
+    }
+
+    return ListView.separated(
+      shrinkWrap: true,
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+      itemCount: _results.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 6),
+      itemBuilder: (context, index) {
+        final customer = _results[index];
+        final isSelected = _selectedCustomer?.id == customer.id;
+        return _CustomerTile(customer: customer, isSelected: isSelected, onTap: () => _selectCustomer(customer));
+      },
+    );
+  }
+
+  Widget _buildEmptyState({
+    required IconData icon,
+    required Color iconColor,
+    required Color bgColor,
+    required String title,
+    required String subtitle,
+  }) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
+              child: Icon(icon, size: 40, color: iconColor),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 13, color: Color(0xFF718096)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CustomerTile extends StatelessWidget {
+  final CustomerModel customer;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _CustomerTile({required this.customer, required this.isSelected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFEBF4FF) : const Color(0xFFF7FAFC),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: isSelected ? const Color(0xFF667EEA) : const Color(0xFFE2E8F0), width: isSelected ? 2 : 1),
+        ),
+        child: Row(
+          children: [
+            // Avatar
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                gradient: isSelected
+                    ? const LinearGradient(colors: [Color(0xFF667EEA), Color(0xFF764BA2)], begin: Alignment.topLeft, end: Alignment.bottomRight)
+                    : null,
+                color: isSelected ? null : const Color(0xFFEDF2F7),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  customer.name.isNotEmpty ? customer.name[0].toUpperCase() : '?',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isSelected ? Colors.white : const Color(0xFF667EEA)),
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            // Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    customer.fullName,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected ? const Color(0xFF2D3748) : const Color(0xFF2D3748),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.phone_outlined, size: 13, color: Color(0xFF718096)),
+                      const SizedBox(width: 4),
+                      Text(customer.phoneNumber, style: const TextStyle(fontSize: 12, color: Color(0xFF718096))),
+                      if (customer.loyaltyId.isNotEmpty) ...[
+                        const SizedBox(width: 12),
+                        const Icon(Icons.card_membership, size: 13, color: Color(0xFF718096)),
+                        const SizedBox(width: 4),
+                        Text(customer.loyaltyId, style: const TextStyle(fontSize: 12, color: Color(0xFF718096))),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            // Discount badge
+            if (customer.discountPercentage > 0)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: isSelected ? const Color(0xFF667EEA) : const Color(0xFFEBF4FF),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${customer.discountPercentage.toStringAsFixed(0)}%',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: isSelected ? Colors.white : const Color(0xFF667EEA)),
+                ),
+              ),
+            if (isSelected) ...[const SizedBox(width: 8), const Icon(Icons.check_circle, color: Color(0xFF667EEA), size: 20)],
+          ],
+        ),
+      ),
+    );
+  }
 }
