@@ -1,7 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:inventory/core/network/api_result.dart';
 import 'package:inventory/features/auth/auth_service.dart';
+import 'package:inventory/features/stocks/data/models/stock_product_response_model.dart';
+import 'package:inventory/features/stocks/data/repositories/stocks_repository.dart';
 import 'package:inventory/models/auth_models.dart';
 
 enum PriceType { retail, wholesale }
@@ -25,7 +29,6 @@ class _PosPageState extends State<PosPage> {
   bool _discountEnabled = false;
   double _globalDiscountPercent = 0.0;
   int? _selectedDiscountBadge;
-  _Product? _selectedDropdownProduct;
   bool _discountIsPercent = true; // true for %, false for ₼
 
   PriceType _priceType = PriceType.retail;
@@ -37,16 +40,15 @@ class _PosPageState extends State<PosPage> {
   AuthUser? _authUser;
   LoginInventory? _loggedInInventory;
 
-  final List<_Product> _products = [
-    _Product(id: '1', name: 'iPhone 15 Pro, Qara', retailPrice: 2350, wholesalePrice: 2200, costPrice: 2000, barcode: '123456789'),
-    _Product(id: '2', name: 'Nike Air Max, 43', retailPrice: 120, wholesalePrice: 100, costPrice: 80, barcode: '987654321'),
-    _Product(id: '3', name: 'T-shirt, Ağ, M', retailPrice: 25, wholesalePrice: 20, costPrice: 15, barcode: '456789123'),
-    _Product(id: '4', name: 'Samsung Galaxy S24', retailPrice: 1800, wholesalePrice: 1650, costPrice: 1500, barcode: '111222333'),
-    _Product(id: '5', name: 'Adidas Sneakers, 42', retailPrice: 150, wholesalePrice: 130, costPrice: 110, barcode: '444555666'),
-  ];
+  List<StockProductItemModel> _searchResults = [];
+  bool _isSearching = false;
+  StockProductItemModel? _selectedDropdownProduct;
+
+  Timer? _debounce;
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     _discountController.dispose();
     _searchFocusNode.dispose();
@@ -75,37 +77,63 @@ class _PosPageState extends State<PosPage> {
 
   void _onSearchSubmitted(String value) {
     if (value.isEmpty) return;
-
-    // Try to find exact barcode match
-    final product = _products.cast<_Product?>().firstWhere((p) => p?.barcode == value, orElse: () => null);
-
+    // Try exact barcode match from current results
+    final product = _searchResults.cast<StockProductItemModel?>().firstWhere((p) => p?.barcode == value, orElse: () => null);
     if (product != null) {
       _addToCart(product);
       _searchController.clear();
       setState(() {
+        _searchResults = [];
         _selectedDropdownProduct = null;
       });
-      // Keep focus on search
       _searchFocusNode.requestFocus();
     }
   }
 
-  void _onDropdownChanged(_Product? product) {
+  void _onDropdownChanged(StockProductItemModel? product) {
     if (product == null) return;
     _addToCart(product);
     _searchController.clear();
     setState(() {
+      _searchResults = [];
       _selectedDropdownProduct = null;
     });
-    // Keep focus on search for next scan
     Future.microtask(() => _searchFocusNode.requestFocus());
   }
 
-  double _getCurrentPrice(_Product product) {
-    return _priceType == PriceType.retail ? product.retailPrice : product.wholesalePrice;
+  void _onSearchChanged(String value) {
+    _debounce?.cancel();
+    if (value.isEmpty) {
+      setState(() {
+        _searchResults = [];
+        _isSearching = false;
+      });
+      return;
+    }
+    _debounce = Timer(const Duration(milliseconds: 400), () => _searchStocks(value));
   }
 
-  void _addToCart(_Product product) {
+  Future<void> _searchStocks(String query) async {
+    if (_loggedInInventory == null) return;
+    setState(() => _isSearching = true);
+    final result = await StocksRepository.instance.fetchStocks(search: query, inventoryId: _loggedInInventory!.id, priced: true, pageSize: 30);
+    if (!mounted) return;
+    switch (result) {
+      case Success(:final data):
+        setState(() {
+          _searchResults = data.results;
+          _isSearching = false;
+        });
+      case Failure():
+        setState(() => _isSearching = false);
+    }
+  }
+
+  double _getCurrentPrice(StockProductItemModel product) {
+    return _priceType == PriceType.retail ? (product.retailUnitPrice ?? 0.0) : (product.wholeUnitSalesPrice ?? 0.0);
+  }
+
+  void _addToCart(StockProductItemModel product) {
     setState(() {
       final existingIndex = _cartItems.indexWhere((item) => item.product.id == product.id);
       if (existingIndex >= 0) {
@@ -286,7 +314,7 @@ class _PosPageState extends State<PosPage> {
             itemBuilder: (context, index) {
               final order = _frozenOrders[index];
               final total = order.items.fold(0.0, (sum, item) {
-                final price = order.priceType == PriceType.retail ? item.product.retailPrice : item.product.wholesalePrice;
+                final price = order.priceType == PriceType.retail ? (item.product.retailUnitPrice ?? 0.0) : (item.product.wholeUnitSalesPrice ?? 0.0);
                 return sum + (price * item.quantity);
               });
               return Card(
@@ -530,14 +558,6 @@ class _PosPageState extends State<PosPage> {
   }
 
   Widget _buildSearchBar() {
-    // Get filtered products based on search
-    final filteredProducts = _searchController.text.isEmpty
-        ? _products
-        : _products.where((product) {
-            final searchLower = _searchController.text.toLowerCase();
-            return product.name.toLowerCase().contains(searchLower) || product.barcode.contains(_searchController.text);
-          }).toList();
-
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -553,7 +573,9 @@ class _PosPageState extends State<PosPage> {
               gradient: const LinearGradient(colors: [Color(0xFF667EEA), Color(0xFF764BA2)], begin: Alignment.topLeft, end: Alignment.bottomRight),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.search, color: Colors.white, size: 18),
+            child: _isSearching
+                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Icon(Icons.search, color: Colors.white, size: 18),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -568,7 +590,7 @@ class _PosPageState extends State<PosPage> {
                 contentPadding: EdgeInsets.zero,
               ),
               style: const TextStyle(fontSize: 15, color: Color(0xFF2D3748)),
-              onChanged: (value) => setState(() {}), // Trigger rebuild for dropdown
+              onChanged: _onSearchChanged,
               onSubmitted: _onSearchSubmitted,
             ),
           ),
@@ -579,6 +601,7 @@ class _PosPageState extends State<PosPage> {
               onPressed: () {
                 _searchController.clear();
                 setState(() {
+                  _searchResults = [];
                   _selectedDropdownProduct = null;
                 });
                 _searchFocusNode.requestFocus();
@@ -592,14 +615,23 @@ class _PosPageState extends State<PosPage> {
           const SizedBox(width: 16),
           Expanded(
             child: DropdownButtonHideUnderline(
-              child: DropdownButton<_Product>(
+              child: DropdownButton<StockProductItemModel>(
                 value: _selectedDropdownProduct,
-                hint: const Text('Siyahıdan seçin...', style: TextStyle(color: Color(0xFFA0AEC0), fontSize: 15)),
+                hint: Text(
+                  _searchController.text.isEmpty
+                      ? 'Siyahıdan seçin...'
+                      : _isSearching
+                      ? 'Axtarılır...'
+                      : _searchResults.isEmpty
+                      ? 'Nəticə tapılmadı'
+                      : 'Siyahıdan seçin...',
+                  style: const TextStyle(color: Color(0xFFA0AEC0), fontSize: 15),
+                ),
                 isExpanded: true,
                 icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF667EEA)),
-                items: filteredProducts.map((product) {
+                items: _searchResults.map((product) {
                   final price = _getCurrentPrice(product);
-                  return DropdownMenuItem<_Product>(
+                  return DropdownMenuItem<StockProductItemModel>(
                     value: product,
                     child: Row(
                       children: [
@@ -609,12 +641,15 @@ class _PosPageState extends State<PosPage> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                product.name,
+                                product.displayName,
                                 style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 2),
-                              Text('Barkod: ${product.barcode}', style: const TextStyle(fontSize: 12, color: Color(0xFF718096))),
+                              Text(
+                                'Barkod: ${product.barcode ?? '—'}  •  Stok: ${product.quantity}',
+                                style: const TextStyle(fontSize: 12, color: Color(0xFF718096)),
+                              ),
                             ],
                           ),
                         ),
@@ -626,7 +661,7 @@ class _PosPageState extends State<PosPage> {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            '${price.toStringAsFixed(0)} ₼',
+                            '${price.toStringAsFixed(2)} ₼',
                             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
                           ),
                         ),
@@ -743,7 +778,7 @@ class _PosPageState extends State<PosPage> {
                     itemBuilder: (context, index) {
                       final item = _cartItems[index];
                       final unitPrice = _getCurrentPrice(item.product);
-                      final costPrice = item.product.costPrice;
+                      final costPrice = item.product.costUnitPrice ?? 0.0;
                       final maxDiscountAmount = unitPrice - costPrice; // Max discount to not go below cost
                       final maxDiscountPercent = unitPrice > 0 ? (maxDiscountAmount / unitPrice * 100) : 0.0;
 
@@ -764,7 +799,7 @@ class _PosPageState extends State<PosPage> {
                             Expanded(
                               flex: 3,
                               child: Text(
-                                item.product.name,
+                                item.product.displayName,
                                 style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
                               ),
                             ),
@@ -1459,26 +1494,8 @@ class _PosPageState extends State<PosPage> {
   }
 }
 
-class _Product {
-  final String id;
-  final String name;
-  final double retailPrice;
-  final double wholesalePrice;
-  final double costPrice;
-  final String barcode;
-
-  _Product({
-    required this.id,
-    required this.name,
-    required this.retailPrice,
-    required this.wholesalePrice,
-    required this.costPrice,
-    required this.barcode,
-  });
-}
-
 class _CartItem {
-  final _Product product;
+  final StockProductItemModel product;
   int quantity;
   double discountPercent;
 
