@@ -45,6 +45,9 @@ abstract class ApiConstants {
   // ── Stocks ────────────────────────────────────────────────────────────────
   static const String stocks = '/api/stocks/';
 
+  // ── Selling Transactions ──────────────────────────────────────────────────
+  static const String completePayment = '/api/selling-transactions/complete-payment/';
+
   // ── Timeouts ────────────────────────────────────────────────────────────────
   static const Duration connectTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(minutes: 3); // OCR can take ~75 s

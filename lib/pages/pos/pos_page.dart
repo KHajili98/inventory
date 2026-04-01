@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -6,6 +7,8 @@ import 'package:inventory/core/network/api_result.dart';
 import 'package:inventory/features/auth/auth_service.dart';
 import 'package:inventory/features/loyal_customers/data/models/customer_model.dart';
 import 'package:inventory/features/loyal_customers/data/repositories/customers_repository.dart';
+import 'package:inventory/features/selling_transactions/data/models/selling_transaction_models.dart';
+import 'package:inventory/features/selling_transactions/data/repositories/selling_transactions_repository.dart';
 import 'package:inventory/features/stocks/data/models/stock_product_response_model.dart';
 import 'package:inventory/features/stocks/data/repositories/stocks_repository.dart';
 import 'package:inventory/models/auth_models.dart';
@@ -43,6 +46,7 @@ class _PosPageState extends State<PosPage> {
 
   List<StockProductItemModel> _searchResults = [];
   bool _isSearching = false;
+  bool _isCompletingSale = false;
   StockProductItemModel? _selectedDropdownProduct;
 
   Timer? _debounce;
@@ -122,7 +126,7 @@ class _PosPageState extends State<PosPage> {
     switch (result) {
       case Success(:final data):
         setState(() {
-          _searchResults = data.results;
+          _searchResults = data.results.where((p) => p.quantity > 0).toList();
           _isSearching = false;
         });
       case Failure():
@@ -271,24 +275,121 @@ class _PosPageState extends State<PosPage> {
     Future.microtask(() => _searchFocusNode.requestFocus());
   }
 
-  void _completeSale() {
+  SellingPriceType get _sellingPriceType => _priceType == PriceType.retail ? SellingPriceType.retailSale : SellingPriceType.wholeSale;
+
+  SellingPaymentMethod get _sellingPaymentMethod {
+    switch (_selectedPaymentMethod) {
+      case PaymentMethod.cash:
+        return SellingPaymentMethod.cash;
+      case PaymentMethod.card:
+        return SellingPaymentMethod.card;
+      case PaymentMethod.transfer:
+        return SellingPaymentMethod.transfer;
+    }
+  }
+
+  /// Rounds a monetary value to a maximum of 3 decimal places,
+  /// which is the server's accepted precision for price fields.
+  double _r(double v) => double.parse(v.toStringAsFixed(3));
+
+  Future<void> _completeSale() async {
     if (_cartItems.isEmpty) return;
+    if (_loggedInInventory == null) return;
+    if (_isCompletingSale) return;
+
+    setState(() => _isCompletingSale = true);
+
+    final totalDiscount = _r(_calculateTotalDiscount());
+    final combinedPercent = _r(_combinedDiscountPercent());
+    final total = _r(_calculateTotal());
+
+    final items = _cartItems.map((item) {
+      final unitPrice = _getCurrentPrice(item.product);
+      final itemDiscountAmount = _r(unitPrice * item.discountPercent / 100 * item.quantity);
+      final itemTotal = _r((unitPrice - unitPrice * item.discountPercent / 100) * item.quantity);
+      return SellingTransactionItemRequest(
+        productUuid: item.product.sourceProductUuid ?? item.product.id,
+        count: item.quantity,
+        discountPercentage: _r(item.discountPercent),
+        discountAmount: itemDiscountAmount,
+        totalPrice: itemTotal,
+      );
+    }).toList();
+
+    final request = CompletePaymentRequest(
+      loggedInInventoryId: _loggedInInventory!.id,
+      selectedLoyalCustomerId: _selectedCustomer?.id,
+      totalSellingPrice: total,
+      priceType: _sellingPriceType,
+      paymentMethod: _sellingPaymentMethod,
+      discountAmount: totalDiscount,
+      discountPercentage: combinedPercent,
+      items: items,
+    );
+
+    final result = await SellingTransactionsRepository.instance.completePayment(request);
+
+    if (!mounted) return;
+    setState(() => _isCompletingSale = false);
+
+    switch (result) {
+      case Success(:final data):
+        _showSaleSuccessDialog(data.receiptNumber, total);
+      case Failure(:final message):
+        log(message);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Xəta: $message'), backgroundColor: Colors.red, duration: const Duration(seconds: 4)));
+    }
+  }
+
+  void _showSaleSuccessDialog(String receiptNumber, double total) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Satış Tamamlandı'),
-        content: Text('Yekun: ${_calculateTotal().toStringAsFixed(2)} ₼'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: const Color(0xFF48BB78).withOpacity(0.1), shape: BoxShape.circle),
+              child: const Icon(Icons.check_circle, color: Color(0xFF48BB78), size: 28),
+            ),
+            const SizedBox(width: 12),
+            const Text('Satış Tamamlandı'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Yekun: ${total.toStringAsFixed(2)} ₼', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            if (receiptNumber.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text('Qəbz №: $receiptNumber', style: const TextStyle(fontSize: 14, color: Color(0xFF718096))),
+            ],
+          ],
+        ),
         actions: [
-          TextButton(
+          ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               _clearCart();
               setState(() {
                 _selectedCustomer = null;
+                _discountEnabled = false;
+                _globalDiscountPercent = 0.0;
+                _selectedDiscountBadge = null;
+                _discountController.clear();
               });
-              // Keep focus on search after completing sale
               Future.microtask(() => _searchFocusNode.requestFocus());
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF48BB78),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
             child: const Text('OK'),
           ),
         ],
@@ -1182,7 +1283,7 @@ class _PosPageState extends State<PosPage> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: _cartItems.isEmpty ? null : _completeSale,
+                      onPressed: (_cartItems.isEmpty || _isCompletingSale) ? null : _completeSale,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF48BB78),
                         foregroundColor: Colors.white,
@@ -1192,14 +1293,16 @@ class _PosPageState extends State<PosPage> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         elevation: 0,
                       ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.print, size: 22),
-                          SizedBox(width: 12),
-                          Text('SATIŞI TAMAMLA', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
+                      child: _isCompletingSale
+                          ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
+                          : const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.print, size: 22),
+                                SizedBox(width: 12),
+                                Text('SATIŞI TAMAMLA', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
                     ),
                   ),
                   const SizedBox(height: 12),
