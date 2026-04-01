@@ -232,27 +232,35 @@ class _PosPageState extends State<PosPage> {
     });
   }
 
-  double _calculateTotalDiscount() {
-    return _cartItems.fold(0.0, (sum, item) {
-      final price = _getCurrentPrice(item.product);
-      final itemTotal = price * item.quantity;
-      return sum + (itemTotal * item.discountPercent / 100);
-    });
+  /// The combined discount % = custom discount % + customer loyalty discount %.
+  /// Both are summed and applied once to the subtotal.
+  double _combinedDiscountPercent() {
+    final customPercent = _discountEnabled ? _globalDiscountPercent : 0.0;
+    final customerPercent = _selectedCustomer?.discountPercentage ?? 0.0;
+    return customPercent + customerPercent;
   }
 
+  double _calculateTotalDiscount() {
+    final subtotal = _calculateSubtotal();
+    return subtotal * _combinedDiscountPercent() / 100;
+  }
+
+  /// Portion of the total discount attributable to the custom (manual) discount.
+  double _calculateCustomDiscount() {
+    if (!_discountEnabled || _globalDiscountPercent == 0) return 0.0;
+    final subtotal = _calculateSubtotal();
+    return subtotal * _globalDiscountPercent / 100;
+  }
+
+  /// Portion of the total discount attributable to the customer loyalty discount.
   double _calculateCustomerDiscount() {
     if (_selectedCustomer == null) return 0.0;
     final subtotal = _calculateSubtotal();
-    final discount = _calculateTotalDiscount();
-    final afterDiscount = subtotal - discount;
-    return afterDiscount * _selectedCustomer!.discountPercentage / 100;
+    return subtotal * _selectedCustomer!.discountPercentage / 100;
   }
 
   double _calculateTotal() {
-    final subtotal = _calculateSubtotal();
-    final discount = _calculateTotalDiscount();
-    final customerDiscount = _calculateCustomerDiscount();
-    return subtotal - discount - customerDiscount;
+    return _calculateSubtotal() - _calculateTotalDiscount();
   }
 
   void _clearCart() {
@@ -878,8 +886,10 @@ class _PosPageState extends State<PosPage> {
 
   Widget _buildSummaryPanel() {
     final subtotal = _calculateSubtotal();
-    final discount = _calculateTotalDiscount();
+    final customDiscount = _calculateCustomDiscount();
     final customerDiscount = _calculateCustomerDiscount();
+    final totalDiscount = _calculateTotalDiscount();
+    final combinedPercent = _combinedDiscountPercent();
     final total = _calculateTotal();
 
     return Container(
@@ -1109,20 +1119,32 @@ class _PosPageState extends State<PosPage> {
               child: Column(
                 children: [
                   _buildSummaryRow('Ara Cəmi:', '${subtotal.toStringAsFixed(2)} ₼'),
-                  if (discount > 0)
+                  if (customDiscount > 0)
                     _buildSummaryRow(
                       _discountIsPercent
                           ? 'Endirim (${_globalDiscountPercent.toStringAsFixed(0)}%):'
-                          : 'Endirim (${(subtotal * _globalDiscountPercent / 100).toStringAsFixed(2)} ₼):',
-                      '${discount.toStringAsFixed(2)} ₼',
+                          : 'Endirim (${customDiscount.toStringAsFixed(2)} ₼):',
+                      '- ${customDiscount.toStringAsFixed(2)} ₼',
                       isDiscount: true,
                     ),
                   if (customerDiscount > 0 && _selectedCustomer != null)
                     _buildSummaryRow(
                       'Müştəri Endirimi (${_selectedCustomer!.discountPercentage.toStringAsFixed(0)}%):',
-                      '${customerDiscount.toStringAsFixed(2)} ₼',
+                      '- ${customerDiscount.toStringAsFixed(2)} ₼',
                       isDiscount: true,
                     ),
+                  if (totalDiscount > 0) ...[
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 4),
+                      child: Divider(color: Color(0xFFE2E8F0), thickness: 1),
+                    ),
+                    _buildSummaryRow(
+                      'Ümumi Endirim (${combinedPercent.toStringAsFixed(0)}%):',
+                      '- ${totalDiscount.toStringAsFixed(2)} ₼',
+                      isDiscount: true,
+                      isBold: true,
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.all(16),
@@ -1236,16 +1258,23 @@ class _PosPageState extends State<PosPage> {
     );
   }
 
-  Widget _buildSummaryRow(String label, String value, {bool isDiscount = false}) {
+  Widget _buildSummaryRow(String label, String value, {bool isDiscount = false, bool isBold = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontSize: 14, color: Color(0xFF4A5568))),
+          Text(
+            label,
+            style: TextStyle(fontSize: 14, color: const Color(0xFF4A5568), fontWeight: isBold ? FontWeight.w700 : FontWeight.normal),
+          ),
           Text(
             value,
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: isDiscount ? const Color(0xFFC53030) : const Color(0xFF2D3748)),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: isBold ? FontWeight.w800 : FontWeight.w700,
+              color: isDiscount ? const Color(0xFFC53030) : const Color(0xFF2D3748),
+            ),
           ),
         ],
       ),
