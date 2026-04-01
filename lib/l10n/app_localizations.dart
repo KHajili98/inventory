@@ -2221,6 +2221,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saving…'**
   String get savingPrice;
+
+  /// Loyal Customers navigation label
+  ///
+  /// In en, this message translates to:
+  /// **'Loyal Customers'**
+  String get loyalCustomers;
+
+  /// Loyal Customers page subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your loyal customers and their discounts'**
+  String get loyalCustomersSubtitle;
+
+  /// Button label for adding a customer
+  ///
+  /// In en, this message translates to:
+  /// **'Add Customer'**
+  String get addCustomer;
+
+  /// Dialog title for editing a customer
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Customer'**
+  String get editCustomer;
+
+  /// Total customers stat label
+  ///
+  /// In en, this message translates to:
+  /// **'Total Customers'**
+  String get totalCustomers;
+
+  /// Search bar hint for customers
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name, phone or loyalty ID…'**
+  String get searchCustomers;
+
+  /// Empty state when no customers are found
+  ///
+  /// In en, this message translates to:
+  /// **'No customers found'**
+  String get noCustomersFound;
+
+  /// Discount label
+  ///
+  /// In en, this message translates to:
+  /// **'Discount'**
+  String get discount;
+
+  /// Loyalty ID field label
+  ///
+  /// In en, this message translates to:
+  /// **'Loyalty ID'**
+  String get loyaltyId;
+
+  /// Snackbar when customer is created
+  ///
+  /// In en, this message translates to:
+  /// **'Customer added successfully'**
+  String get customerCreated;
+
+  /// Snackbar when customer is updated
+  ///
+  /// In en, this message translates to:
+  /// **'Customer updated successfully'**
+  String get customerUpdated;
+
+  /// First name field label
+  ///
+  /// In en, this message translates to:
+  /// **'First Name'**
+  String get firstName;
+
+  /// First name field hint
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. John'**
+  String get firstNameHint;
+
+  /// Last name field label
+  ///
+  /// In en, this message translates to:
+  /// **'Last Name'**
+  String get lastName;
+
+  /// Last name field hint
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Doe'**
+  String get lastNameHint;
+
+  /// Phone number field label
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get phoneNumber;
+
+  /// Discount percentage field label
+  ///
+  /// In en, this message translates to:
+  /// **'Discount (%)'**
+  String get discountPercentage;
+
+  /// Validation error for required fields
+  ///
+  /// In en, this message translates to:
+  /// **'This field is required'**
+  String get fieldRequired;
+
+  /// Validation error for invalid numbers
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid number'**
+  String get invalidNumber;
+
+  /// Validation error for discount range
+  ///
+  /// In en, this message translates to:
+  /// **'Discount must be between 0 and 100'**
+  String get discountRange;
 }
 
 class _AppLocalizationsDelegate

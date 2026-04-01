@@ -36,6 +36,12 @@ abstract class ApiConstants {
 
   static String changeRequestStatus(String id) => '/api/requests/$id/change-status/';
 
+  // ── Loyal Customers ──────────────────────────────────────────────────────
+  static const String customers = '/api/customers/';
+
+  /// Single loyal customer by UUID.
+  static String customerDetail(String id) => '/api/customers/$id/';
+
   // ── Stocks ────────────────────────────────────────────────────────────────
   static const String stocks = '/api/stocks/';
 

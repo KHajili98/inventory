@@ -576,5 +576,26 @@
 
   "priceSaveFailed": "Qiyməti yeniləmək mümkün olmadı: {error}",
 
-  "savingPrice": "Saxlanılır…"
+  "savingPrice": "Saxlanılır…",
+
+  "loyalCustomers": "Sadiq Müştərilər",
+  "loyalCustomersSubtitle": "Sadiq müştərilərinizi və endirimləri idarə edin",
+  "addCustomer": "Müştəri Əlavə Et",
+  "editCustomer": "Müştərini Redaktə Et",
+  "totalCustomers": "Ümumi Müştərilər",
+  "searchCustomers": "Ad, telefon və ya sadiqlik ID ilə axtar…",
+  "noCustomersFound": "Müştəri tapılmadı",
+  "discount": "Endirim",
+  "loyaltyId": "Sadiqlik ID",
+  "customerCreated": "Müştəri uğurla əlavə edildi",
+  "customerUpdated": "Müştəri uğurla yeniləndi",
+  "firstName": "Ad",
+  "firstNameHint": "məs. Kamran",
+  "lastName": "Soyad",
+  "lastNameHint": "məs. Hacılı",
+  "phoneNumber": "Telefon Nömrəsi",
+  "discountPercentage": "Endirim (%)",
+  "fieldRequired": "Bu sahə məcburidir",
+  "invalidNumber": "Zəhmət olmasa düzgün rəqəm daxil edin",
+  "discountRange": "Endirim 0 ilə 100 arasında olmalıdır"
 }

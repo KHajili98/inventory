@@ -13,6 +13,7 @@ import 'package:inventory/pages/stock/stock_page.dart';
 import 'package:inventory/pages/invoice/invoices_page.dart';
 import 'package:inventory/pages/finance/price_calculation_page.dart';
 import 'package:inventory/pages/pos/pos_page.dart';
+import 'package:inventory/pages/customers/loyal_customers_page.dart';
 import 'package:inventory/widgets/app_shell.dart';
 
 /// Global navigator key — used by the Dio interceptor to redirect on 401
@@ -62,6 +63,7 @@ GoRouter createRouter(AuthCubit authCubit) {
           GoRoute(path: '/inventory-products', builder: (context, state) => const InventoryProductsPage()),
           GoRoute(path: '/stock', builder: (context, state) => const StockPage()),
           GoRoute(path: '/product-requests', builder: (context, state) => const ProductRequestsPage()),
+          GoRoute(path: '/loyal-customers', builder: (context, state) => const LoyalCustomersPage()),
           GoRoute(path: '/finance/price-calculation', builder: (context, state) => const PriceCalculationPage()),
           GoRoute(path: '/finance/expense-tracking', builder: (context, state) => const ExpenseTrackingPage()),
           GoRoute(path: '/finance/analytics', builder: (context, state) => const AnalyticsPage()),

@@ -1132,4 +1132,65 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get savingPrice => 'Saxlanılır…';
+
+  @override
+  String get loyalCustomers => 'Sadiq Müştərilər';
+
+  @override
+  String get loyalCustomersSubtitle =>
+      'Sadiq müştərilərinizi və endirimləri idarə edin';
+
+  @override
+  String get addCustomer => 'Müştəri Əlavə Et';
+
+  @override
+  String get editCustomer => 'Müştərini Redaktə Et';
+
+  @override
+  String get totalCustomers => 'Ümumi Müştərilər';
+
+  @override
+  String get searchCustomers => 'Ad, telefon və ya sadiqlik ID ilə axtar…';
+
+  @override
+  String get noCustomersFound => 'Müştəri tapılmadı';
+
+  @override
+  String get discount => 'Endirim';
+
+  @override
+  String get loyaltyId => 'Sadiqlik ID';
+
+  @override
+  String get customerCreated => 'Müştəri uğurla əlavə edildi';
+
+  @override
+  String get customerUpdated => 'Müştəri uğurla yeniləndi';
+
+  @override
+  String get firstName => 'Ad';
+
+  @override
+  String get firstNameHint => 'məs. Kamran';
+
+  @override
+  String get lastName => 'Soyad';
+
+  @override
+  String get lastNameHint => 'məs. Hacılı';
+
+  @override
+  String get phoneNumber => 'Telefon Nömrəsi';
+
+  @override
+  String get discountPercentage => 'Endirim (%)';
+
+  @override
+  String get fieldRequired => 'Bu sahə məcburidir';
+
+  @override
+  String get invalidNumber => 'Zəhmət olmasa düzgün rəqəm daxil edin';
+
+  @override
+  String get discountRange => 'Endirim 0 ilə 100 arasında olmalıdır';
 }

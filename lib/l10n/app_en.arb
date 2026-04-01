@@ -1527,5 +1527,65 @@
   },
 
   "savingPrice": "Saving…",
-  "@savingPrice": { "description": "Button label while saving price" }
+  "@savingPrice": { "description": "Button label while saving price" },
+
+  "loyalCustomers": "Loyal Customers",
+  "@loyalCustomers": { "description": "Loyal Customers navigation label" },
+
+  "loyalCustomersSubtitle": "Manage your loyal customers and their discounts",
+  "@loyalCustomersSubtitle": { "description": "Loyal Customers page subtitle" },
+
+  "addCustomer": "Add Customer",
+  "@addCustomer": { "description": "Button label for adding a customer" },
+
+  "editCustomer": "Edit Customer",
+  "@editCustomer": { "description": "Dialog title for editing a customer" },
+
+  "totalCustomers": "Total Customers",
+  "@totalCustomers": { "description": "Total customers stat label" },
+
+  "searchCustomers": "Search by name, phone or loyalty ID…",
+  "@searchCustomers": { "description": "Search bar hint for customers" },
+
+  "noCustomersFound": "No customers found",
+  "@noCustomersFound": { "description": "Empty state when no customers are found" },
+
+  "discount": "Discount",
+  "@discount": { "description": "Discount label" },
+
+  "loyaltyId": "Loyalty ID",
+  "@loyaltyId": { "description": "Loyalty ID field label" },
+
+  "customerCreated": "Customer added successfully",
+  "@customerCreated": { "description": "Snackbar when customer is created" },
+
+  "customerUpdated": "Customer updated successfully",
+  "@customerUpdated": { "description": "Snackbar when customer is updated" },
+
+  "firstName": "First Name",
+  "@firstName": { "description": "First name field label" },
+
+  "firstNameHint": "e.g. John",
+  "@firstNameHint": { "description": "First name field hint" },
+
+  "lastName": "Last Name",
+  "@lastName": { "description": "Last name field label" },
+
+  "lastNameHint": "e.g. Doe",
+  "@lastNameHint": { "description": "Last name field hint" },
+
+  "phoneNumber": "Phone Number",
+  "@phoneNumber": { "description": "Phone number field label" },
+
+  "discountPercentage": "Discount (%)",
+  "@discountPercentage": { "description": "Discount percentage field label" },
+
+  "fieldRequired": "This field is required",
+  "@fieldRequired": { "description": "Validation error for required fields" },
+
+  "invalidNumber": "Please enter a valid number",
+  "@invalidNumber": { "description": "Validation error for invalid numbers" },
+
+  "discountRange": "Discount must be between 0 and 100",
+  "@discountRange": { "description": "Validation error for discount range" }
 }

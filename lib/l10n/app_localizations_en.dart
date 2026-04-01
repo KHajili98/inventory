@@ -1128,4 +1128,65 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get savingPrice => 'Saving…';
+
+  @override
+  String get loyalCustomers => 'Loyal Customers';
+
+  @override
+  String get loyalCustomersSubtitle =>
+      'Manage your loyal customers and their discounts';
+
+  @override
+  String get addCustomer => 'Add Customer';
+
+  @override
+  String get editCustomer => 'Edit Customer';
+
+  @override
+  String get totalCustomers => 'Total Customers';
+
+  @override
+  String get searchCustomers => 'Search by name, phone or loyalty ID…';
+
+  @override
+  String get noCustomersFound => 'No customers found';
+
+  @override
+  String get discount => 'Discount';
+
+  @override
+  String get loyaltyId => 'Loyalty ID';
+
+  @override
+  String get customerCreated => 'Customer added successfully';
+
+  @override
+  String get customerUpdated => 'Customer updated successfully';
+
+  @override
+  String get firstName => 'First Name';
+
+  @override
+  String get firstNameHint => 'e.g. John';
+
+  @override
+  String get lastName => 'Last Name';
+
+  @override
+  String get lastNameHint => 'e.g. Doe';
+
+  @override
+  String get phoneNumber => 'Phone Number';
+
+  @override
+  String get discountPercentage => 'Discount (%)';
+
+  @override
+  String get fieldRequired => 'This field is required';
+
+  @override
+  String get invalidNumber => 'Please enter a valid number';
+
+  @override
+  String get discountRange => 'Discount must be between 0 and 100';
 }
