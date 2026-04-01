@@ -331,7 +331,11 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
 
   Widget _buildTableRow(StockProductItemModel item, AppLocalizations l10n) {
     return InkWell(
-      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => CalculationDetailPage(item: item))),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => CalculationDetailPage(item: item, onSuccess: () => _cubit.removeItem(item.id)),
+        ),
+      ),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: const BoxDecoration(

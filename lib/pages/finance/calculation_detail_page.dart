@@ -76,8 +76,9 @@ class _ProductCalcState {
 
 class CalculationDetailPage extends StatefulWidget {
   final StockProductItemModel item;
+  final VoidCallback? onSuccess;
 
-  const CalculationDetailPage({super.key, required this.item});
+  const CalculationDetailPage({super.key, required this.item, this.onSuccess});
 
   @override
   State<CalculationDetailPage> createState() => _CalculationDetailPageState();
@@ -131,10 +132,11 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
     final l10n = AppLocalizations.of(context)!;
     final s = _state;
 
-    // Show loading dialog
+    // Show loading dialog on the same navigator as this page (not root)
     showDialog(
       context: context,
       barrierDismissible: false,
+      useRootNavigator: false,
       builder: (_) => const Center(child: CircularProgressIndicator()),
     );
 
@@ -146,10 +148,11 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
     );
 
     if (!mounted) return;
-    Navigator.of(context).pop(); // close loading
+    Navigator.of(context).pop(); // close loading dialog
 
     switch (result) {
       case Success():
+        widget.onSuccess?.call();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.confirmationTitle),
@@ -162,6 +165,7 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
       case Failure(:final message):
         showDialog(
           context: context,
+          useRootNavigator: false,
           builder: (ctx) => AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             title: const Row(
@@ -193,6 +197,7 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
+      useRootNavigator: false,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(l10n.confirmationTitle, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18)),

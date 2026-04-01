@@ -44,4 +44,10 @@ class PriceCalculationCubit extends Cubit<PriceCalculationState> {
         emit(current.copyWith(isLoadingMore: false));
     }
   }
+
+  void removeItem(String id) {
+    final current = state;
+    if (current is! PriceCalculationLoaded) return;
+    emit(current.copyWith(products: current.products.where((p) => p.id != id).toList(), totalCount: current.totalCount - 1));
+  }
 }
