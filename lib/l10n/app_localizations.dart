@@ -110,6 +110,12 @@ abstract class AppLocalizations {
   /// **'POS'**
   String get pos;
 
+  /// Sell module parent navigation label
+  ///
+  /// In en, this message translates to:
+  /// **'Sell'**
+  String get sellModule;
+
   /// Invoices navigation label
   ///
   /// In en, this message translates to:

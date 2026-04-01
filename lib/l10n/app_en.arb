@@ -11,6 +11,11 @@
     "description": "Point of Sale navigation label"
   },
 
+  "sellModule": "Sell",
+  "@sellModule": {
+    "description": "Sell module parent navigation label"
+  },
+
   "invoices": "Invoices",
   "@invoices": {
     "description": "Invoices navigation label"

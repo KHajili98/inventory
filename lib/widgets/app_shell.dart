@@ -28,10 +28,13 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
 
   static const _navItems = [
     _NavItem(
-      labelKey: 'pos',
+      labelKey: 'sellModule',
       icon: Icons.point_of_sale_rounded,
-      path: '/pos',
-      subItems: [_SubNavItem(labelKey: 'sellingTransactions', path: '/pos/transactions')],
+      path: '/sell-module/pos',
+      subItems: [
+        _SubNavItem(labelKey: 'pos', path: '/sell-module/pos'),
+        _SubNavItem(labelKey: 'sellingTransactions', path: '/sell-module/transactions'),
+      ],
     ),
     _NavItem(labelKey: 'invoices', icon: Icons.receipt_long_rounded, path: '/invoices'),
     _NavItem(labelKey: 'inventoryProducts', icon: Icons.inventory_2_rounded, path: '/inventory-products'),
@@ -54,12 +57,18 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
   int _selectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
     final index = _navItems.indexWhere((item) => location.startsWith(item.path) || item.subItems.any((sub) => location.startsWith(sub.path)));
+    // Auto-expand the matching group whenever the route changes
+    if (index >= 0 && _navItems[index].subItems.isNotEmpty) {
+      _expandedItems.add(index);
+    }
     return index < 0 ? 0 : index;
   }
 
   String _getNavLabel(BuildContext context, String key) {
     final l10n = AppLocalizations.of(context)!;
     switch (key) {
+      case 'sellModule':
+        return l10n.sellModule;
       case 'pos':
         return l10n.pos;
       case 'sellingTransactions':

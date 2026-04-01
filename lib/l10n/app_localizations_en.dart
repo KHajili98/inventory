@@ -15,6 +15,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pos => 'POS';
 
   @override
+  String get sellModule => 'Sell';
+
+  @override
   String get invoices => 'Invoices';
 
   @override

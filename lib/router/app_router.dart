@@ -59,8 +59,8 @@ GoRouter createRouter(AuthCubit authCubit) {
         observers: [RouteLogger()],
         builder: (context, state, child) => AppShell(child: child),
         routes: [
-          GoRoute(path: '/pos', builder: (context, state) => const PosPage()),
-          GoRoute(path: '/pos/transactions', builder: (context, state) => const TransactionListPage()),
+          GoRoute(path: '/sell-module/pos', builder: (context, state) => const PosPage()),
+          GoRoute(path: '/sell-module/transactions', builder: (context, state) => const TransactionListPage()),
           GoRoute(path: '/invoices', builder: (context, state) => const InvoicesPage()),
           GoRoute(path: '/inventory-products', builder: (context, state) => const InventoryProductsPage()),
           GoRoute(path: '/stock', builder: (context, state) => const StockPage()),
