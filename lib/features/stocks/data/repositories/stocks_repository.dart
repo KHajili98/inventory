@@ -18,6 +18,7 @@ class StocksRepository {
     String? search,
     String? inventoryId,
     String? status,
+    bool? priced,
   }) async {
     try {
       final response = await _dio.get<Map<String, dynamic>>(
@@ -28,6 +29,7 @@ class StocksRepository {
           if (search != null && search.isNotEmpty) 'search': search,
           if (inventoryId != null && inventoryId.isNotEmpty) 'inventory': inventoryId,
           if (status != null && status.isNotEmpty) 'status': status,
+          if (priced != null) 'priced': priced,
         },
       );
 
