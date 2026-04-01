@@ -21,7 +21,6 @@ class PosPage extends StatefulWidget {
 
 class _PosPageState extends State<PosPage> {
   final List<_CartItem> _cartItems = [];
-  final List<_FrozenOrder> _frozenOrders = [];
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _discountController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
@@ -259,98 +258,6 @@ class _PosPageState extends State<PosPage> {
       _cartItems.clear();
     });
     // Keep focus on search after clearing cart
-    Future.microtask(() => _searchFocusNode.requestFocus());
-  }
-
-  void _freezeOrder() {
-    if (_cartItems.isEmpty) return;
-
-    final order = _FrozenOrder(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      items: List.from(_cartItems),
-      priceType: _priceType,
-      customer: _selectedCustomer,
-      paymentMethod: _selectedPaymentMethod,
-      timestamp: DateTime.now(),
-    );
-
-    setState(() {
-      _frozenOrders.add(order);
-      _cartItems.clear();
-      _selectedCustomer = null;
-      _discountEnabled = false;
-      _globalDiscountPercent = 0.0;
-      _selectedDiscountBadge = null;
-      _discountController.clear();
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Sifariş donduruldu (#${_frozenOrders.length})'),
-        backgroundColor: const Color(0xFF4CAF50),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-
-    // Keep focus on search after freezing order
-    Future.microtask(() => _searchFocusNode.requestFocus());
-  }
-
-  void _showFrozenOrdersDialog() {
-    if (_frozenOrders.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Dondurulmuş sifariş yoxdur')));
-      return;
-    }
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Dondurulmuş Sifarişlər'),
-        content: SizedBox(
-          width: 500,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: _frozenOrders.length,
-            itemBuilder: (context, index) {
-              final order = _frozenOrders[index];
-              final total = order.items.fold(0.0, (sum, item) {
-                final price = order.priceType == PriceType.retail ? (item.product.retailUnitPrice ?? 0.0) : (item.product.wholeUnitSalesPrice ?? 0.0);
-                return sum + (price * item.quantity);
-              });
-              return Card(
-                child: ListTile(
-                  title: Text('Sifariş #${index + 1}'),
-                  subtitle: Text('${order.items.length} məhsul - ${DateFormat('HH:mm').format(order.timestamp)}'),
-                  trailing: Text('${total.toStringAsFixed(2)} ₼', style: const TextStyle(fontWeight: FontWeight.bold)),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _restoreFrozenOrder(order);
-                    setState(() {
-                      _frozenOrders.removeAt(index);
-                    });
-                  },
-                ),
-              );
-            },
-          ),
-        ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Bağla'))],
-      ),
-    );
-  }
-
-  void _restoreFrozenOrder(_FrozenOrder order) {
-    setState(() {
-      _cartItems.clear();
-      _cartItems.addAll(order.items.map((item) => _CartItem(product: item.product, quantity: item.quantity, discountPercent: item.discountPercent)));
-      _priceType = order.priceType;
-      _selectedCustomer = order.customer;
-      _selectedPaymentMethod = order.paymentMethod;
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sifariş bərpa edildi'), backgroundColor: Color(0xFF4CAF50)));
-
-    // Keep focus on search after restoring order
     Future.microtask(() => _searchFocusNode.requestFocus());
   }
 
@@ -1021,38 +928,6 @@ class _PosPageState extends State<PosPage> {
       children: [
         Expanded(
           child: ElevatedButton.icon(
-            onPressed: _cartItems.isEmpty ? null : _freezeOrder,
-            icon: const Icon(Icons.pause_circle_outline, size: 20),
-            label: const Text('Sifarişi Dondur', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFED8936),
-              foregroundColor: Colors.white,
-              disabledBackgroundColor: const Color(0xFFE2E8F0),
-              disabledForegroundColor: const Color(0xFFA0AEC0),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              elevation: 0,
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: _showFrozenOrdersDialog,
-            icon: Badge(label: Text('${_frozenOrders.length}'), isLabelVisible: _frozenOrders.isNotEmpty, child: const Icon(Icons.history, size: 20)),
-            label: const Text('Donmuş Sifarişlər', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4299E1),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              elevation: 0,
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: ElevatedButton.icon(
             onPressed: _clearCart,
             icon: const Icon(Icons.delete_outline, size: 20),
             label: const Text('Səbəti Təmizlə', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
@@ -1509,15 +1384,4 @@ class _Customer {
   final double discountPercent;
 
   _Customer({required this.id, required this.name, required this.loyaltyCard, required this.discountPercent});
-}
-
-class _FrozenOrder {
-  final String id;
-  final List<_CartItem> items;
-  final PriceType priceType;
-  final _Customer? customer;
-  final PaymentMethod paymentMethod;
-  final DateTime timestamp;
-
-  _FrozenOrder({required this.id, required this.items, required this.priceType, this.customer, required this.paymentMethod, required this.timestamp});
 }
