@@ -299,9 +299,12 @@ class _PosPageState extends State<PosPage> {
     }
   }
 
-  /// Rounds a monetary value to a maximum of 3 decimal places,
-  /// which is the server's accepted precision for price fields.
-  double _r(double v) => double.parse(v.toStringAsFixed(3));
+  /// Rounds a monetary price/amount value to max 3 decimal places.
+  double _rPrice(double v) => double.parse(v.toStringAsFixed(3));
+
+  /// Rounds a percentage value to max 2 decimal places
+  /// (server rejects more than 2 decimals for percentage fields).
+  double _rPct(double v) => double.parse(v.toStringAsFixed(2));
 
   Future<void> _completeSale() async {
     if (_cartItems.isEmpty) return;
@@ -310,18 +313,18 @@ class _PosPageState extends State<PosPage> {
 
     setState(() => _isCompletingSale = true);
 
-    final totalDiscount = _r(_calculateTotalDiscount());
-    final combinedPercent = _r(_combinedDiscountPercent());
-    final total = _r(_calculateTotal());
+    final totalDiscount = _rPrice(_calculateTotalDiscount());
+    final combinedPercent = _rPct(_combinedDiscountPercent());
+    final total = _rPrice(_calculateTotal());
 
     final items = _cartItems.map((item) {
       final unitPrice = _getCurrentPrice(item.product);
-      final itemDiscountAmount = _r(unitPrice * item.discountPercent / 100 * item.quantity);
-      final itemTotal = _r((unitPrice - unitPrice * item.discountPercent / 100) * item.quantity);
+      final itemDiscountAmount = _rPrice(unitPrice * item.discountPercent / 100 * item.quantity);
+      final itemTotal = _rPrice((unitPrice - unitPrice * item.discountPercent / 100) * item.quantity);
       return SellingTransactionItemRequest(
         productUuid: item.product.sourceProductUuid ?? item.product.id,
         count: item.quantity,
-        discountPercentage: _r(item.discountPercent),
+        discountPercentage: _rPct(item.discountPercent),
         discountAmount: itemDiscountAmount,
         totalPrice: itemTotal,
       );
