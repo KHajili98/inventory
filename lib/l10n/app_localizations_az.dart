@@ -1112,4 +1112,24 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get loadingMore => 'Daha çox yüklənir…';
+
+  @override
+  String get loadingInventories => 'Anbarlar yüklənir…';
+
+  @override
+  String get allStockProducts => 'Bütün Stok Məhsulları';
+
+  @override
+  String get noInventoriesFound => 'Stok anbarı tapılmadı';
+
+  @override
+  String get priceSavedSuccess => 'Qiymət uğurla yeniləndi';
+
+  @override
+  String priceSaveFailed(String error) {
+    return 'Qiyməti yeniləmək mümkün olmadı: $error';
+  }
+
+  @override
+  String get savingPrice => 'Saxlanılır…';
 }

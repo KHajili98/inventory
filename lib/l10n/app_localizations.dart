@@ -2185,6 +2185,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Loading more…'**
   String get loadingMore;
+
+  /// Loading inventories placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Loading inventories…'**
+  String get loadingInventories;
+
+  /// Section title for all products in selected stock
+  ///
+  /// In en, this message translates to:
+  /// **'All Stock Products'**
+  String get allStockProducts;
+
+  /// Empty state when no inventories are returned
+  ///
+  /// In en, this message translates to:
+  /// **'No stock inventories found'**
+  String get noInventoriesFound;
+
+  /// Snackbar when price update succeeds
+  ///
+  /// In en, this message translates to:
+  /// **'Price updated successfully'**
+  String get priceSavedSuccess;
+
+  /// Snackbar when price update fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update price: {error}'**
+  String priceSaveFailed(String error);
+
+  /// Button label while saving price
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get savingPrice;
 }
 
 class _AppLocalizationsDelegate

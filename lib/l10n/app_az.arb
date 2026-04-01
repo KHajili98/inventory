@@ -564,5 +564,17 @@
   "stockItemCreated": "Stok məhsulu uğurla yaradıldı",
   "stockItemCreateFailed": "Yaratmaq mümkün olmadı: {error}",
   "invoicePriceAznLabel": "Qaimə Qiyməti (AZN)",
-  "loadingMore": "Daha çox yüklənir…"
+  "loadingMore": "Daha çox yüklənir…",
+
+  "loadingInventories": "Anbarlar yüklənir…",
+
+  "allStockProducts": "Bütün Stok Məhsulları",
+
+  "noInventoriesFound": "Stok anbarı tapılmadı",
+
+  "priceSavedSuccess": "Qiymət uğurla yeniləndi",
+
+  "priceSaveFailed": "Qiyməti yeniləmək mümkün olmadı: {error}",
+
+  "savingPrice": "Saxlanılır…"
 }

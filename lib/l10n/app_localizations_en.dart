@@ -1108,4 +1108,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loadingMore => 'Loading more…';
+
+  @override
+  String get loadingInventories => 'Loading inventories…';
+
+  @override
+  String get allStockProducts => 'All Stock Products';
+
+  @override
+  String get noInventoriesFound => 'No stock inventories found';
+
+  @override
+  String get priceSavedSuccess => 'Price updated successfully';
+
+  @override
+  String priceSaveFailed(String error) {
+    return 'Failed to update price: $error';
+  }
+
+  @override
+  String get savingPrice => 'Saving…';
 }

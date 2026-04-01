@@ -1506,5 +1506,26 @@
   "@invoicePriceAznLabel": { "description": "Invoice price AZN field label in add stock dialog" },
 
   "loadingMore": "Loading more…",
-  "@loadingMore": { "description": "Label shown when loading more items" }
+  "@loadingMore": { "description": "Label shown when loading more items" },
+
+  "loadingInventories": "Loading inventories…",
+  "@loadingInventories": { "description": "Loading inventories placeholder" },
+
+  "allStockProducts": "All Stock Products",
+  "@allStockProducts": { "description": "Section title for all products in selected stock" },
+
+  "noInventoriesFound": "No stock inventories found",
+  "@noInventoriesFound": { "description": "Empty state when no inventories are returned" },
+
+  "priceSavedSuccess": "Price updated successfully",
+  "@priceSavedSuccess": { "description": "Snackbar when price update succeeds" },
+
+  "priceSaveFailed": "Failed to update price: {error}",
+  "@priceSaveFailed": {
+    "description": "Snackbar when price update fails",
+    "placeholders": { "error": { "type": "String" } }
+  },
+
+  "savingPrice": "Saving…",
+  "@savingPrice": { "description": "Button label while saving price" }
 }
