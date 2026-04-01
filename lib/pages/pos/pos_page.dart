@@ -125,8 +125,11 @@ class _PosPageState extends State<PosPage> {
     if (!mounted) return;
     switch (result) {
       case Success(:final data):
+        // Filter to products with stock and deduplicate by id to prevent
+        // DropdownButton assertion errors with duplicate values.
+        final seen = <String>{};
         setState(() {
-          _searchResults = data.results.where((p) => p.quantity > 0).toList();
+          _searchResults = data.results.where((p) => p.quantity > 0 && seen.add(p.id)).toList();
           _isSearching = false;
         });
       case Failure():
@@ -140,7 +143,15 @@ class _PosPageState extends State<PosPage> {
 
   void _addToCart(StockProductItemModel product) {
     setState(() {
-      final existingIndex = _cartItems.indexWhere((item) => item.product.id == product.id);
+      // Use barcode as the unique key when available so that products with
+      // the same name but different barcodes are treated as separate items,
+      // and the same physical product (same barcode) always increments quantity.
+      final existingIndex = _cartItems.indexWhere((item) {
+        if (product.barcode != null && product.barcode!.isNotEmpty) {
+          return item.product.barcode == product.barcode;
+        }
+        return item.product.id == product.id;
+      });
       if (existingIndex >= 0) {
         _cartItems[existingIndex].quantity++;
       } else {
@@ -334,7 +345,7 @@ class _PosPageState extends State<PosPage> {
 
     switch (result) {
       case Success(:final data):
-        _showSaleSuccessDialog(data.receiptNumber, total);
+        _showSaleSuccessDialog(data, total);
       case Failure(:final message):
         log(message);
         ScaffoldMessenger.of(
@@ -343,54 +354,167 @@ class _PosPageState extends State<PosPage> {
     }
   }
 
-  void _showSaleSuccessDialog(String receiptNumber, double total) {
+  void _showSaleSuccessDialog(SellingTransactionResponse data, double total) {
+    final receiptNumber = data.receiptNumber;
+    final sellerName = data.sellerDetailedInfo != null ? '${data.sellerDetailedInfo!.firstName} ${data.sellerDetailedInfo!.lastName}'.trim() : null;
+    final inventoryName = data.sellingLocationInventoryDetails?.name;
+    final paymentMethodLabel = switch (data.paymentMethod) {
+      'cash' => 'Nağd',
+      'card' => 'Kart',
+      'transfer' => 'Köçürmə',
+      _ => data.paymentMethod,
+    };
+    final priceTypeLabel = data.priceType == 'retail_sale' ? 'Pərakəndə' : 'Topdan';
+    final itemCount = data.items.fold<int>(0, (sum, i) => sum + i.count);
+    final now = data.createdAt ?? DateTime.now();
+    final dateStr = DateFormat('dd.MM.yyyy  HH:mm').format(now);
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: const Color(0xFF48BB78).withOpacity(0.1), shape: BoxShape.circle),
-              child: const Icon(Icons.check_circle, color: Color(0xFF48BB78), size: 28),
-            ),
-            const SizedBox(width: 12),
-            const Text('Satış Tamamlandı'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Yekun: ${total.toStringAsFixed(2)} ₼', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            if (receiptNumber.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text('Qəbz №: $receiptNumber', style: const TextStyle(fontSize: 14, color: Color(0xFF718096))),
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          width: 460,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 40, offset: const Offset(0, 16))],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // ── Green header ──────────────────────────────────────────
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 32),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(colors: [Color(0xFF38A169), Color(0xFF48BB78)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
+                      child: const Icon(Icons.check_rounded, color: Colors.white, size: 48),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Satış Uğurla Tamamlandı!',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(dateStr, style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.85))),
+                  ],
+                ),
+              ),
+
+              // ── Receipt number ─────────────────────────────────────────
+              if (receiptNumber.isNotEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  color: const Color(0xFFF0FFF4),
+                  child: Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.receipt_long, size: 16, color: Color(0xFF38A169)),
+                        const SizedBox(width: 8),
+                        Text(
+                          receiptNumber,
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF276749), letterSpacing: 0.5),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // ── Details grid ───────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    // Total
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF7FAFC),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('Ödəniləcək:', style: TextStyle(fontSize: 15, color: Color(0xFF4A5568))),
+                          Text(
+                            '${total.toStringAsFixed(2)} ₼',
+                            style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Info rows
+                    _buildReceiptRow(Icons.local_atm_outlined, 'Ödəniş', paymentMethodLabel),
+                    _buildReceiptRow(Icons.sell_outlined, 'Qiymət növü', priceTypeLabel),
+                    _buildReceiptRow(Icons.shopping_bag_outlined, 'Məhsul sayı', '$itemCount ədəd'),
+                    if (sellerName != null && sellerName.isNotEmpty) _buildReceiptRow(Icons.person_outline, 'Satıcı', sellerName),
+                    if (inventoryName != null && inventoryName.isNotEmpty) _buildReceiptRow(Icons.store_outlined, 'Mağaza', inventoryName),
+                  ],
+                ),
+              ),
+
+              // ── Action button ──────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _clearCart();
+                      setState(() {
+                        _selectedCustomer = null;
+                        _discountEnabled = false;
+                        _globalDiscountPercent = 0.0;
+                        _selectedDiscountBadge = null;
+                        _discountController.clear();
+                      });
+                      Future.microtask(() => _searchFocusNode.requestFocus());
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF48BB78),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      elevation: 0,
+                    ),
+                    child: const Text('Yeni Satış', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ),
             ],
-          ],
+          ),
         ),
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _clearCart();
-              setState(() {
-                _selectedCustomer = null;
-                _discountEnabled = false;
-                _globalDiscountPercent = 0.0;
-                _selectedDiscountBadge = null;
-                _discountController.clear();
-              });
-              Future.microtask(() => _searchFocusNode.requestFocus());
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF48BB78),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            child: const Text('OK'),
+      ),
+    );
+  }
+
+  Widget _buildReceiptRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: const Color(0xFF667EEA)),
+          const SizedBox(width: 10),
+          Text(label, style: const TextStyle(fontSize: 14, color: Color(0xFF718096))),
+          const Spacer(),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
           ),
         ],
       ),
@@ -746,9 +870,24 @@ class _PosPageState extends State<PosPage> {
                           children: [
                             Expanded(
                               flex: 3,
-                              child: Text(
-                                item.product.displayName,
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    item.product.displayName,
+                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (item.product.barcode != null && item.product.barcode!.isNotEmpty) ...[
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      item.product.barcode!,
+                                      style: const TextStyle(fontSize: 11, color: Color(0xFF718096)),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
                             SizedBox(
