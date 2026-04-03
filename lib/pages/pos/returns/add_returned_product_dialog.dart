@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:inventory/core/network/api_result.dart';
 import 'package:inventory/features/returned_products/data/repositories/returned_products_repository.dart';
+import 'package:inventory/features/selling_transactions/data/models/selling_transaction_models.dart';
+import 'package:inventory/features/selling_transactions/data/repositories/selling_transactions_repository.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 
 class AddReturnedProductDialog extends StatefulWidget {
@@ -19,6 +21,10 @@ class _AddReturnedProductDialogState extends State<AddReturnedProductDialog> {
 
   bool _isDefected = false;
   bool _isSubmitting = false;
+  bool _isValidatingReceipt = false;
+  SellingTransactionResponse? _receiptData;
+  String? _receiptError;
+  String? _barcodeError;
 
   @override
   void dispose() {
@@ -26,6 +32,80 @@ class _AddReturnedProductDialogState extends State<AddReturnedProductDialog> {
     _barcodeController.dispose();
     _countController.dispose();
     super.dispose();
+  }
+
+  Future<void> _validateReceipt() async {
+    final receiptNumber = _receiptController.text.trim();
+    if (receiptNumber.isEmpty) {
+      setState(() {
+        _receiptData = null;
+        _receiptError = null;
+        _barcodeError = null;
+      });
+      return;
+    }
+
+    setState(() {
+      _isValidatingReceipt = true;
+      _receiptError = null;
+      _barcodeError = null;
+    });
+
+    final result = await SellingTransactionsRepository.instance.fetchReceiptByNumber(receiptNumber);
+
+    if (!mounted) return;
+
+    setState(() {
+      _isValidatingReceipt = false;
+      switch (result) {
+        case Success(:final data):
+          if (data == null) {
+            _receiptError = AppLocalizations.of(context)!.receiptNotFound;
+            _receiptData = null;
+          } else {
+            _receiptData = data;
+            _receiptError = null;
+          }
+        case Failure(:final message):
+          _receiptError = message;
+          _receiptData = null;
+      }
+    });
+
+    // Re-validate barcode if it was already entered
+    if (_barcodeController.text.isNotEmpty) {
+      _validateBarcode();
+    }
+  }
+
+  void _validateBarcode() {
+    final barcode = _barcodeController.text.trim();
+    if (barcode.isEmpty || _receiptData == null) {
+      setState(() => _barcodeError = null);
+      return;
+    }
+
+    // Check if barcode exists in receipt items
+    final foundItem = _receiptData!.items.cast<SellingTransactionItemResponse?>().firstWhere((item) => item?.barcode == barcode, orElse: () => null);
+
+    setState(() {
+      if (foundItem == null) {
+        _barcodeError = AppLocalizations.of(context)!.barcodeNotFoundInReceipt;
+      } else {
+        _barcodeError = null;
+        // Validate count as well
+        _validateCount(foundItem);
+      }
+    });
+  }
+
+  void _validateCount(SellingTransactionItemResponse? item) {
+    if (item == null) return;
+
+    final count = int.tryParse(_countController.text);
+    if (count != null && count > item.count) {
+      // This will be shown in the validator
+    }
   }
 
   Future<void> _showConfirmationDialog() async {
@@ -112,9 +192,13 @@ class _AddReturnedProductDialogState extends State<AddReturnedProductDialog> {
   Future<void> _submitReturnedProduct() async {
     setState(() => _isSubmitting = true);
 
+    // Find the product UUID from the receipt item
+    final barcode = _barcodeController.text.trim();
+    final item = _receiptData!.items.firstWhere((item) => item.barcode == barcode);
+
     final result = await ReturnedProductsRepository.instance.createReturnedProduct(
-      returnedProductBarcode: _barcodeController.text.trim(),
-      productUuid: _barcodeController.text.trim(), // Use barcode as productUuid
+      returnedProductBarcode: barcode,
+      productUuid: item.productUuid, // Use the actual product UUID from receipt
       count: int.parse(_countController.text),
       isDefected: _isDefected,
       receiptNumber: _receiptController.text.trim(),
@@ -198,9 +282,18 @@ class _AddReturnedProductDialogState extends State<AddReturnedProductDialog> {
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _receiptController,
+                        onChanged: (_) => _validateReceipt(),
                         decoration: InputDecoration(
                           hintText: l10n.enterReceiptNumber,
                           prefixIcon: const Icon(Icons.receipt_rounded, color: Color(0xFF94A3B8), size: 20),
+                          suffixIcon: _isValidatingReceipt
+                              ? const Padding(
+                                  padding: EdgeInsets.all(12.0),
+                                  child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                                )
+                              : _receiptData != null
+                              ? const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 20)
+                              : null,
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
@@ -209,11 +302,11 @@ class _AddReturnedProductDialogState extends State<AddReturnedProductDialog> {
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            borderSide: BorderSide(color: _receiptError != null ? const Color(0xFFEF4444) : const Color(0xFFE2E8F0)),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+                            borderSide: BorderSide(color: _receiptError != null ? const Color(0xFFEF4444) : const Color(0xFF6366F1), width: 2),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -225,8 +318,26 @@ class _AddReturnedProductDialogState extends State<AddReturnedProductDialog> {
                           ),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                         ),
-                        validator: (value) => value?.isEmpty ?? true ? l10n.fieldRequired : null,
+                        validator: (value) {
+                          if (value?.isEmpty ?? true) return l10n.fieldRequired;
+                          if (_receiptError != null) return _receiptError;
+                          return null;
+                        },
                       ),
+                      if (_receiptData != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.info_outline, size: 14, color: Color(0xFF10B981)),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${_receiptData!.items.length} product(s) in receipt',
+                                style: const TextStyle(fontSize: 12, color: Color(0xFF10B981)),
+                              ),
+                            ],
+                          ),
+                        ),
 
                       // Barcode
                       const SizedBox(height: 20),
@@ -237,9 +348,13 @@ class _AddReturnedProductDialogState extends State<AddReturnedProductDialog> {
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _barcodeController,
+                        onChanged: (_) => _validateBarcode(),
                         decoration: InputDecoration(
                           hintText: l10n.enterBarcode,
                           prefixIcon: const Icon(Icons.qr_code_rounded, color: Color(0xFF94A3B8), size: 20),
+                          suffixIcon: _barcodeError == null && _barcodeController.text.isNotEmpty && _receiptData != null
+                              ? const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 20)
+                              : null,
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
@@ -248,11 +363,11 @@ class _AddReturnedProductDialogState extends State<AddReturnedProductDialog> {
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                            borderSide: BorderSide(color: _barcodeError != null ? const Color(0xFFEF4444) : const Color(0xFFE2E8F0)),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+                            borderSide: BorderSide(color: _barcodeError != null ? const Color(0xFFEF4444) : const Color(0xFF6366F1), width: 2),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -264,8 +379,32 @@ class _AddReturnedProductDialogState extends State<AddReturnedProductDialog> {
                           ),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                         ),
-                        validator: (value) => value?.isEmpty ?? true ? l10n.fieldRequired : null,
+                        validator: (value) {
+                          if (value?.isEmpty ?? true) return l10n.fieldRequired;
+                          if (_barcodeError != null) return _barcodeError;
+                          return null;
+                        },
                       ),
+                      if (_barcodeController.text.isNotEmpty && _receiptData != null && _barcodeError == null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Builder(
+                            builder: (context) {
+                              final item = _receiptData!.items.cast<SellingTransactionItemResponse?>().firstWhere(
+                                (item) => item?.barcode == _barcodeController.text.trim(),
+                                orElse: () => null,
+                              );
+                              if (item == null) return const SizedBox.shrink();
+                              return Row(
+                                children: [
+                                  const Icon(Icons.inventory_2_outlined, size: 14, color: Color(0xFF6366F1)),
+                                  const SizedBox(width: 4),
+                                  Text('Available in receipt: ${item.count}', style: const TextStyle(fontSize: 12, color: Color(0xFF6366F1))),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
 
                       // Count
                       const SizedBox(height: 20),
@@ -278,6 +417,17 @@ class _AddReturnedProductDialogState extends State<AddReturnedProductDialog> {
                         controller: _countController,
                         keyboardType: TextInputType.number,
                         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        onChanged: (_) {
+                          if (_receiptData != null && _barcodeController.text.isNotEmpty) {
+                            final item = _receiptData!.items.cast<SellingTransactionItemResponse?>().firstWhere(
+                              (item) => item?.barcode == _barcodeController.text.trim(),
+                              orElse: () => null,
+                            );
+                            if (item != null) {
+                              _validateCount(item);
+                            }
+                          }
+                        },
                         decoration: InputDecoration(
                           hintText: l10n.enterQuantity,
                           prefixIcon: const Icon(Icons.numbers_rounded, color: Color(0xFF94A3B8), size: 20),
@@ -309,6 +459,18 @@ class _AddReturnedProductDialogState extends State<AddReturnedProductDialog> {
                           if (value?.isEmpty ?? true) return l10n.fieldRequired;
                           final count = int.tryParse(value!);
                           if (count == null || count <= 0) return l10n.invalidNumber;
+
+                          // Validate against receipt quantity
+                          if (_receiptData != null && _barcodeController.text.isNotEmpty) {
+                            final item = _receiptData!.items.cast<SellingTransactionItemResponse?>().firstWhere(
+                              (item) => item?.barcode == _barcodeController.text.trim(),
+                              orElse: () => null,
+                            );
+                            if (item != null && count > item.count) {
+                              return l10n.quantityExceedsReceipt(item.count);
+                            }
+                          }
+
                           return null;
                         },
                       ),

@@ -54,7 +54,7 @@ class ReturnedProductsRepository {
   }) async {
     try {
       final response = await _dio.post<Map<String, dynamic>>(
-        '/api/returned-products/',
+        '/api/returned-products/return-product/',
         data: {
           'returned_product_barcode': returnedProductBarcode,
           'product_uuid': productUuid,

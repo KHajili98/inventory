@@ -66,6 +66,37 @@ class SellingTransactionsRepository {
     }
   }
 
+  /// GET /api/selling-transactions/ with search by receipt number
+  Future<ApiResult<SellingTransactionResponse?>> fetchReceiptByNumber(String receiptNumber) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiConstants.sellingTransactionsList,
+        queryParameters: {'search': receiptNumber, 'page_size': 1},
+      );
+
+      if (response.statusCode == 200) {
+        final listResponse = SellingTransactionListResponse.fromJson(response.data as Map<String, dynamic>);
+
+        // Find exact match
+        final exactMatch = listResponse.results.firstWhere(
+          (transaction) => transaction.receiptNumber == receiptNumber,
+          orElse: () => throw Exception('Receipt not found'),
+        );
+
+        return Success(exactMatch);
+      }
+
+      return Failure('Unexpected status: ${response.statusCode}', statusCode: response.statusCode);
+    } on DioException catch (e) {
+      return Failure(_parseDioError(e), statusCode: e.response?.statusCode);
+    } catch (e) {
+      if (e.toString().contains('Receipt not found')) {
+        return const Success(null);
+      }
+      return Failure(e.toString());
+    }
+  }
+
   String _parseDioError(DioException e) {
     if (e.response?.data is Map) {
       final data = e.response!.data as Map;

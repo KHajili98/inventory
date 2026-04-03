@@ -1358,4 +1358,18 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get add => 'Əlavə et';
+
+  @override
+  String get barcodeNotFoundInReceipt => 'Barkod qəbzdə tapılmadı';
+
+  @override
+  String quantityExceedsReceipt(int available) {
+    return 'Miqdar qəbzdəki miqdardan çoxdur. Mövcud: $available';
+  }
+
+  @override
+  String get receiptNotFound => 'Qəbz tapılmadı';
+
+  @override
+  String get validatingReceipt => 'Qəbz yoxlanılır...';
 }

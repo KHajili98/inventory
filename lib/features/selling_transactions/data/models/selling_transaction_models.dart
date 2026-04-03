@@ -158,6 +158,7 @@ class SellingTransactionItemResponse {
   final String id;
   final String sellingTransaction;
   final String productUuid;
+  final String? barcode;
   final int count;
   final double discountPercentage;
   final double discountAmount;
@@ -169,6 +170,7 @@ class SellingTransactionItemResponse {
     required this.id,
     required this.sellingTransaction,
     required this.productUuid,
+    this.barcode,
     required this.count,
     required this.discountPercentage,
     required this.discountAmount,
@@ -181,6 +183,7 @@ class SellingTransactionItemResponse {
     id: json['id'] as String,
     sellingTransaction: json['selling_transaction'] as String,
     productUuid: json['product_uuid'] as String,
+    barcode: json['barcode'] as String?,
     count: (json['count'] as num).toInt(),
     discountPercentage: (json['discount_percentage'] as num?)?.toDouble() ?? 0.0,
     discountAmount: (json['discount_amount'] as num?)?.toDouble() ?? 0.0,

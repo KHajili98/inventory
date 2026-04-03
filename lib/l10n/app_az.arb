@@ -654,5 +654,9 @@
   "enterQuantity": "Miqdarı daxil edin",
   "markAsDefected": "Qüsurlu kimi qeyd edin",
   "confirmReturn": "Geri Qaytarmanı Təsdiqləyin",
-  "add": "Əlavə et"
+  "add": "Əlavə et",
+  "barcodeNotFoundInReceipt": "Barkod qəbzdə tapılmadı",
+  "quantityExceedsReceipt": "Miqdar qəbzdəki miqdardan çoxdur. Mövcud: {available}",
+  "receiptNotFound": "Qəbz tapılmadı",
+  "validatingReceipt": "Qəbz yoxlanılır..."
 }

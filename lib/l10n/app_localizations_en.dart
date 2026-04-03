@@ -1354,4 +1354,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get add => 'Add';
+
+  @override
+  String get barcodeNotFoundInReceipt => 'Barcode not found in this receipt';
+
+  @override
+  String quantityExceedsReceipt(int available) {
+    return 'Quantity exceeds receipt amount. Available: $available';
+  }
+
+  @override
+  String get receiptNotFound => 'Receipt not found';
+
+  @override
+  String get validatingReceipt => 'Validating receipt...';
 }

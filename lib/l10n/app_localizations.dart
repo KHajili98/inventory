@@ -2665,6 +2665,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add'**
   String get add;
+
+  /// Error message when barcode is not in receipt
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode not found in this receipt'**
+  String get barcodeNotFoundInReceipt;
+
+  /// Error message when quantity exceeds receipt quantity
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity exceeds receipt amount. Available: {available}'**
+  String quantityExceedsReceipt(int available);
+
+  /// Error message when receipt is not found
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt not found'**
+  String get receiptNotFound;
+
+  /// Loading message when validating receipt
+  ///
+  /// In en, this message translates to:
+  /// **'Validating receipt...'**
+  String get validatingReceipt;
 }
 
 class _AppLocalizationsDelegate

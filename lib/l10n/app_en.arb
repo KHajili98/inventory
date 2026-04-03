@@ -1751,5 +1751,22 @@
   "@confirmReturn": { "description": "Confirmation dialog title for returned product" },
 
   "add": "Add",
-  "@add": { "description": "Add button label" }
+  "@add": { "description": "Add button label" },
+
+  "barcodeNotFoundInReceipt": "Barcode not found in this receipt",
+  "@barcodeNotFoundInReceipt": { "description": "Error message when barcode is not in receipt" },
+
+  "quantityExceedsReceipt": "Quantity exceeds receipt amount. Available: {available}",
+  "@quantityExceedsReceipt": { 
+    "description": "Error message when quantity exceeds receipt quantity",
+    "placeholders": {
+      "available": { "type": "int" }
+    }
+  },
+
+  "receiptNotFound": "Receipt not found",
+  "@receiptNotFound": { "description": "Error message when receipt is not found" },
+
+  "validatingReceipt": "Validating receipt...",
+  "@validatingReceipt": { "description": "Loading message when validating receipt" }
 }
