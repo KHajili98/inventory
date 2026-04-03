@@ -12,7 +12,7 @@ import 'package:inventory/pages/requests/product_requests_page.dart';
 import 'package:inventory/pages/stock/stock_page.dart';
 import 'package:inventory/pages/invoice/invoices_page.dart';
 import 'package:inventory/pages/finance/price_calculation_page.dart';
-import 'package:inventory/pages/pos/pos_page.dart';
+import 'package:inventory/pages/pos/pos/pos_page.dart';
 import 'package:inventory/pages/pos/transactions/transaction_list_page.dart';
 import 'package:inventory/pages/customers/loyal_customers_page.dart';
 import 'package:inventory/widgets/app_shell.dart';

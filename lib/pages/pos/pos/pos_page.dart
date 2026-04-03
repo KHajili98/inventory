@@ -143,6 +143,9 @@ class _PosPageState extends State<PosPage> {
 
   void _addToCart(StockProductItemModel product) {
     setState(() {
+      // Log barcode for debugging
+      log('Adding product to cart: ${product.displayName}, barcode: ${product.barcode}');
+
       // Use barcode as the unique key when available so that products with
       // the same name but different barcodes are treated as separate items,
       // and the same physical product (same barcode) always increments quantity.
@@ -321,14 +324,31 @@ class _PosPageState extends State<PosPage> {
       final unitPrice = _getCurrentPrice(item.product);
       final itemDiscountAmount = _rPrice(unitPrice * item.discountPercent / 100 * item.quantity);
       final itemTotal = _rPrice((unitPrice - unitPrice * item.discountPercent / 100) * item.quantity);
+
+      // Determine the correct product UUID - prioritize sourceProductUuid, then id
+      final productUuid = (item.product.sourceProductUuid != null && item.product.sourceProductUuid!.isNotEmpty)
+          ? item.product.sourceProductUuid!
+          : item.product.id;
+
+      // Log product details for debugging
+      log('Preparing item for sale: ${item.product.displayName}');
+      log('  - id: ${item.product.id}');
+      log('  - sourceProductUuid: ${item.product.sourceProductUuid}');
+      log('  - Using productUuid: $productUuid');
+      log('  - barcode: ${item.product.barcode}');
+
       return SellingTransactionItemRequest(
-        productUuid: item.product.sourceProductUuid ?? item.product.id,
+        productUuid: productUuid,
         count: item.quantity,
         discountPercentage: _rPct(item.discountPercent),
         discountAmount: itemDiscountAmount,
         totalPrice: itemTotal,
+        barcode: item.product.barcode,
       );
     }).toList();
+
+    // Log the complete request for debugging
+    log('Complete payment request items: ${items.map((i) => 'barcode: ${i.barcode}').join(', ')}');
 
     final request = CompletePaymentRequest(
       loggedInInventoryId: _loggedInInventory!.id,

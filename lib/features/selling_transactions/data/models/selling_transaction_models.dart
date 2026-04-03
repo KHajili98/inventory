@@ -27,6 +27,7 @@ class SellingTransactionItemRequest {
   final double discountPercentage;
   final double discountAmount;
   final double totalPrice;
+  final String? barcode;
 
   const SellingTransactionItemRequest({
     required this.productUuid,
@@ -34,6 +35,7 @@ class SellingTransactionItemRequest {
     required this.discountPercentage,
     required this.discountAmount,
     required this.totalPrice,
+    this.barcode,
   });
 
   Map<String, dynamic> toJson() => {
@@ -42,6 +44,7 @@ class SellingTransactionItemRequest {
     'discount_percentage': discountPercentage,
     'discount_amount': discountAmount,
     'total_price': totalPrice,
+    'barcode': barcode,
   };
 }
 
