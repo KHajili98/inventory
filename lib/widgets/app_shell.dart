@@ -34,6 +34,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
       subItems: [
         _SubNavItem(labelKey: 'pos', path: '/sell-module/pos'),
         _SubNavItem(labelKey: 'sellingTransactions', path: '/sell-module/transactions'),
+        _SubNavItem(labelKey: 'returnedProducts', path: '/sell-module/returns'),
       ],
     ),
     _NavItem(labelKey: 'invoices', icon: Icons.receipt_long_rounded, path: '/invoices'),
@@ -73,6 +74,8 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
         return l10n.pos;
       case 'sellingTransactions':
         return l10n.sellingTransactions;
+      case 'returnedProducts':
+        return l10n.returnedProducts;
       case 'invoices':
         return l10n.invoices;
       case 'inventoryProducts':

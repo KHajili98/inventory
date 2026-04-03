@@ -2492,17 +2492,113 @@ abstract class AppLocalizations {
   /// **'Total Transactions'**
   String get totalTransactions;
 
-  /// Total revenue stat label
+  /// Total revenue summary label
   ///
   /// In en, this message translates to:
   /// **'Total Revenue'**
   String get totalRevenue;
 
-  /// Search transactions placeholder
+  /// Transaction search placeholder
   ///
   /// In en, this message translates to:
   /// **'Search by receipt, seller…'**
   String get searchTransactions;
+
+  /// Returned products navigation label
+  ///
+  /// In en, this message translates to:
+  /// **'Returns'**
+  String get returnedProducts;
+
+  /// Returned products page subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'View and filter returned product history'**
+  String get returnedProductsSubtitle;
+
+  /// Returned product detail popup title
+  ///
+  /// In en, this message translates to:
+  /// **'Product Details'**
+  String get returnedProductDetails;
+
+  /// Label for defected returned product
+  ///
+  /// In en, this message translates to:
+  /// **'Defected Product'**
+  String get defectedProduct;
+
+  /// Label for normal returned product
+  ///
+  /// In en, this message translates to:
+  /// **'Normal Return'**
+  String get normalReturn;
+
+  /// Defected status label
+  ///
+  /// In en, this message translates to:
+  /// **'Defected'**
+  String get defected;
+
+  /// Normal status label
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get normal;
+
+  /// Total returns summary label
+  ///
+  /// In en, this message translates to:
+  /// **'Total Returns'**
+  String get totalReturns;
+
+  /// All products filter option
+  ///
+  /// In en, this message translates to:
+  /// **'All Products'**
+  String get allProducts;
+
+  /// Defected products filter option
+  ///
+  /// In en, this message translates to:
+  /// **'Defected Only'**
+  String get defectedOnly;
+
+  /// Normal products filter option
+  ///
+  /// In en, this message translates to:
+  /// **'Normal Only'**
+  String get normalOnly;
+
+  /// Empty state for returned products list
+  ///
+  /// In en, this message translates to:
+  /// **'No returned products found'**
+  String get noReturnedProducts;
+
+  /// Product UUID label
+  ///
+  /// In en, this message translates to:
+  /// **'Product UUID'**
+  String get productUUID;
+
+  /// Updated at timestamp label
+  ///
+  /// In en, this message translates to:
+  /// **'Updated At'**
+  String get updatedAt;
+
+  /// Refresh button label
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get refresh;
+
+  /// Close button label
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
 }
 
 class _AppLocalizationsDelegate

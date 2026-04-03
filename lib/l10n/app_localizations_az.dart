@@ -992,7 +992,7 @@ class AppLocalizationsAz extends AppLocalizations {
   String get adjustPrices => 'Qiymətləri Tənzimlə';
 
   @override
-  String get editProductPrices => 'Məhsul Qiymətlərini Redaktə Et';
+  String get editProductPrices => 'Məhsul Qiymətlerini Redaktə Et';
 
   @override
   String get selectStock => 'Stock seçin';
@@ -1276,4 +1276,53 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get searchTransactions => 'Qəbz, satıcı ilə axtar…';
+
+  @override
+  String get returnedProducts => 'Geri Qaytarma';
+
+  @override
+  String get returnedProductsSubtitle =>
+      'Geri qaytarılmış məhsulları görün və filtrləyin';
+
+  @override
+  String get returnedProductDetails => 'Məhsul Təfərrüatı';
+
+  @override
+  String get defectedProduct => 'Qüsurlu Məhsul';
+
+  @override
+  String get normalReturn => 'Normal Qaytarma';
+
+  @override
+  String get defected => 'Qüsurlu';
+
+  @override
+  String get normal => 'Normal';
+
+  @override
+  String get totalReturns => 'Ümumi Qaytarmalar';
+
+  @override
+  String get allProducts => 'Bütün Məhsullar';
+
+  @override
+  String get defectedOnly => 'Yalnız Qüsurlu';
+
+  @override
+  String get normalOnly => 'Yalnız Normal';
+
+  @override
+  String get noReturnedProducts => 'Geri qaytarılmış məhsul tapılmadı';
+
+  @override
+  String get productUUID => 'Məhsul UUID';
+
+  @override
+  String get updatedAt => 'Yenilənmə Tarixi';
+
+  @override
+  String get refresh => 'Yenilə';
+
+  @override
+  String get close => 'Bağla';
 }

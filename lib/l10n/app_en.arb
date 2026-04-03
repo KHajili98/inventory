@@ -1667,8 +1667,56 @@
   "@totalTransactions": { "description": "Total transactions stat label" },
 
   "totalRevenue": "Total Revenue",
-  "@totalRevenue": { "description": "Total revenue stat label" },
+  "@totalRevenue": { "description": "Total revenue summary label" },
 
   "searchTransactions": "Search by receipt, seller…",
-  "@searchTransactions": { "description": "Search transactions placeholder" }
+  "@searchTransactions": { "description": "Transaction search placeholder" },
+
+  "returnedProducts": "Returns",
+  "@returnedProducts": { "description": "Returned products navigation label" },
+
+  "returnedProductsSubtitle": "View and filter returned product history",
+  "@returnedProductsSubtitle": { "description": "Returned products page subtitle" },
+
+  "returnedProductDetails": "Product Details",
+  "@returnedProductDetails": { "description": "Returned product detail popup title" },
+
+  "defectedProduct": "Defected Product",
+  "@defectedProduct": { "description": "Label for defected returned product" },
+
+  "normalReturn": "Normal Return",
+  "@normalReturn": { "description": "Label for normal returned product" },
+
+  "defected": "Defected",
+  "@defected": { "description": "Defected status label" },
+
+  "normal": "Normal",
+  "@normal": { "description": "Normal status label" },
+
+  "totalReturns": "Total Returns",
+  "@totalReturns": { "description": "Total returns summary label" },
+
+  "allProducts": "All Products",
+  "@allProducts": { "description": "All products filter option" },
+
+  "defectedOnly": "Defected Only",
+  "@defectedOnly": { "description": "Defected products filter option" },
+
+  "normalOnly": "Normal Only",
+  "@normalOnly": { "description": "Normal products filter option" },
+
+  "noReturnedProducts": "No returned products found",
+  "@noReturnedProducts": { "description": "Empty state for returned products list" },
+
+  "productUUID": "Product UUID",
+  "@productUUID": { "description": "Product UUID label" },
+
+  "updatedAt": "Updated At",
+  "@updatedAt": { "description": "Updated at timestamp label" },
+
+  "refresh": "Refresh",
+  "@refresh": { "description": "Refresh button label" },
+
+  "close": "Close",
+  "@close": { "description": "Close button label" }
 }

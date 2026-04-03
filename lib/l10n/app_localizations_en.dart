@@ -1272,4 +1272,53 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchTransactions => 'Search by receipt, seller…';
+
+  @override
+  String get returnedProducts => 'Returns';
+
+  @override
+  String get returnedProductsSubtitle =>
+      'View and filter returned product history';
+
+  @override
+  String get returnedProductDetails => 'Product Details';
+
+  @override
+  String get defectedProduct => 'Defected Product';
+
+  @override
+  String get normalReturn => 'Normal Return';
+
+  @override
+  String get defected => 'Defected';
+
+  @override
+  String get normal => 'Normal';
+
+  @override
+  String get totalReturns => 'Total Returns';
+
+  @override
+  String get allProducts => 'All Products';
+
+  @override
+  String get defectedOnly => 'Defected Only';
+
+  @override
+  String get normalOnly => 'Normal Only';
+
+  @override
+  String get noReturnedProducts => 'No returned products found';
+
+  @override
+  String get productUUID => 'Product UUID';
+
+  @override
+  String get updatedAt => 'Updated At';
+
+  @override
+  String get refresh => 'Refresh';
+
+  @override
+  String get close => 'Close';
 }

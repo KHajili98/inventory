@@ -524,7 +524,7 @@
   "confirmCalculation": "Hesablamanı Təsdiqlə",
   "confirm": "Təsdiqlə",
   "adjustPrices": "Qiymətləri Tənzimlə",
-  "editProductPrices": "Məhsul Qiymətlərini Redaktə Et",
+  "editProductPrices": "Məhsul Qiymətlerini Redaktə Et",
   "selectStock": "Stock seçin",
   "selectStockHint": "Stock seçin...",
   "top5Products": "Ən çox olan 5 məhsul",
@@ -626,5 +626,22 @@
   "count": "Say",
   "totalTransactions": "Ümumi Əməliyyatlar",
   "totalRevenue": "Ümumi Gəlir",
-  "searchTransactions": "Qəbz, satıcı ilə axtar…"
+  "searchTransactions": "Qəbz, satıcı ilə axtar…",
+
+  "returnedProducts": "Geri Qaytarma",
+  "returnedProductsSubtitle": "Geri qaytarılmış məhsulları görün və filtrləyin",
+  "returnedProductDetails": "Məhsul Təfərrüatı",
+  "defectedProduct": "Qüsurlu Məhsul",
+  "normalReturn": "Normal Qaytarma",
+  "defected": "Qüsurlu",
+  "normal": "Normal",
+  "totalReturns": "Ümumi Qaytarmalar",
+  "allProducts": "Bütün Məhsullar",
+  "defectedOnly": "Yalnız Qüsurlu",
+  "normalOnly": "Yalnız Normal",
+  "noReturnedProducts": "Geri qaytarılmış məhsul tapılmadı",
+  "productUUID": "Məhsul UUID",
+  "updatedAt": "Yenilənmə Tarixi",
+  "refresh": "Yenilə",
+  "close": "Bağla"
 }
