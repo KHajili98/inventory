@@ -8,6 +8,7 @@ import 'package:inventory/features/returned_products/cubit/returned_products_cub
 import 'package:inventory/features/returned_products/cubit/returned_products_state.dart';
 import 'package:inventory/features/returned_products/data/models/returned_product_models.dart';
 import 'package:inventory/l10n/app_localizations.dart';
+import 'package:inventory/pages/pos/returns/add_returned_product_dialog.dart';
 
 // ── Entry widget ─────────────────────────────────────────────────────────────
 
@@ -184,19 +185,33 @@ class _ReturnedProductsViewState extends State<_ReturnedProductsView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Padding(
-      padding: context.responsiveHorizontalPadding.add(EdgeInsets.symmetric(vertical: context.responsivePadding)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildTopBar(l10n),
-          SizedBox(height: context.isMobile ? 16 : 20),
-          _buildSummaryRow(l10n),
-          SizedBox(height: context.isMobile ? 12 : 16),
-          _buildFilters(l10n),
-          SizedBox(height: context.isMobile ? 12 : 16),
-          Expanded(child: _buildList(l10n)),
-        ],
+    return Scaffold(
+      body: Padding(
+        padding: context.responsiveHorizontalPadding.add(EdgeInsets.symmetric(vertical: context.responsivePadding)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildTopBar(l10n),
+            SizedBox(height: context.isMobile ? 16 : 20),
+            _buildSummaryRow(l10n),
+            SizedBox(height: context.isMobile ? 12 : 16),
+            _buildFilters(l10n),
+            SizedBox(height: context.isMobile ? 12 : 16),
+            Expanded(child: _buildList(l10n)),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final result = await showDialog<bool>(context: context, builder: (context) => const AddReturnedProductDialog());
+          if (result == true && context.mounted) {
+            context.read<ReturnedProductsCubit>().refresh();
+          }
+        },
+        backgroundColor: const Color(0xFF6366F1),
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add_rounded),
+        label: Text(l10n.addReturnedProduct),
       ),
     );
   }

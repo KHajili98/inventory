@@ -2599,6 +2599,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close'**
   String get close;
+
+  /// Add returned product dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Add Returned Product'**
+  String get addReturnedProduct;
+
+  /// Validation message for product selection
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a product'**
+  String get pleaseSelectProduct;
+
+  /// Success message after adding returned product
+  ///
+  /// In en, this message translates to:
+  /// **'Returned product added successfully'**
+  String get returnedProductAdded;
+
+  /// Receipt number input placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Enter receipt number'**
+  String get enterReceiptNumber;
+
+  /// Label showing number of found transactions
+  ///
+  /// In en, this message translates to:
+  /// **'Found transactions'**
+  String get foundTransactions;
+
+  /// Product selection label
+  ///
+  /// In en, this message translates to:
+  /// **'Select Product'**
+  String get selectProduct;
+
+  /// Barcode input placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Enter barcode'**
+  String get enterBarcode;
+
+  /// Quantity input placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Enter quantity'**
+  String get enterQuantity;
+
+  /// Defect checkbox description
+  ///
+  /// In en, this message translates to:
+  /// **'Mark this product as defected'**
+  String get markAsDefected;
+
+  /// Confirmation dialog title for returned product
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Return'**
+  String get confirmReturn;
+
+  /// Add button label
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
 }
 
 class _AppLocalizationsDelegate

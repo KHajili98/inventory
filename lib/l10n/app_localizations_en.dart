@@ -1321,4 +1321,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get close => 'Close';
+
+  @override
+  String get addReturnedProduct => 'Add Returned Product';
+
+  @override
+  String get pleaseSelectProduct => 'Please select a product';
+
+  @override
+  String get returnedProductAdded => 'Returned product added successfully';
+
+  @override
+  String get enterReceiptNumber => 'Enter receipt number';
+
+  @override
+  String get foundTransactions => 'Found transactions';
+
+  @override
+  String get selectProduct => 'Select Product';
+
+  @override
+  String get enterBarcode => 'Enter barcode';
+
+  @override
+  String get enterQuantity => 'Enter quantity';
+
+  @override
+  String get markAsDefected => 'Mark this product as defected';
+
+  @override
+  String get confirmReturn => 'Confirm Return';
+
+  @override
+  String get add => 'Add';
 }

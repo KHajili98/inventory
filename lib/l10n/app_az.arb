@@ -643,5 +643,16 @@
   "productUUID": "Məhsul UUID",
   "updatedAt": "Yenilənmə Tarixi",
   "refresh": "Yenilə",
-  "close": "Bağla"
+  "close": "Bağla",
+  "addReturnedProduct": "Geri Qaytarma Əlavə Et",
+  "pleaseSelectProduct": "Zəhmət olmasa məhsul seçin",
+  "returnedProductAdded": "Geri qaytarma uğurla əlavə edildi",
+  "enterReceiptNumber": "Qəbz nömrəsini daxil edin",
+  "foundTransactions": "Tapılmış əməliyyatlar",
+  "selectProduct": "Məhsul seçin",
+  "enterBarcode": "Barkod daxil edin",
+  "enterQuantity": "Miqdarı daxil edin",
+  "markAsDefected": "Qüsurlu kimi qeyd edin",
+  "confirmReturn": "Geri Qaytarmanı Təsdiqləyin",
+  "add": "Əlavə et"
 }

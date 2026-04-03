@@ -44,6 +44,38 @@ class ReturnedProductsRepository {
     }
   }
 
+  /// POST /api/returned-products/
+  Future<ApiResult<ReturnedProduct>> createReturnedProduct({
+    required String returnedProductBarcode,
+    required String productUuid,
+    required int count,
+    required bool isDefected,
+    required String receiptNumber,
+  }) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/api/returned-products/',
+        data: {
+          'returned_product_barcode': returnedProductBarcode,
+          'product_uuid': productUuid,
+          'count': count,
+          'is_defected': isDefected,
+          'receipt_number': receiptNumber,
+        },
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return Success(ReturnedProduct.fromJson(response.data as Map<String, dynamic>));
+      }
+
+      return Failure('Unexpected status: ${response.statusCode}', statusCode: response.statusCode);
+    } on DioException catch (e) {
+      return Failure(_parseDioError(e), statusCode: e.response?.statusCode);
+    } catch (e) {
+      return Failure(e.toString());
+    }
+  }
+
   String _parseDioError(DioException e) {
     if (e.response?.data is Map) {
       final data = e.response!.data as Map;

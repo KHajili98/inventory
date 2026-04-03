@@ -1325,4 +1325,37 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get close => 'Bağla';
+
+  @override
+  String get addReturnedProduct => 'Geri Qaytarma Əlavə Et';
+
+  @override
+  String get pleaseSelectProduct => 'Zəhmət olmasa məhsul seçin';
+
+  @override
+  String get returnedProductAdded => 'Geri qaytarma uğurla əlavə edildi';
+
+  @override
+  String get enterReceiptNumber => 'Qəbz nömrəsini daxil edin';
+
+  @override
+  String get foundTransactions => 'Tapılmış əməliyyatlar';
+
+  @override
+  String get selectProduct => 'Məhsul seçin';
+
+  @override
+  String get enterBarcode => 'Barkod daxil edin';
+
+  @override
+  String get enterQuantity => 'Miqdarı daxil edin';
+
+  @override
+  String get markAsDefected => 'Qüsurlu kimi qeyd edin';
+
+  @override
+  String get confirmReturn => 'Geri Qaytarmanı Təsdiqləyin';
+
+  @override
+  String get add => 'Əlavə et';
 }

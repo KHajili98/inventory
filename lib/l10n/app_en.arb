@@ -1718,5 +1718,38 @@
   "@refresh": { "description": "Refresh button label" },
 
   "close": "Close",
-  "@close": { "description": "Close button label" }
+  "@close": { "description": "Close button label" },
+
+  "addReturnedProduct": "Add Returned Product",
+  "@addReturnedProduct": { "description": "Add returned product dialog title" },
+
+  "pleaseSelectProduct": "Please select a product",
+  "@pleaseSelectProduct": { "description": "Validation message for product selection" },
+
+  "returnedProductAdded": "Returned product added successfully",
+  "@returnedProductAdded": { "description": "Success message after adding returned product" },
+
+  "enterReceiptNumber": "Enter receipt number",
+  "@enterReceiptNumber": { "description": "Receipt number input placeholder" },
+
+  "foundTransactions": "Found transactions",
+  "@foundTransactions": { "description": "Label showing number of found transactions" },
+
+  "selectProduct": "Select Product",
+  "@selectProduct": { "description": "Product selection label" },
+
+  "enterBarcode": "Enter barcode",
+  "@enterBarcode": { "description": "Barcode input placeholder" },
+
+  "enterQuantity": "Enter quantity",
+  "@enterQuantity": { "description": "Quantity input placeholder" },
+
+  "markAsDefected": "Mark this product as defected",
+  "@markAsDefected": { "description": "Defect checkbox description" },
+
+  "confirmReturn": "Confirm Return",
+  "@confirmReturn": { "description": "Confirmation dialog title for returned product" },
+
+  "add": "Add",
+  "@add": { "description": "Add button label" }
 }
