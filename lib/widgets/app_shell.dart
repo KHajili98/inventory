@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:inventory/features/auth/auth_cubit.dart';
+import 'package:inventory/features/auth/auth_service.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 import 'package:inventory/cubit/locale_cubit.dart';
 import 'package:inventory/core/utils/responsive.dart';
+import 'package:inventory/models/auth_models.dart';
 
 class AppShell extends StatefulWidget {
   final Widget child;
@@ -283,6 +285,37 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           child: Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
                         ),
+                        // ── Inventory name ────────────────────────────────────
+                        FutureBuilder<LoginResponse?>(
+                          future: AuthService.instance.getLoginResponse(),
+                          builder: (context, snapshot) {
+                            final inventoryName = snapshot.data?.loggedInInventory?.name;
+
+                            if (inventoryName == null || _collapsed) return const SizedBox.shrink();
+
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.store_rounded, size: 14, color: Color(0xFF94A3B8)),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      inventoryName,
+                                      style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8), fontWeight: FontWeight.w500),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 2,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
+                        ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                           child: AnimatedSwitcher(
@@ -481,6 +514,34 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
               ),
             ),
 
+            // Inventory name
+            FutureBuilder<LoginResponse?>(
+              future: AuthService.instance.getLoginResponse(),
+              builder: (context, snapshot) {
+                final inventoryName = snapshot.data?.loggedInInventory?.name;
+
+                if (inventoryName == null) return const SizedBox.shrink();
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.store_rounded, size: 14, color: Color(0xFF94A3B8)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          inventoryName,
+                          style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8), fontWeight: FontWeight.w500),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+
             Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -642,7 +703,7 @@ class _NavItem {
   const _NavItem({required this.labelKey, required this.icon, required this.path, this.subItems = const []});
 }
 
-// ── Sidebar tile ──────────────────────────────────────────────────────────────
+// ── Sidebar tile ─────────────────────────────────────────────────────────────-
 
 class _SidebarTile extends StatefulWidget {
   final _NavItem item;
