@@ -519,9 +519,12 @@ class _PosPageState extends State<PosPage> {
                           inventoryAddress: inventoryAddress,
                           sellerName: sellerName,
                           paymentMethodLabel: paymentMethodLabel,
+                          manualDiscountPercent: _discountEnabled ? _globalDiscountPercent : 0.0,
+                          customerDiscountPercent: _selectedCustomer?.discountPercentage ?? 0.0,
+                          customerName: _selectedCustomer?.fullName,
                         ),
                         icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
-                        label: const Text('Qəbzi PDF yüklə', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                        label: const Text('Qaimə PDF yüklə', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF667EEA),
                           side: const BorderSide(color: Color(0xFF667EEA), width: 1.5),
@@ -575,6 +578,9 @@ class _PosPageState extends State<PosPage> {
     required String inventoryAddress,
     required String? sellerName,
     required String paymentMethodLabel,
+    required double manualDiscountPercent,
+    required double customerDiscountPercent,
+    required String? customerName,
   }) async {
     try {
       // ── Load Unicode font from bundled assets (supports all Azerbaijani chars) ──
@@ -604,8 +610,8 @@ class _PosPageState extends State<PosPage> {
         final price = _getCurrentPrice(item.product);
         return sum + price * item.quantity;
       });
-      final discountAmount = subtotal - total;
-      final discountPercent = _rPct(data.discountPercentage);
+      final manualDiscountAmount = subtotal * manualDiscountPercent / 100;
+      final customerDiscountAmount = subtotal * customerDiscountPercent / 100;
 
       // Load logo
       pw.MemoryImage? logoImage;
@@ -721,7 +727,7 @@ class _PosPageState extends State<PosPage> {
                 pw.Row(
                   children: [
                     pw.Text('Kimə: ', style: body(bold: true, color: tableHeaderRed)),
-                    pw.Text(_selectedCustomer?.fullName ?? '—', style: body()),
+                    pw.Text(customerName ?? '—', style: body()),
                     pw.Spacer(),
                     pw.Text('Ödəniş: ', style: body(bold: true, color: tableHeaderRed)),
                     pw.Text(paymentMethodLabel, style: body()),
@@ -779,10 +785,20 @@ class _PosPageState extends State<PosPage> {
                       children: [
                         _totalRow('CƏMİ', '${subtotal.toStringAsFixed(2)} AZN', body, borderColor, redText),
                         pw.SizedBox(height: 4),
-                        if (discountAmount > 0.001) ...[
+                        if (manualDiscountAmount > 0.001) ...[
                           _totalRow(
-                            '${discountPercent.toStringAsFixed(0)}% ENDİRİM',
-                            '${discountAmount.toStringAsFixed(2)} AZN',
+                            'ENDİRİM (${manualDiscountPercent.toStringAsFixed(0)}%)',
+                            '- ${manualDiscountAmount.toStringAsFixed(2)} AZN',
+                            body,
+                            borderColor,
+                            redText,
+                          ),
+                          pw.SizedBox(height: 4),
+                        ],
+                        if (customerDiscountAmount > 0.001) ...[
+                          _totalRow(
+                            'MÜŞTƏRİ ENDİRİMİ (${customerDiscountPercent.toStringAsFixed(0)}%)',
+                            '- ${customerDiscountAmount.toStringAsFixed(2)} AZN',
                             body,
                             borderColor,
                             redText,
