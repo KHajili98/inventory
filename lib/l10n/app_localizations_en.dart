@@ -1377,4 +1377,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get logoutConfirmMessage => 'Are you sure you want to log out?';
+
+  @override
+  String get priceHistory => 'Price History';
+
+  @override
+  String get history => 'History';
+
+  @override
+  String get noHistory => 'No price change history available.';
+
+  @override
+  String get changedBy => 'Changed by';
+
+  @override
+  String get changedAt => 'Changed at';
+
+  @override
+  String get oldValue => 'Old';
+
+  @override
+  String get newValue => 'New';
+
+  @override
+  String get costUnitPriceLabel => 'Cost Price';
+
+  @override
+  String get wholeUnitSalesPriceLabel => 'Wholesale Price';
+
+  @override
+  String get retailUnitPriceLabel => 'Retail Price';
+
+  @override
+  String get priceChange => 'Price Change';
+
+  @override
+  String get viewPriceHistory => 'View all price changes';
 }

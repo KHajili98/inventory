@@ -1,3 +1,36 @@
+/// A single price field change within a history entry.
+class PriceChangeDetail {
+  final double? oldValue;
+  final double? newValue;
+
+  const PriceChangeDetail({this.oldValue, this.newValue});
+
+  factory PriceChangeDetail.fromJson(Map<String, dynamic> json) =>
+      PriceChangeDetail(oldValue: (json['old'] as num?)?.toDouble(), newValue: (json['new'] as num?)?.toDouble());
+}
+
+/// A single entry in the change_history list.
+class PriceChangeHistoryEntry {
+  final Map<String, PriceChangeDetail> changes;
+  final DateTime? changedAt;
+  final String? changedByUsername;
+  final String? changedByEmail;
+
+  const PriceChangeHistoryEntry({required this.changes, this.changedAt, this.changedByUsername, this.changedByEmail});
+
+  factory PriceChangeHistoryEntry.fromJson(Map<String, dynamic> json) {
+    final changesRaw = json['changes'] as Map<String, dynamic>? ?? {};
+    final changes = changesRaw.map((key, value) => MapEntry(key, PriceChangeDetail.fromJson(value as Map<String, dynamic>)));
+    final changedBy = json['changed_by'] as Map<String, dynamic>?;
+    return PriceChangeHistoryEntry(
+      changes: changes,
+      changedAt: json['changed_at'] != null ? DateTime.tryParse(json['changed_at'] as String) : null,
+      changedByUsername: changedBy?['username'] as String?,
+      changedByEmail: changedBy?['email'] as String?,
+    );
+  }
+}
+
 /// Response model for GET /api/stocks/
 class StockProductResponseModel {
   final int count;
@@ -55,6 +88,7 @@ class StockProductItemModel {
   final double? wholeUnitSalesPrice;
   final double? retailUnitPrice;
   final bool priced;
+  final List<PriceChangeHistoryEntry> changeHistory;
   final StockInventoryDetails? inventoryDetails;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -78,6 +112,7 @@ class StockProductItemModel {
     this.wholeUnitSalesPrice,
     this.retailUnitPrice,
     required this.priced,
+    this.changeHistory = const [],
     this.inventoryDetails,
     this.createdAt,
     this.updatedAt,
@@ -105,6 +140,8 @@ class StockProductItemModel {
     wholeUnitSalesPrice: (json['whole_unit_sales_price'] as num?)?.toDouble(),
     retailUnitPrice: (json['retail_unit_price'] as num?)?.toDouble(),
     priced: json['priced'] as bool? ?? false,
+    changeHistory:
+        (json['change_history'] as List<dynamic>?)?.map((e) => PriceChangeHistoryEntry.fromJson(e as Map<String, dynamic>)).toList() ?? const [],
     inventoryDetails: json['inventory_details'] != null ? StockInventoryDetails.fromJson(json['inventory_details'] as Map<String, dynamic>) : null,
     createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'] as String) : null,
     updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at'] as String) : null,

@@ -9,6 +9,8 @@ import 'package:inventory/features/stocks/data/models/stock_product_response_mod
 import 'package:inventory/l10n/app_localizations.dart';
 import 'package:inventory/pages/finance/calculation_detail_page.dart';
 import 'package:inventory/pages/finance/edit_product_price_by_stock_page.dart';
+import 'package:inventory/pages/finance/price_history_page.dart';
+import 'package:inventory/pages/finance/priced_history_list_page.dart';
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
@@ -45,6 +47,7 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
   static const double _colCostPrice = 120.0;
   static const double _colWholePrice = 140.0;
   static const double _colRetailPrice = 130.0;
+  static const double _colHistory = 100.0;
 
   static double get _tableWidth =>
       _colModelCode +
@@ -61,6 +64,7 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
       _colCostPrice +
       _colWholePrice +
       _colRetailPrice +
+      _colHistory +
       50;
 
   @override
@@ -161,7 +165,17 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
                   BlocBuilder<PriceCalculationCubit, PriceCalculationState>(
                     builder: (_, state) {
                       if (state is PriceCalculationLoaded) {
-                        return _StatsRow(totalCount: state.totalCount, isMobile: isMobile, l10n: l10n);
+                        return _StatsRow(
+                          totalCount: state.totalCount,
+                          isMobile: isMobile,
+                          l10n: l10n,
+                          onHistoryTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              settings: const RouteSettings(name: 'PricedHistoryListPage'),
+                              builder: (_) => const PricedHistoryListPage(),
+                            ),
+                          ),
+                        );
                       }
                       return const SizedBox.shrink();
                     },
@@ -317,6 +331,7 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
             _headerCell(l10n.costPrice, _colCostPrice),
             _headerCell(l10n.wholesalePrice, _colWholePrice),
             _headerCell(l10n.retailPrice, _colRetailPrice),
+            _headerCell(l10n.history, _colHistory),
           ],
         ),
       ),
@@ -365,6 +380,26 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
               _cell(item.costUnitPrice != null ? '₼ ${item.costUnitPrice!.toStringAsFixed(2)}' : '—', _colCostPrice),
               _cell(item.wholeUnitSalesPrice != null ? '₼ ${item.wholeUnitSalesPrice!.toStringAsFixed(2)}' : '—', _colWholePrice),
               _cell(item.retailUnitPrice != null ? '₼ ${item.retailUnitPrice!.toStringAsFixed(2)}' : '—', _colRetailPrice),
+              // ── History button ─────────────────────────────────────────
+              SizedBox(
+                width: _colHistory,
+                child: TextButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      settings: const RouteSettings(name: 'PriceHistoryPage'),
+                      builder: (_) => PriceHistoryPage(item: item),
+                    ),
+                  ),
+                  icon: const Icon(Icons.history_rounded, size: 14),
+                  label: Text(l10n.history),
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFF6366F1),
+                    textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -429,12 +464,13 @@ class _StatsRow extends StatelessWidget {
   final int totalCount;
   final bool isMobile;
   final AppLocalizations l10n;
+  final VoidCallback onHistoryTap;
 
-  const _StatsRow({required this.totalCount, required this.isMobile, required this.l10n});
+  const _StatsRow({required this.totalCount, required this.isMobile, required this.l10n, required this.onHistoryTap});
 
   @override
   Widget build(BuildContext context) {
-    final cards = [
+    final statCards = [
       _StatCard(
         title: l10n.totalRequests,
         value: '$totalCount',
@@ -445,12 +481,17 @@ class _StatsRow extends StatelessWidget {
       _StatCard(title: l10n.pricePending, value: '$totalCount', icon: Icons.pending_rounded, color: const Color(0xFFEF4444), isMobile: isMobile),
     ];
 
+    final historyButton = _HistoryActionCard(onTap: onHistoryTap, l10n: l10n, isMobile: isMobile);
+
     if (isMobile) {
       return Column(
-        children: cards.map((c) => Padding(padding: const EdgeInsets.only(bottom: 10), child: c)).toList(),
+        children: [
+          ...statCards.map((c) => Padding(padding: const EdgeInsets.only(bottom: 10), child: c)),
+          historyButton,
+        ],
       );
     }
-    return Wrap(spacing: 14, runSpacing: 14, children: cards);
+    return Wrap(spacing: 14, runSpacing: 14, children: [...statCards, historyButton]);
   }
 }
 
@@ -500,6 +541,57 @@ class _StatCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── History action card ───────────────────────────────────────────────────────
+
+class _HistoryActionCard extends StatelessWidget {
+  final VoidCallback onTap;
+  final AppLocalizations l10n;
+  final bool isMobile;
+
+  const _HistoryActionCard({required this.onTap, required this.l10n, required this.isMobile});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: isMobile ? double.infinity : 220,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF818CF8)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(9)),
+              child: const Icon(Icons.history_rounded, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.priceHistory,
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(l10n.viewPriceHistory, style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.8))),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.white),
+          ],
+        ),
       ),
     );
   }

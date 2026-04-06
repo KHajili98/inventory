@@ -662,5 +662,18 @@
 
   "logout": "Çıxış",
   "logoutConfirmTitle": "Çıxmaq istəyirsiniz?",
-  "logoutConfirmMessage": "Hesabdan çıxmaq istədiyinizə əminsiniz?"
+  "logoutConfirmMessage": "Hesabdan çıxmaq istədiyinizə əminsiniz?",
+
+  "priceHistory": "Qiymət Tarixçəsi",
+  "history": "Tarixçə",
+  "noHistory": "Qiymət dəyişikliyi tarixçəsi yoxdur.",
+  "changedBy": "Dəyişdirən",
+  "changedAt": "Dəyişdirilmə tarixi",
+  "oldValue": "Köhnə",
+  "newValue": "Yeni",
+  "costUnitPriceLabel": "Maya Qiyməti",
+  "wholeUnitSalesPriceLabel": "Topdan Qiymət",
+  "retailUnitPriceLabel": "Pərakəndə Qiymət",
+  "priceChange": "Qiymət Dəyişikliyi",
+  "viewPriceHistory": "Bütün qiymət dəyişikliklərini gör"
 }

@@ -1777,5 +1777,41 @@
   "@logoutConfirmTitle": { "description": "Logout confirmation dialog title" },
 
   "logoutConfirmMessage": "Are you sure you want to log out?",
-  "@logoutConfirmMessage": { "description": "Logout confirmation dialog message" }
+  "@logoutConfirmMessage": { "description": "Logout confirmation dialog message" },
+
+  "priceHistory": "Price History",
+  "@priceHistory": { "description": "Price history page title" },
+
+  "history": "History",
+  "@history": { "description": "History button label" },
+
+  "noHistory": "No price change history available.",
+  "@noHistory": { "description": "Empty state message for price history" },
+
+  "changedBy": "Changed by",
+  "@changedBy": { "description": "Label for who made the price change" },
+
+  "changedAt": "Changed at",
+  "@changedAt": { "description": "Label for when the price change was made" },
+
+  "oldValue": "Old",
+  "@oldValue": { "description": "Label for the old price value" },
+
+  "newValue": "New",
+  "@newValue": { "description": "Label for the new price value" },
+
+  "costUnitPriceLabel": "Cost Price",
+  "@costUnitPriceLabel": { "description": "Label for cost unit price field" },
+
+  "wholeUnitSalesPriceLabel": "Wholesale Price",
+  "@wholeUnitSalesPriceLabel": { "description": "Label for wholesale unit sales price field" },
+
+  "retailUnitPriceLabel": "Retail Price",
+  "@retailUnitPriceLabel": { "description": "Label for retail unit price field" },
+
+  "priceChange": "Price Change",
+  "@priceChange": { "description": "Label for a price change history entry" },
+
+  "viewPriceHistory": "View all price changes",
+  "@viewPriceHistory": { "description": "Subtitle for the price history action button" }
 }

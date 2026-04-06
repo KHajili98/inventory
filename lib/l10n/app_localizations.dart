@@ -2707,6 +2707,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Are you sure you want to log out?'**
   String get logoutConfirmMessage;
+
+  /// Price history page title
+  ///
+  /// In en, this message translates to:
+  /// **'Price History'**
+  String get priceHistory;
+
+  /// History button label
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get history;
+
+  /// Empty state message for price history
+  ///
+  /// In en, this message translates to:
+  /// **'No price change history available.'**
+  String get noHistory;
+
+  /// Label for who made the price change
+  ///
+  /// In en, this message translates to:
+  /// **'Changed by'**
+  String get changedBy;
+
+  /// Label for when the price change was made
+  ///
+  /// In en, this message translates to:
+  /// **'Changed at'**
+  String get changedAt;
+
+  /// Label for the old price value
+  ///
+  /// In en, this message translates to:
+  /// **'Old'**
+  String get oldValue;
+
+  /// Label for the new price value
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get newValue;
+
+  /// Label for cost unit price field
+  ///
+  /// In en, this message translates to:
+  /// **'Cost Price'**
+  String get costUnitPriceLabel;
+
+  /// Label for wholesale unit sales price field
+  ///
+  /// In en, this message translates to:
+  /// **'Wholesale Price'**
+  String get wholeUnitSalesPriceLabel;
+
+  /// Label for retail unit price field
+  ///
+  /// In en, this message translates to:
+  /// **'Retail Price'**
+  String get retailUnitPriceLabel;
+
+  /// Label for a price change history entry
+  ///
+  /// In en, this message translates to:
+  /// **'Price Change'**
+  String get priceChange;
+
+  /// Subtitle for the price history action button
+  ///
+  /// In en, this message translates to:
+  /// **'View all price changes'**
+  String get viewPriceHistory;
 }
 
 class _AppLocalizationsDelegate

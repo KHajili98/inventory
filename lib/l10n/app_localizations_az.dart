@@ -1381,4 +1381,40 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get logoutConfirmMessage => 'Hesabdan çıxmaq istədiyinizə əminsiniz?';
+
+  @override
+  String get priceHistory => 'Qiymət Tarixçəsi';
+
+  @override
+  String get history => 'Tarixçə';
+
+  @override
+  String get noHistory => 'Qiymət dəyişikliyi tarixçəsi yoxdur.';
+
+  @override
+  String get changedBy => 'Dəyişdirən';
+
+  @override
+  String get changedAt => 'Dəyişdirilmə tarixi';
+
+  @override
+  String get oldValue => 'Köhnə';
+
+  @override
+  String get newValue => 'Yeni';
+
+  @override
+  String get costUnitPriceLabel => 'Maya Qiyməti';
+
+  @override
+  String get wholeUnitSalesPriceLabel => 'Topdan Qiymət';
+
+  @override
+  String get retailUnitPriceLabel => 'Pərakəndə Qiymət';
+
+  @override
+  String get priceChange => 'Qiymət Dəyişikliyi';
+
+  @override
+  String get viewPriceHistory => 'Bütün qiymət dəyişikliklərini gör';
 }
