@@ -1468,23 +1468,48 @@ class _PosPageState extends State<PosPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _showCustomerDialog,
-                      icon: Icon(_selectedCustomer != null ? Icons.person : Icons.person_add_outlined, size: 20),
-                      label: Text(
-                        _selectedCustomer != null ? 'Müştəri: ${_selectedCustomer!.fullName}' : 'Müştəri Seç',
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _showCustomerDialog,
+                          icon: Icon(_selectedCustomer != null ? Icons.person : Icons.person_add_outlined, size: 20),
+                          label: Text(
+                            _selectedCustomer != null ? 'Müştəri: ${_selectedCustomer!.fullName}' : 'Müştəri Seç',
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _selectedCustomer != null ? const Color(0xFF9F7AEA) : const Color(0xFFF7FAFC),
+                            foregroundColor: _selectedCustomer != null ? Colors.white : const Color(0xFF718096),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 0,
+                          ),
+                        ),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _selectedCustomer != null ? const Color(0xFF9F7AEA) : const Color(0xFFF7FAFC),
-                        foregroundColor: _selectedCustomer != null ? Colors.white : const Color(0xFF718096),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        elevation: 0,
-                      ),
-                    ),
+                      if (_selectedCustomer != null) ...[
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          height: 44,
+                          width: 44,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              setState(() => _selectedCustomer = null);
+                              Future.microtask(() => _searchFocusNode.requestFocus());
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFFC8181),
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              elevation: 0,
+                            ),
+                            child: const Icon(Icons.close, size: 20),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),
