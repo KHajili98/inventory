@@ -531,7 +531,7 @@ class _ProductCard extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    Text(
+                    SelectableText(
                       DateFormat('dd.MM.yyyy HH:mm').format(product.createdAt.toLocal()),
                       style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
                     ),
@@ -546,7 +546,7 @@ class _ProductCard extends StatelessWidget {
                         children: [
                           Text(l10n.barcode, style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
                           const SizedBox(height: 2),
-                          Text(
+                          SelectableText(
                             product.returnedProductBarcode,
                             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
                           ),
@@ -572,7 +572,7 @@ class _ProductCard extends StatelessWidget {
                   children: [
                     const Icon(Icons.receipt_rounded, size: 14, color: Color(0xFF94A3B8)),
                     const SizedBox(width: 4),
-                    Text('${l10n.receiptNumber}: ${product.receiptNumber}', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                    SelectableText('${l10n.receiptNumber}: ${product.receiptNumber}', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
                   ],
                 ),
               ],
@@ -599,13 +599,13 @@ class _DetailRow extends StatelessWidget {
       children: [
         SizedBox(
           width: 120,
-          child: Text(
+          child: SelectableText(
             label,
             style: const TextStyle(fontSize: 13, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
           ),
         ),
         Expanded(
-          child: Text(
+          child: SelectableText(
             value,
             style: const TextStyle(fontSize: 13, color: Color(0xFF1E293B), fontWeight: FontWeight.w600),
           ),

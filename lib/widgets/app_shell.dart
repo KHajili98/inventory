@@ -387,7 +387,10 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                         ),
                       ),
                       Expanded(
-                        child: Container(color: const Color(0xFFF8FAFC), child: widget.child),
+                        child: Container(
+                          color: const Color(0xFFF8FAFC),
+                          child: SelectionArea(child: widget.child),
+                        ),
                       ),
                     ],
                   ),

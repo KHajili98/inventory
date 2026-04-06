@@ -576,7 +576,7 @@ class _TableHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       flex: flex,
-      child: Text(
+      child: SelectableText(
         label.toUpperCase(),
         style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B), letterSpacing: 0.5),
       ),
@@ -633,22 +633,18 @@ class _TransactionTableRowState extends State<_TransactionTableRow> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    SelectableText(
                       tx.receiptNumber,
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
                     ),
-                    Text('${tx.items.length} item(s)', style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+                    SelectableText('${tx.items.length} item(s)', style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
                   ],
                 ),
               ),
               // Seller
               Expanded(
                 flex: 2,
-                child: Text(
-                  tx.sellerDetailedInfo?.username ?? '—',
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF475569)),
-                  overflow: TextOverflow.ellipsis,
-                ),
+                child: SelectableText(tx.sellerDetailedInfo?.username ?? '—', style: const TextStyle(fontSize: 12, color: Color(0xFF475569))),
               ),
               // Payment method
               Expanded(
@@ -663,7 +659,7 @@ class _TransactionTableRowState extends State<_TransactionTableRow> {
               // Total
               Expanded(
                 flex: 2,
-                child: Text(
+                child: SelectableText(
                   '₼ ${_fmt.format(tx.totalSellingPrice)}',
                   style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
                 ),
@@ -674,15 +670,15 @@ class _TransactionTableRowState extends State<_TransactionTableRow> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('₼ ${_fmt.format(tx.discountAmount)}', style: const TextStyle(fontSize: 12, color: Color(0xFFEF4444))),
-                    Text('${tx.discountPercentage.toStringAsFixed(1)}%', style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+                    SelectableText('₼ ${_fmt.format(tx.discountAmount)}', style: const TextStyle(fontSize: 12, color: Color(0xFFEF4444))),
+                    SelectableText('${tx.discountPercentage.toStringAsFixed(1)}%', style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
                   ],
                 ),
               ),
               // Date
               Expanded(
                 flex: 2,
-                child: Text(
+                child: SelectableText(
                   tx.createdAt != null ? _dateFmt.format(tx.createdAt!.toLocal()) : '—',
                   style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
                 ),
@@ -737,13 +733,13 @@ class _TransactionCard extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text(
+                  child: SelectableText(
                     tx.receiptNumber,
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
-                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
-                Text(
+                SelectableText(
                   '₼ ${fmt.format(tx.totalSellingPrice)}',
                   style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Color(0xFF1E293B)),
                 ),
@@ -756,7 +752,7 @@ class _TransactionCard extends StatelessWidget {
                 const SizedBox(width: 6),
                 _Badge(label: priceTypeLabel, color: priceTypeColor),
                 const Spacer(),
-                Text(
+                SelectableText(
                   tx.createdAt != null ? dateFmt.format(tx.createdAt!.toLocal()) : '',
                   style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
                 ),
@@ -767,16 +763,16 @@ class _TransactionCard extends StatelessWidget {
               children: [
                 const Icon(Icons.person_outline_rounded, size: 13, color: Color(0xFF94A3B8)),
                 const SizedBox(width: 4),
-                Text(tx.sellerDetailedInfo?.username ?? '—', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                SelectableText(tx.sellerDetailedInfo?.username ?? '—', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
                 const Spacer(),
                 const Icon(Icons.inventory_2_outlined, size: 13, color: Color(0xFF94A3B8)),
                 const SizedBox(width: 4),
-                Text('${tx.items.length} item(s)', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                SelectableText('${tx.items.length} item(s)', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
               ],
             ),
             if (tx.discountAmount > 0) ...[
               const SizedBox(height: 4),
-              Text(
+              SelectableText(
                 'Discount: ₼ ${fmt.format(tx.discountAmount)} (${tx.discountPercentage.toStringAsFixed(1)}%)',
                 style: const TextStyle(fontSize: 11, color: Color(0xFFEF4444)),
               ),
@@ -920,11 +916,7 @@ class _TransactionDetailDialog extends StatelessWidget {
                             l10n.transactionDetail,
                             style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700),
                           ),
-                          Text(
-                            tx.receiptNumber,
-                            style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12),
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          SelectableText(tx.receiptNumber, style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12)),
                         ],
                       ),
                     ),
@@ -1122,9 +1114,9 @@ class _DetailCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+            SelectableText(label, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
             const SizedBox(height: 4),
-            Text(
+            SelectableText(
               value,
               style: TextStyle(fontSize: 16, fontWeight: valueBold ? FontWeight.w800 : FontWeight.w600, color: valueColor ?? const Color(0xFF1E293B)),
             ),
@@ -1171,14 +1163,13 @@ class _InfoRow extends StatelessWidget {
           const SizedBox(width: 8),
           SizedBox(
             width: 110,
-            child: Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+            child: SelectableText(label, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
           ),
           Expanded(
-            child: Text(
+            child: SelectableText(
               value,
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: valueColor ?? const Color(0xFF1E293B)),
               textAlign: TextAlign.end,
-              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -1220,26 +1211,22 @@ class _TransactionItemRow extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    SelectableText(
                       item.productUuid.substring(0, 8).toUpperCase(),
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF1E293B), fontFamily: 'monospace'),
                     ),
-                    Text(
-                      'ID: ${item.productUuid}',
-                      style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    SelectableText('ID: ${item.productUuid}', style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8))),
                   ],
                 ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
+                  SelectableText(
                     '₼ ${fmt.format(item.totalPrice)}',
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
                   ),
-                  Text('x${item.count}', style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                  SelectableText('x${item.count}', style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
                 ],
               ),
             ],
@@ -1252,7 +1239,7 @@ class _TransactionItemRow extends StatelessWidget {
               children: [
                 const Icon(Icons.local_offer_outlined, size: 12, color: Color(0xFFEF4444)),
                 const SizedBox(width: 4),
-                Text(
+                SelectableText(
                   'Discount: ₼ ${fmt.format(item.discountAmount)} (${item.discountPercentage.toStringAsFixed(1)}%)',
                   style: const TextStyle(fontSize: 11, color: Color(0xFFEF4444)),
                 ),

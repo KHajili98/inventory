@@ -39,6 +39,14 @@
       overscroll-behavior-y: none;
       overflow: hidden;
     }
+    
+    /* Enable text selection in Flutter web */
+    flt-glass-pane * {
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
+    }
   </style>
 </head>
 <body>

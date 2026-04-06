@@ -451,10 +451,9 @@ class _StockPageState extends State<StockPage> {
   Widget _headerCell(String text, double width) {
     return SizedBox(
       width: width,
-      child: Text(
+      child: SelectableText(
         text,
         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B), letterSpacing: 0.3),
-        softWrap: true,
       ),
     );
   }
@@ -508,14 +507,13 @@ class _StockPageState extends State<StockPage> {
   Widget _cell(String text, double width, {bool bold = false, bool muted = false}) {
     return SizedBox(
       width: width,
-      child: Text(
+      child: SelectableText(
         text,
         style: TextStyle(
           fontSize: 13,
           fontWeight: bold ? FontWeight.w600 : FontWeight.normal,
           color: muted ? const Color(0xFF94A3B8) : const Color(0xFF1E293B),
         ),
-        overflow: TextOverflow.ellipsis,
       ),
     );
   }
@@ -544,11 +542,7 @@ class _StockPageState extends State<StockPage> {
             const SizedBox(width: 6),
           ],
           Expanded(
-            child: Text(
-              colorName,
-              style: const TextStyle(fontSize: 13, color: Color(0xFF1E293B)),
-              overflow: TextOverflow.ellipsis,
-            ),
+            child: SelectableText(colorName, style: const TextStyle(fontSize: 13, color: Color(0xFF1E293B))),
           ),
         ],
       ),

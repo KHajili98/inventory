@@ -887,10 +887,9 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
       decoration: const BoxDecoration(
         border: Border(right: BorderSide(color: Color(0xFFE2E8F0))),
       ),
-      child: Text(
+      child: SelectableText(
         label,
         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 0.3, color: Color(0xFF475569)),
-        softWrap: true,
       ),
     );
   }
@@ -1019,13 +1018,10 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Icon(Icons.qr_code_rounded, size: 14, color: Color(0xFF94A3B8)),
-                    const SizedBox(width: 6),
                     Flexible(
-                      child: Text(
+                      child: SelectableText(
                         product.barcode ?? '—',
                         style: const TextStyle(fontSize: 12, color: Color(0xFF64748B), fontFamily: 'monospace'),
-                        softWrap: true,
                       ),
                     ),
                   ],
@@ -1145,7 +1141,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Align(
           alignment: Alignment.centerLeft,
-          child: Text(text, style: style ?? const TextStyle(fontSize: 13, color: Color(0xFF475569)), softWrap: true),
+          child: SelectableText(text, style: style ?? const TextStyle(fontSize: 13, color: Color(0xFF475569))),
         ),
       ),
     );
