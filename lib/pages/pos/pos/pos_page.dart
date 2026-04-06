@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -12,6 +13,9 @@ import 'package:inventory/features/selling_transactions/data/repositories/sellin
 import 'package:inventory/features/stocks/data/models/stock_product_response_model.dart';
 import 'package:inventory/features/stocks/data/repositories/stocks_repository.dart';
 import 'package:inventory/models/auth_models.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:universal_html/html.dart' as html;
 
 enum PriceType { retail, wholesale }
 
@@ -30,10 +34,14 @@ class _PosPageState extends State<PosPage> {
   final TextEditingController _discountController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
 
+  // Cached PDF font bytes (loaded once, reused on every PDF export)
+  static Uint8List? _pdfFontRegular;
+  static Uint8List? _pdfFontBold;
+
   bool _discountEnabled = false;
   double _globalDiscountPercent = 0.0;
   int? _selectedDiscountBadge;
-  bool _discountIsPercent = true; // true for %, false for ₼
+  bool _discountIsPercent = true; // true for %, false for AZN
 
   PriceType _priceType = PriceType.retail;
   CustomerModel? _selectedCustomer;
@@ -226,7 +234,7 @@ class _PosPageState extends State<PosPage> {
         }
       });
     } else {
-      // Amount mode (₼)
+      // Amount mode (AZN)
       final amount = double.tryParse(value) ?? 0.0;
       final subtotal = _calculateSubtotal();
       // Calculate percentage from amount
@@ -381,6 +389,7 @@ class _PosPageState extends State<PosPage> {
     final receiptNumber = data.receiptNumber;
     final sellerName = data.sellerDetailedInfo != null ? '${data.sellerDetailedInfo!.firstName} ${data.sellerDetailedInfo!.lastName}'.trim() : null;
     final inventoryName = data.sellingLocationInventoryDetails?.name;
+    final inventoryAddress = data.sellingLocationInventoryDetails?.address ?? '';
     final paymentMethodLabel = switch (data.paymentMethod) {
       'cash' => 'Nağd',
       'card' => 'Kart',
@@ -391,6 +400,9 @@ class _PosPageState extends State<PosPage> {
     final itemCount = data.items.fold<int>(0, (sum, i) => sum + i.count);
     final now = data.createdAt ?? DateTime.now();
     final dateStr = DateFormat('dd.MM.yyyy  HH:mm').format(now);
+
+    // Snapshot cart items for PDF (capture before cart is cleared)
+    final cartSnapshot = List<_CartItem>.from(_cartItems);
 
     showDialog(
       context: context,
@@ -473,7 +485,7 @@ class _PosPageState extends State<PosPage> {
                         children: [
                           const Text('Ödəniləcək:', style: TextStyle(fontSize: 15, color: Color(0xFF4A5568))),
                           Text(
-                            '${total.toStringAsFixed(2)} ₼',
+                            '${total.toStringAsFixed(2)} AZN',
                             style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
                           ),
                         ],
@@ -490,39 +502,364 @@ class _PosPageState extends State<PosPage> {
                 ),
               ),
 
-              // ── Action button ──────────────────────────────────────────
+              // ── Action buttons ─────────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _clearCart();
-                      setState(() {
-                        _selectedCustomer = null;
-                        _discountEnabled = false;
-                        _globalDiscountPercent = 0.0;
-                        _selectedDiscountBadge = null;
-                        _discountController.clear();
-                      });
-                      Future.microtask(() => _searchFocusNode.requestFocus());
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF48BB78),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      elevation: 0,
+                child: Column(
+                  children: [
+                    // Generate PDF button
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => _generateAndDownloadReceiptPdf(
+                          data: data,
+                          total: total,
+                          cartItems: cartSnapshot,
+                          inventoryName: inventoryName,
+                          inventoryAddress: inventoryAddress,
+                          sellerName: sellerName,
+                          paymentMethodLabel: paymentMethodLabel,
+                        ),
+                        icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
+                        label: const Text('Qəbzi PDF yüklə', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF667EEA),
+                          side: const BorderSide(color: Color(0xFF667EEA), width: 1.5),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        ),
+                      ),
                     ),
-                    child: const Text('Yeni Satış', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  ),
+                    const SizedBox(height: 12),
+                    // New sale button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _clearCart();
+                          setState(() {
+                            _selectedCustomer = null;
+                            _discountEnabled = false;
+                            _globalDiscountPercent = 0.0;
+                            _selectedDiscountBadge = null;
+                            _discountController.clear();
+                          });
+                          Future.microtask(() => _searchFocusNode.requestFocus());
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF48BB78),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          elevation: 0,
+                        ),
+                        child: const Text('Yeni Satış', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _generateAndDownloadReceiptPdf({
+    required SellingTransactionResponse data,
+    required double total,
+    required List<_CartItem> cartItems,
+    required String? inventoryName,
+    required String inventoryAddress,
+    required String? sellerName,
+    required String paymentMethodLabel,
+  }) async {
+    try {
+      // ── Load Unicode font from bundled assets (supports all Azerbaijani chars) ──
+      if (_pdfFontRegular == null || _pdfFontBold == null) {
+        final regularData = await rootBundle.load('assets/fonts/Arial-Regular.ttf');
+        final boldData = await rootBundle.load('assets/fonts/Arial-Bold.ttf');
+        _pdfFontRegular = regularData.buffer.asUint8List();
+        _pdfFontBold = boldData.buffer.asUint8List();
+      }
+
+      final ttfRegular = pw.Font.ttf(_pdfFontRegular!.buffer.asByteData());
+      final ttfBold = pw.Font.ttf(_pdfFontBold!.buffer.asByteData());
+
+      // Helper style builders that always use the loaded font
+      pw.TextStyle body({bool bold = false, double size = 10, PdfColor? color}) => pw.TextStyle(
+        font: bold ? ttfBold : ttfRegular,
+        fontBold: ttfBold,
+        fontSize: size,
+        fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal,
+        color: color,
+      );
+
+      final pdf = pw.Document();
+      final now = data.createdAt ?? DateTime.now();
+      final dateStr = DateFormat('dd.MM.yyyy').format(now);
+      final subtotal = cartItems.fold(0.0, (sum, item) {
+        final price = _getCurrentPrice(item.product);
+        return sum + price * item.quantity;
+      });
+      final discountAmount = subtotal - total;
+      final discountPercent = _rPct(data.discountPercentage);
+
+      // Load logo
+      pw.MemoryImage? logoImage;
+      try {
+        final logoBytes = await rootBundle.load('logo_aydinoglu.png');
+        logoImage = pw.MemoryImage(logoBytes.buffer.asUint8List());
+      } catch (_) {
+        logoImage = null;
+      }
+
+      // ── Colors ─────────────────────────────────────────────────────────────
+      const headerYellow = PdfColor.fromInt(0xFFFFD700);
+      const headerBlue = PdfColor.fromInt(0xFFADD8E6);
+      const tableHeaderRed = PdfColor.fromInt(0xFFD32F2F);
+      const tableHeaderBg = PdfColor.fromInt(0xFFFFF9C4);
+      const rowBgGray = PdfColor.fromInt(0xFFF5F5F5);
+      const borderColor = PdfColor.fromInt(0xFF555555);
+      const redText = PdfColor.fromInt(0xFFD32F2F);
+      const darkText = PdfColor.fromInt(0xFF212121);
+
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(24),
+          build: (ctx) {
+            // Build table data rows
+            final tableRows = <List<String>>[];
+            for (int i = 0; i < cartItems.length; i++) {
+              final item = cartItems[i];
+              final unitPrice = _getCurrentPrice(item.product);
+              final lineTotal = unitPrice * item.quantity;
+              tableRows.add([
+                '${i + 1}',
+                item.product.displayName,
+                'ədəd',
+                '${item.quantity}',
+                '${unitPrice.toStringAsFixed(2)} AZN',
+                '${lineTotal.toStringAsFixed(2)} AZN',
+              ]);
+            }
+
+            // Cell builder that uses the loaded font
+            pw.Widget cell(String text, {bool bold = false, PdfColor? color, pw.TextAlign align = pw.TextAlign.center}) {
+              return pw.Padding(
+                padding: const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                child: pw.Text(
+                  text,
+                  style: body(bold: bold, size: 9, color: color),
+                  textAlign: align,
+                ),
+              );
+            }
+
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                // ── Header Row: Logo + store info ──────────────────────────
+                pw.Row(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Container(
+                      width: 120,
+                      height: 110,
+                      child: logoImage != null
+                          ? pw.Image(logoImage, fit: pw.BoxFit.contain)
+                          : pw.Center(child: pw.Text('Aydınoğlu', style: body(bold: true, size: 14))),
+                    ),
+                    pw.SizedBox(width: 12),
+                    pw.Expanded(
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.end,
+                        children: [
+                          pw.Container(
+                            padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            color: headerYellow,
+                            child: pw.Text(
+                              inventoryAddress.isNotEmpty ? inventoryAddress : (inventoryName ?? 'Aydınoğlu MMC'),
+                              style: body(bold: true, color: darkText),
+                              textAlign: pw.TextAlign.center,
+                            ),
+                          ),
+
+                          pw.SizedBox(height: 4),
+                          pw.Container(
+                            padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            color: headerBlue,
+                            child: pw.Text(
+                              'Qəbz № ${data.receiptNumber}',
+                              style: body(bold: true, color: darkText),
+                              textAlign: pw.TextAlign.center,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                pw.SizedBox(height: 10),
+
+                // ── From / To / Date row ───────────────────────────────────
+                pw.Row(
+                  children: [
+                    pw.Text('Kimdən: ', style: body(bold: true, color: tableHeaderRed)),
+                    pw.Text('Aydınoğlu MMC', style: body()),
+                    pw.Spacer(),
+                    if (sellerName != null && sellerName.isNotEmpty) ...[
+                      pw.Text('Satıcı: ', style: body(bold: true, color: tableHeaderRed)),
+                      pw.Text(sellerName, style: body()),
+                    ],
+                  ],
+                ),
+                pw.SizedBox(height: 4),
+                pw.Row(
+                  children: [
+                    pw.Text('Kimə: ', style: body(bold: true, color: tableHeaderRed)),
+                    pw.Text(_selectedCustomer?.fullName ?? '—', style: body()),
+                    pw.Spacer(),
+                    pw.Text('Ödəniş: ', style: body(bold: true, color: tableHeaderRed)),
+                    pw.Text(paymentMethodLabel, style: body()),
+                  ],
+                ),
+                pw.SizedBox(height: 4),
+                pw.Row(
+                  children: [
+                    pw.Text('Tarix: ', style: body(bold: true, color: tableHeaderRed)),
+                    pw.Text(dateStr, style: body()),
+                  ],
+                ),
+                pw.SizedBox(height: 10),
+
+                // ── Items table ────────────────────────────────────────────
+                pw.Table(
+                  border: pw.TableBorder.all(color: borderColor, width: 0.5),
+                  columnWidths: {
+                    0: const pw.FixedColumnWidth(24),
+                    1: const pw.FlexColumnWidth(4),
+                    2: const pw.FlexColumnWidth(1.5),
+                    3: const pw.FixedColumnWidth(40),
+                    4: const pw.FlexColumnWidth(1.8),
+                    5: const pw.FlexColumnWidth(1.8),
+                  },
+                  children: [
+                    pw.TableRow(
+                      decoration: const pw.BoxDecoration(color: tableHeaderBg),
+                      children: [
+                        cell('№', bold: true, color: tableHeaderRed),
+                        cell('Malın adı', bold: true, color: tableHeaderRed),
+                        cell('Ölçü vahidi', bold: true, color: tableHeaderRed),
+                        cell('Miqdarı', bold: true, color: tableHeaderRed),
+                        cell('Qiyməti', bold: true, color: tableHeaderRed),
+                        cell('Məbləğ', bold: true, color: tableHeaderRed),
+                      ],
+                    ),
+                    ...tableRows.asMap().entries.map((e) {
+                      final isEven = e.key % 2 == 0;
+                      return pw.TableRow(
+                        decoration: pw.BoxDecoration(color: isEven ? PdfColors.white : rowBgGray),
+                        children: e.value.map((c) => cell(c)).toList(),
+                      );
+                    }),
+                  ],
+                ),
+                pw.SizedBox(height: 14),
+
+                // ── Totals section ─────────────────────────────────────────
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.end,
+                  children: [
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.end,
+                      children: [
+                        _totalRow('CƏMİ', '${subtotal.toStringAsFixed(2)} AZN', body, borderColor, redText),
+                        pw.SizedBox(height: 4),
+                        if (discountAmount > 0.001) ...[
+                          _totalRow(
+                            '${discountPercent.toStringAsFixed(0)}% ENDİRİM',
+                            '${discountAmount.toStringAsFixed(2)} AZN',
+                            body,
+                            borderColor,
+                            redText,
+                          ),
+                          pw.SizedBox(height: 4),
+                        ],
+                        _totalRow('QALIQ', '${total.toStringAsFixed(2)} AZN', body, borderColor, redText),
+                      ],
+                    ),
+                  ],
+                ),
+                pw.SizedBox(height: 30),
+
+                // ── Signature row ──────────────────────────────────────────
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Row(
+                      children: [
+                        pw.Text('Təhvil verdi', style: body()),
+                        pw.SizedBox(width: 60),
+                        pw.Container(width: 120, height: 0.5, color: borderColor),
+                      ],
+                    ),
+                    pw.Row(
+                      children: [
+                        pw.Text('Təhvil aldı', style: body()),
+                        pw.SizedBox(width: 60),
+                        pw.Container(width: 120, height: 0.5, color: borderColor),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
+      );
+
+      final bytes = await pdf.save();
+      final blob = html.Blob([bytes], 'application/pdf');
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      html.AnchorElement(href: url)
+        ..setAttribute('download', 'qebz_${data.receiptNumber.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_')}.pdf')
+        ..click();
+      html.Url.revokeObjectUrl(url);
+    } catch (e) {
+      log('PDF generation error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('PDF yaradılarkən xəta: $e'), backgroundColor: Colors.red, duration: const Duration(seconds: 4)));
+      }
+    }
+  }
+
+  /// Builds a labelled totals row (e.g. CƏMİ / QALIQ) for the PDF.
+  static pw.Widget _totalRow(
+    String label,
+    String value,
+    pw.TextStyle Function({bool bold, double size, PdfColor? color}) styleBuilder,
+    PdfColor borderColor,
+    PdfColor labelColor,
+  ) {
+    return pw.Row(
+      mainAxisAlignment: pw.MainAxisAlignment.end,
+      children: [
+        pw.SizedBox(width: 100),
+        pw.Text(label, style: styleBuilder(bold: true, size: 11, color: labelColor)),
+        pw.SizedBox(width: 20),
+        pw.Container(
+          width: 90,
+          padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: pw.BoxDecoration(border: pw.Border.all(color: borderColor, width: 0.5)),
+          child: pw.Text(value, style: styleBuilder(bold: true, size: 11), textAlign: pw.TextAlign.right),
+        ),
+      ],
     );
   }
 
@@ -756,7 +1093,7 @@ class _PosPageState extends State<PosPage> {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            '${price.toStringAsFixed(2)} ₼',
+                            '${price.toStringAsFixed(2)} AZN',
                             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
                           ),
                         ),
@@ -941,7 +1278,7 @@ class _PosPageState extends State<PosPage> {
                               width: 120,
                               child: Center(
                                 child: Text(
-                                  '${unitPrice.toStringAsFixed(2)} ₼',
+                                  '${unitPrice.toStringAsFixed(2)} AZN',
                                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF4A5568)),
                                 ),
                               ),
@@ -994,7 +1331,7 @@ class _PosPageState extends State<PosPage> {
                                         if (percent > maxDiscountPercent) {
                                           ScaffoldMessenger.of(context).showSnackBar(
                                             SnackBar(
-                                              content: Text('Endirim maya dəyərindən (${costPrice.toStringAsFixed(2)} ₼) aşağı düşə bilməz!'),
+                                              content: Text('Endirim maya dəyərindən (${costPrice.toStringAsFixed(2)} AZN) aşağı düşə bilməz!'),
                                               backgroundColor: Colors.orange,
                                               duration: const Duration(seconds: 2),
                                             ),
@@ -1051,7 +1388,7 @@ class _PosPageState extends State<PosPage> {
                                           ScaffoldMessenger.of(context).showSnackBar(
                                             SnackBar(
                                               content: Text(
-                                                'Maksimum endirim: ${maxDiscountAmount.toStringAsFixed(2)} ₼ (Maya: ${costPrice.toStringAsFixed(2)} ₼)',
+                                                'Maksimum endirim: ${maxDiscountAmount.toStringAsFixed(2)} AZN (Maya: ${costPrice.toStringAsFixed(2)} AZN)',
                                               ),
                                               backgroundColor: Colors.orange,
                                               duration: const Duration(seconds: 2),
@@ -1063,7 +1400,7 @@ class _PosPageState extends State<PosPage> {
                                   ),
                                   const SizedBox(width: 4),
                                   const Text(
-                                    '₼',
+                                    'AZN',
                                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF718096)),
                                   ),
                                 ],
@@ -1079,7 +1416,7 @@ class _PosPageState extends State<PosPage> {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
-                                    '${total.toStringAsFixed(2)} ₼',
+                                    '${total.toStringAsFixed(2)} AZN',
                                     style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
                                   ),
                                 ),
@@ -1232,7 +1569,7 @@ class _PosPageState extends State<PosPage> {
                         child: Text(
                           _discountIsPercent
                               ? '${_globalDiscountPercent.toStringAsFixed(0)}%'
-                              : '${(_calculateSubtotal() * _globalDiscountPercent / 100).toStringAsFixed(2)} ₼',
+                              : '${(_calculateSubtotal() * _globalDiscountPercent / 100).toStringAsFixed(2)} AZN',
                           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFFC53030)),
                         ),
                       ),
@@ -1289,7 +1626,7 @@ class _PosPageState extends State<PosPage> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      // Toggle buttons for % and ₼
+                      // Toggle buttons for % and AZN
                       Row(
                         children: [
                           GestureDetector(
@@ -1349,7 +1686,7 @@ class _PosPageState extends State<PosPage> {
                                 borderRadius: const BorderRadius.only(topRight: Radius.circular(8), bottomRight: Radius.circular(8)),
                               ),
                               child: Text(
-                                '₼',
+                                'AZN',
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
@@ -1381,19 +1718,19 @@ class _PosPageState extends State<PosPage> {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  _buildSummaryRow('Ara Cəmi:', '${subtotal.toStringAsFixed(2)} ₼'),
+                  _buildSummaryRow('Ara Cəmi:', '${subtotal.toStringAsFixed(2)} AZN'),
                   if (customDiscount > 0)
                     _buildSummaryRow(
                       _discountIsPercent
                           ? 'Endirim (${_globalDiscountPercent.toStringAsFixed(0)}%):'
-                          : 'Endirim (${customDiscount.toStringAsFixed(2)} ₼):',
-                      '- ${customDiscount.toStringAsFixed(2)} ₼',
+                          : 'Endirim (${customDiscount.toStringAsFixed(2)} AZN):',
+                      '- ${customDiscount.toStringAsFixed(2)} AZN',
                       isDiscount: true,
                     ),
                   if (customerDiscount > 0 && _selectedCustomer != null)
                     _buildSummaryRow(
                       'Müştəri Endirimi (${_selectedCustomer!.discountPercentage.toStringAsFixed(0)}%):',
-                      '- ${customerDiscount.toStringAsFixed(2)} ₼',
+                      '- ${customerDiscount.toStringAsFixed(2)} AZN',
                       isDiscount: true,
                     ),
                   if (totalDiscount > 0) ...[
@@ -1403,7 +1740,7 @@ class _PosPageState extends State<PosPage> {
                     ),
                     _buildSummaryRow(
                       'Ümumi Endirim (${combinedPercent.toStringAsFixed(0)}%):',
-                      '- ${totalDiscount.toStringAsFixed(2)} ₼',
+                      '- ${totalDiscount.toStringAsFixed(2)} AZN',
                       isDiscount: true,
                       isBold: true,
                     ),
@@ -1427,7 +1764,7 @@ class _PosPageState extends State<PosPage> {
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                         Text(
-                          '${total.toStringAsFixed(2)} ₼',
+                          '${total.toStringAsFixed(2)} AZN',
                           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                       ],
