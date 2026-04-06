@@ -218,53 +218,58 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                         const SizedBox(height: 10),
 
                         // ── Nav items ────────────────────────────────────────
-                        ...List.generate(_navItems.length, (index) {
-                          final item = _navItems[index];
-                          final isSelected = index == selectedIndex;
-                          final hasSubItems = item.subItems.isNotEmpty;
-                          final isExpanded = _expandedItems.contains(index);
-                          final location = GoRouterState.of(context).uri.toString();
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: List.generate(_navItems.length, (index) {
+                                final item = _navItems[index];
+                                final isSelected = index == selectedIndex;
+                                final hasSubItems = item.subItems.isNotEmpty;
+                                final isExpanded = _expandedItems.contains(index);
+                                final location = GoRouterState.of(context).uri.toString();
 
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _SidebarTile(
-                                item: item,
-                                isSelected: isSelected,
-                                collapsed: _collapsed,
-                                hasSubItems: hasSubItems,
-                                isExpanded: isExpanded,
-                                onTap: () {
-                                  if (hasSubItems) {
-                                    setState(() {
-                                      if (isExpanded) {
-                                        _expandedItems.remove(index);
-                                      } else {
-                                        _expandedItems.add(index);
-                                      }
-                                    });
-                                    if (!isExpanded) context.go(item.path);
-                                  } else {
-                                    context.go(item.path);
-                                  }
-                                },
-                                label: _getNavLabel(context, item.labelKey),
-                              ),
-                              if (hasSubItems && isExpanded && !_collapsed)
-                                ...item.subItems.map((sub) {
-                                  final isSubSelected = location.startsWith(sub.path);
-                                  return _SubSidebarTile(
-                                    sub: sub,
-                                    isSelected: isSubSelected,
-                                    onTap: () => context.go(sub.path),
-                                    label: _getNavLabel(context, sub.labelKey),
-                                  );
-                                }),
-                            ],
-                          );
-                        }),
-
-                        const Spacer(),
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _SidebarTile(
+                                      item: item,
+                                      isSelected: isSelected,
+                                      collapsed: _collapsed,
+                                      hasSubItems: hasSubItems,
+                                      isExpanded: isExpanded,
+                                      onTap: () {
+                                        if (hasSubItems) {
+                                          setState(() {
+                                            if (isExpanded) {
+                                              _expandedItems.remove(index);
+                                            } else {
+                                              _expandedItems.add(index);
+                                            }
+                                          });
+                                          if (!isExpanded) context.go(item.path);
+                                        } else {
+                                          context.go(item.path);
+                                        }
+                                      },
+                                      label: _getNavLabel(context, item.labelKey),
+                                    ),
+                                    if (hasSubItems && isExpanded && !_collapsed)
+                                      ...item.subItems.map((sub) {
+                                        final isSubSelected = location.startsWith(sub.path);
+                                        return _SubSidebarTile(
+                                          sub: sub,
+                                          isSelected: isSubSelected,
+                                          onTap: () => context.go(sub.path),
+                                          label: _getNavLabel(context, sub.labelKey),
+                                        );
+                                      }),
+                                  ],
+                                );
+                              }),
+                            ),
+                          ),
+                        ),
 
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
