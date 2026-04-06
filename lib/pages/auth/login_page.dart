@@ -44,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
       case Success(:final data):
         setState(() {
           _inventories = data.results;
-          _selectedInventory = data.results.isNotEmpty ? data.results.first : null;
+          _selectedInventory = null;
           _loadingInventories = false;
         });
       case Failure(:final message):
