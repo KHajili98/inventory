@@ -35,6 +35,14 @@ class DioClient {
     return ApiConstants.baseUrl;
   }
 
+  /// Whether a token-refresh call is currently in flight.
+  /// Used to prevent multiple concurrent refreshes (lock pattern).
+  static bool _isRefreshing = false;
+
+  /// Requests that arrived while a refresh was already in-flight are queued
+  /// here and replayed once the new access token is available.
+  static final List<({RequestOptions options, ErrorInterceptorHandler handler})> _pendingQueue = [];
+
   static Dio _create() {
     final dio = Dio(
       BaseOptions(
@@ -49,8 +57,10 @@ class DioClient {
     dio.interceptors.addAll([
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          // Inject Bearer token for all requests except the login endpoint
-          if (!options.path.contains(ApiConstants.login)) {
+          // Inject Bearer token for all requests except the login / refresh endpoints.
+          final isAuthEndpoint = options.path.contains(ApiConstants.login) || options.path.contains(ApiConstants.tokenRefresh);
+
+          if (!isAuthEndpoint) {
             final token = await AuthService.instance.getAccessToken();
             if (token != null && token.isNotEmpty) {
               options.headers['Authorization'] = 'Bearer $token';
@@ -59,13 +69,68 @@ class DioClient {
           handler.next(options);
         },
         onError: (DioException e, ErrorInterceptorHandler handler) async {
-          if (e.response?.statusCode == 401) {
-            // Clear stored session
-            await AuthService.instance.logout();
-            // Navigate to /login via GoRouter, replacing the entire stack
-            appRouter.go('/login');
+          if (e.response?.statusCode != 401) {
+            // Not an auth error — pass through unchanged.
+            handler.next(e);
+            return;
           }
-          handler.next(e);
+
+          final failedRequest = e.requestOptions;
+
+          // Don't try to refresh if the 401 itself came from an auth endpoint.
+          final isAuthEndpoint = failedRequest.path.contains(ApiConstants.login) || failedRequest.path.contains(ApiConstants.tokenRefresh);
+
+          if (isAuthEndpoint) {
+            await AuthService.instance.logout();
+            appRouter.go('/login');
+            handler.next(e);
+            return;
+          }
+
+          if (_isRefreshing) {
+            // Another refresh is already in flight — queue this request.
+            _pendingQueue.add((options: failedRequest, handler: handler));
+            return;
+          }
+
+          _isRefreshing = true;
+
+          final newAccessToken = await AuthService.instance.refreshTokens();
+
+          _isRefreshing = false;
+
+          if (newAccessToken == null) {
+            // Refresh failed — flush queue with the original error, then logout.
+            for (final pending in _pendingQueue) {
+              pending.handler.next(e);
+            }
+            _pendingQueue.clear();
+            await AuthService.instance.logout();
+            appRouter.go('/login');
+            handler.next(e);
+            return;
+          }
+
+          // Replay all queued requests with the new access token.
+          for (final pending in _pendingQueue) {
+            pending.options.headers['Authorization'] = 'Bearer $newAccessToken';
+            try {
+              final retryResponse = await dio.fetch(pending.options);
+              pending.handler.resolve(retryResponse);
+            } catch (retryError) {
+              pending.handler.next(retryError as DioException);
+            }
+          }
+          _pendingQueue.clear();
+
+          // Retry the original failed request.
+          failedRequest.headers['Authorization'] = 'Bearer $newAccessToken';
+          try {
+            final retryResponse = await dio.fetch(failedRequest);
+            handler.resolve(retryResponse);
+          } on DioException catch (retryError) {
+            handler.next(retryError);
+          }
         },
       ),
       // Logger is added AFTER the auth interceptor so it prints the final

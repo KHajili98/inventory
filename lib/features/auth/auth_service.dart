@@ -54,6 +54,50 @@ class AuthService {
     return token != null && token.isNotEmpty;
   }
 
+  // ── Token Refresh ────────────────────────────────────────────────────────────
+
+  /// Calls the refresh endpoint with the stored refresh token.
+  /// On success, persists the new access & refresh tokens and returns the new
+  /// access token string.  Returns null if the refresh token is missing or the
+  /// request fails (caller should treat this as a full logout).
+  Future<String?> refreshTokens() async {
+    final refreshToken = await getRefreshToken();
+    if (refreshToken == null || refreshToken.isEmpty) return null;
+
+    try {
+      // Use a plain Dio instance (no auth interceptor) to avoid recursion.
+      final dio = Dio(
+        BaseOptions(
+          baseUrl: ApiConstants.baseUrl,
+          connectTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(minutes: 3),
+          headers: {'Accept': 'application/json'},
+        ),
+      );
+
+      final response = await dio.post(ApiConstants.tokenRefresh, data: {'refresh': refreshToken});
+
+      final data = response.data as Map<String, dynamic>;
+      final newAccess = data['access'] as String;
+      final newRefresh = data['refresh'] as String? ?? refreshToken;
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_keyAccessToken, newAccess);
+      await prefs.setString(_keyRefreshToken, newRefresh);
+
+      // Also update the cached LoginResponse so getLoginResponse() stays fresh.
+      final cached = await getLoginResponse();
+      if (cached != null) {
+        final updated = LoginResponse(user: cached.user, access: newAccess, refresh: newRefresh, loggedInInventory: cached.loggedInInventory);
+        await prefs.setString(_loginResponse, jsonEncode(updated.toJson()));
+      }
+
+      return newAccess;
+    } catch (_) {
+      return null;
+    }
+  }
+
   // ── Login ────────────────────────────────────────────────────────────────────
 
   Future<ApiResult<LoginResponse>> login({required String username, required String password, required String loggedInInventoryId}) async {

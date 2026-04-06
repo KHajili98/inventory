@@ -5,6 +5,7 @@ abstract class ApiConstants {
 
   // ── Auth ────────────────────────────────────────────────────────────────────
   static const String login = '/api/auth/login/';
+  static const String tokenRefresh = '/api/auth/token/refresh/';
 
   // ── Inventories ─────────────────────────────────────────────────────────────
   static const String inventories = '/api/inventories/';
