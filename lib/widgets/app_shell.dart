@@ -116,6 +116,55 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
     }
   }
 
+  Future<void> _confirmLogout(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: const Color(0xFFFEE2E2), borderRadius: BorderRadius.circular(8)),
+              child: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444), size: 20),
+            ),
+            const SizedBox(width: 12),
+            Text(l10n.logoutConfirmTitle, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+          ],
+        ),
+        content: Text(l10n.logoutConfirmMessage, style: const TextStyle(fontSize: 14, color: Color(0xFF64748B))),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        actions: [
+          OutlinedButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            style: OutlinedButton.styleFrom(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              side: const BorderSide(color: Color(0xFFE2E8F0)),
+            ),
+            child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF64748B))),
+          ),
+          const SizedBox(width: 8),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              elevation: 0,
+            ),
+            child: Text(l10n.logout),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      await context.read<AuthCubit>().logout();
+      if (context.mounted) context.go('/login');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final selectedIndex = _selectedIndex(context);
@@ -278,13 +327,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                         // ── Logout button ─────────────────────────────────────
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                          child: _LogoutButton(
-                            collapsed: _collapsed,
-                            onTap: () async {
-                              await context.read<AuthCubit>().logout();
-                              if (context.mounted) context.go('/login');
-                            },
-                          ),
+                          child: _LogoutButton(collapsed: _collapsed, onTap: () => _confirmLogout(context)),
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -501,8 +544,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
               child: InkWell(
                 onTap: () async {
                   Navigator.pop(context);
-                  await context.read<AuthCubit>().logout();
-                  if (context.mounted) context.go('/login');
+                  await _confirmLogout(context);
                 },
                 borderRadius: BorderRadius.circular(10),
                 child: Container(

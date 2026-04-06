@@ -1368,4 +1368,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get validatingReceipt => 'Validating receipt...';
+
+  @override
+  String get logout => 'Logout';
+
+  @override
+  String get logoutConfirmTitle => 'Log out?';
+
+  @override
+  String get logoutConfirmMessage => 'Are you sure you want to log out?';
 }

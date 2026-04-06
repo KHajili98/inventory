@@ -1372,4 +1372,13 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get validatingReceipt => 'Qəbz yoxlanılır...';
+
+  @override
+  String get logout => 'Çıxış';
+
+  @override
+  String get logoutConfirmTitle => 'Çıxmaq istəyirsiniz?';
+
+  @override
+  String get logoutConfirmMessage => 'Hesabdan çıxmaq istədiyinizə əminsiniz?';
 }

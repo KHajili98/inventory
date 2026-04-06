@@ -658,5 +658,9 @@
   "barcodeNotFoundInReceipt": "Barkod qəbzdə tapılmadı",
   "quantityExceedsReceipt": "Miqdar qəbzdəki miqdardan çoxdur. Mövcud: {available}",
   "receiptNotFound": "Qəbz tapılmadı",
-  "validatingReceipt": "Qəbz yoxlanılır..."
+  "validatingReceipt": "Qəbz yoxlanılır...",
+
+  "logout": "Çıxış",
+  "logoutConfirmTitle": "Çıxmaq istəyirsiniz?",
+  "logoutConfirmMessage": "Hesabdan çıxmaq istədiyinizə əminsiniz?"
 }
