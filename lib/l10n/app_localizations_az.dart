@@ -1417,4 +1417,263 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get viewPriceHistory => 'Bütün qiymət dəyişikliklərini gör';
+
+  @override
+  String get posKassa => 'Kassa';
+
+  @override
+  String get posScanOrSearch => 'Barkod oxut və ya məhsul axtar...';
+
+  @override
+  String get posSelectFromList => 'Siyahıdan seçin...';
+
+  @override
+  String get posSearching => 'Axtarılır...';
+
+  @override
+  String get posNoResults => 'Nəticə tapılmadı';
+
+  @override
+  String posBarcodeStockInfo(String barcode, int qty) {
+    return 'Barkod: $barcode  •  Stok: $qty';
+  }
+
+  @override
+  String get posProduct => 'Məhsul';
+
+  @override
+  String get posQuantity => 'Miqdar';
+
+  @override
+  String get posUnitPrice => 'Vahid Qiymət';
+
+  @override
+  String get posDiscountCol => 'Endirim';
+
+  @override
+  String get posTotal => 'Toplam';
+
+  @override
+  String get posDeleteCol => 'Sil';
+
+  @override
+  String get posCartEmpty => 'Səbət boşdur';
+
+  @override
+  String get posCartEmptyHint => 'Məhsul əlavə etmək üçün axtar';
+
+  @override
+  String get posClearCart => 'Səbəti Təmizlə';
+
+  @override
+  String get posPriceType => 'Qiymət Növü';
+
+  @override
+  String get posRetail => 'Pərakəndə';
+
+  @override
+  String get posWholesale => 'Topdan';
+
+  @override
+  String get posPaymentMethod => 'Ödəniş Metodu';
+
+  @override
+  String get posCash => 'Nağd';
+
+  @override
+  String get posCard => 'Kart';
+
+  @override
+  String get posTransfer => 'Köçürmə';
+
+  @override
+  String get posSubtotal => 'Ara Cəmi:';
+
+  @override
+  String posDiscountLabel(String percent) {
+    return 'Endirim ($percent%):';
+  }
+
+  @override
+  String posDiscountAmountLabel(String amount) {
+    return 'Endirim ($amount AZN):';
+  }
+
+  @override
+  String posCustomerDiscountLabel(String percent) {
+    return 'Müştəri Endirimi ($percent%):';
+  }
+
+  @override
+  String posTotalDiscountLabel(String percent) {
+    return 'Ümumi Endirim ($percent%):';
+  }
+
+  @override
+  String get posAmountDue => 'Ödəniləcək:';
+
+  @override
+  String get posCompleteSale => 'SATIŞI TAMAMLA';
+
+  @override
+  String get posSelectCustomer => 'Müştəri Seç';
+
+  @override
+  String posCustomerLabel(String name) {
+    return 'Müştəri: $name';
+  }
+
+  @override
+  String get posSaleSuccess => 'Satış Uğurla Tamamlandı!';
+
+  @override
+  String get posPaymentLabel => 'Ödəniş';
+
+  @override
+  String get posPriceTypeLabel => 'Qiymət növü';
+
+  @override
+  String get posProductCount => 'Məhsul sayı';
+
+  @override
+  String posProductCountValue(int count) {
+    return '$count ədəd';
+  }
+
+  @override
+  String get posSeller => 'Satıcı';
+
+  @override
+  String get posStoreLabel => 'Mağaza';
+
+  @override
+  String get posDownloadPdf => 'Qaimə PDF yüklə';
+
+  @override
+  String get posNewSale => 'Yeni Satış';
+
+  @override
+  String posErrorPrefix(String message) {
+    return 'Xəta: $message';
+  }
+
+  @override
+  String posPdfError(String error) {
+    return 'PDF yaradılarkən xəta: $error';
+  }
+
+  @override
+  String posDiscountBelowCost(String price) {
+    return 'Endirim maya dəyərindən ($price AZN) aşağı düşə bilməz!';
+  }
+
+  @override
+  String posMaxDiscount(String max, String cost) {
+    return 'Maksimum endirim: $max AZN (Maya: $cost AZN)';
+  }
+
+  @override
+  String get posCustomerSearchTitle => 'Müştəri Axtarışı';
+
+  @override
+  String get posCustomerSearchSubtitle =>
+      'Ad, soyad, telefon və ya kart nömrəsi ilə axtarın';
+
+  @override
+  String get posCustomerSearchField =>
+      'Ad, soyad, telefon və ya kart nömrəsi...';
+
+  @override
+  String get posStartSearch => 'Axtarışa başlayın';
+
+  @override
+  String get posStartSearchHint =>
+      'Ad, soyad, telefon və ya loayallıq kart nömrəsini daxil edin';
+
+  @override
+  String get posCustomerNotFound => 'Müştəri tapılmadı';
+
+  @override
+  String get posCustomerNotFoundHint => 'Başqa açar söz ilə yenidən cəhd edin';
+
+  @override
+  String get posNoCustomerSelected => 'Müştəri seçilməyib';
+
+  @override
+  String get posConfirmSelect => 'Seç';
+
+  @override
+  String get posPdfFrom => 'Kimdən: ';
+
+  @override
+  String get posPdfTo => 'Kimə: ';
+
+  @override
+  String get posPdfSeller => 'Satıcı: ';
+
+  @override
+  String get posPdfPayment => 'Ödəniş: ';
+
+  @override
+  String get posPdfDate => 'Tarix: ';
+
+  @override
+  String posPdfReceiptNo(String number) {
+    return 'Qəbz № $number';
+  }
+
+  @override
+  String get posPdfItemName => 'Malın adı';
+
+  @override
+  String get posPdfUnit => 'Ölçü vahidi';
+
+  @override
+  String get posPdfQty => 'Miqdarı';
+
+  @override
+  String get posPdfPrice => 'Qiyməti';
+
+  @override
+  String get posPdfAmount => 'Məbləğ';
+
+  @override
+  String get posPdfSubtotal => 'CƏMİ';
+
+  @override
+  String posPdfDiscount(String percent) {
+    return 'ENDİRİM ($percent%)';
+  }
+
+  @override
+  String posPdfCustomerDiscount(String percent) {
+    return 'MÜŞTƏRİ ENDİRİMİ ($percent%)';
+  }
+
+  @override
+  String get posPdfBalance => 'QALIQ';
+
+  @override
+  String get posPdfDeliveredBy => 'Təhvil verdi';
+
+  @override
+  String get posPdfReceivedBy => 'Təhvil aldı';
+
+  @override
+  String get posPdfUnitPcs => 'ədəd';
+
+  @override
+  String get posPaymentCash => 'Nağd';
+
+  @override
+  String get posPaymentCard => 'Kart';
+
+  @override
+  String get posPaymentTransfer => 'Köçürmə';
+
+  @override
+  String get posPriceRetail => 'Pərakəndə';
+
+  @override
+  String get posPriceWholesale => 'Topdan';
 }

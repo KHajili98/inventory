@@ -2779,6 +2779,462 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View all price changes'**
   String get viewPriceHistory;
+
+  /// No description provided for @posKassa.
+  ///
+  /// In en, this message translates to:
+  /// **'Cashier'**
+  String get posKassa;
+
+  /// No description provided for @posScanOrSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan barcode or search product...'**
+  String get posScanOrSearch;
+
+  /// No description provided for @posSelectFromList.
+  ///
+  /// In en, this message translates to:
+  /// **'Select from list...'**
+  String get posSelectFromList;
+
+  /// No description provided for @posSearching.
+  ///
+  /// In en, this message translates to:
+  /// **'Searching...'**
+  String get posSearching;
+
+  /// No description provided for @posNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No results found'**
+  String get posNoResults;
+
+  /// No description provided for @posBarcodeStockInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode: {barcode}  •  Stock: {qty}'**
+  String posBarcodeStockInfo(String barcode, int qty);
+
+  /// No description provided for @posProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Product'**
+  String get posProduct;
+
+  /// No description provided for @posQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get posQuantity;
+
+  /// No description provided for @posUnitPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit Price'**
+  String get posUnitPrice;
+
+  /// No description provided for @posDiscountCol.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount'**
+  String get posDiscountCol;
+
+  /// No description provided for @posTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get posTotal;
+
+  /// No description provided for @posDeleteCol.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get posDeleteCol;
+
+  /// No description provided for @posCartEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Cart is empty'**
+  String get posCartEmpty;
+
+  /// No description provided for @posCartEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search to add products'**
+  String get posCartEmptyHint;
+
+  /// No description provided for @posClearCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Cart'**
+  String get posClearCart;
+
+  /// No description provided for @posPriceType.
+  ///
+  /// In en, this message translates to:
+  /// **'Price Type'**
+  String get posPriceType;
+
+  /// No description provided for @posRetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Retail'**
+  String get posRetail;
+
+  /// No description provided for @posWholesale.
+  ///
+  /// In en, this message translates to:
+  /// **'Wholesale'**
+  String get posWholesale;
+
+  /// No description provided for @posPaymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Method'**
+  String get posPaymentMethod;
+
+  /// No description provided for @posCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get posCash;
+
+  /// No description provided for @posCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Card'**
+  String get posCard;
+
+  /// No description provided for @posTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer'**
+  String get posTransfer;
+
+  /// No description provided for @posSubtotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtotal:'**
+  String get posSubtotal;
+
+  /// No description provided for @posDiscountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount ({percent}%):'**
+  String posDiscountLabel(String percent);
+
+  /// No description provided for @posDiscountAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount ({amount} AZN):'**
+  String posDiscountAmountLabel(String amount);
+
+  /// No description provided for @posCustomerDiscountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Discount ({percent}%):'**
+  String posCustomerDiscountLabel(String percent);
+
+  /// No description provided for @posTotalDiscountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Discount ({percent}%):'**
+  String posTotalDiscountLabel(String percent);
+
+  /// No description provided for @posAmountDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount Due:'**
+  String get posAmountDue;
+
+  /// No description provided for @posCompleteSale.
+  ///
+  /// In en, this message translates to:
+  /// **'COMPLETE SALE'**
+  String get posCompleteSale;
+
+  /// No description provided for @posSelectCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Customer'**
+  String get posSelectCustomer;
+
+  /// No description provided for @posCustomerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer: {name}'**
+  String posCustomerLabel(String name);
+
+  /// No description provided for @posSaleSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Sale Completed Successfully!'**
+  String get posSaleSuccess;
+
+  /// No description provided for @posPaymentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment'**
+  String get posPaymentLabel;
+
+  /// No description provided for @posPriceTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Price type'**
+  String get posPriceTypeLabel;
+
+  /// No description provided for @posProductCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Product count'**
+  String get posProductCount;
+
+  /// No description provided for @posProductCountValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} pcs'**
+  String posProductCountValue(int count);
+
+  /// No description provided for @posSeller.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller'**
+  String get posSeller;
+
+  /// No description provided for @posStoreLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Store'**
+  String get posStoreLabel;
+
+  /// No description provided for @posDownloadPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Download Receipt PDF'**
+  String get posDownloadPdf;
+
+  /// No description provided for @posNewSale.
+  ///
+  /// In en, this message translates to:
+  /// **'New Sale'**
+  String get posNewSale;
+
+  /// No description provided for @posErrorPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {message}'**
+  String posErrorPrefix(String message);
+
+  /// No description provided for @posPdfError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error creating PDF: {error}'**
+  String posPdfError(String error);
+
+  /// No description provided for @posDiscountBelowCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount cannot go below cost price ({price} AZN)!'**
+  String posDiscountBelowCost(String price);
+
+  /// No description provided for @posMaxDiscount.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum discount: {max} AZN (Cost: {cost} AZN)'**
+  String posMaxDiscount(String max, String cost);
+
+  /// No description provided for @posCustomerSearchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Search'**
+  String get posCustomerSearchTitle;
+
+  /// No description provided for @posCustomerSearchSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name, surname, phone or card number'**
+  String get posCustomerSearchSubtitle;
+
+  /// No description provided for @posCustomerSearchField.
+  ///
+  /// In en, this message translates to:
+  /// **'Name, surname, phone or card number...'**
+  String get posCustomerSearchField;
+
+  /// No description provided for @posStartSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Start searching'**
+  String get posStartSearch;
+
+  /// No description provided for @posStartSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter name, surname, phone or loyalty card number'**
+  String get posStartSearchHint;
+
+  /// No description provided for @posCustomerNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer not found'**
+  String get posCustomerNotFound;
+
+  /// No description provided for @posCustomerNotFoundHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again with a different keyword'**
+  String get posCustomerNotFoundHint;
+
+  /// No description provided for @posNoCustomerSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'No customer selected'**
+  String get posNoCustomerSelected;
+
+  /// No description provided for @posConfirmSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get posConfirmSelect;
+
+  /// No description provided for @posPdfFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From: '**
+  String get posPdfFrom;
+
+  /// No description provided for @posPdfTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To: '**
+  String get posPdfTo;
+
+  /// No description provided for @posPdfSeller.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller: '**
+  String get posPdfSeller;
+
+  /// No description provided for @posPdfPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment: '**
+  String get posPdfPayment;
+
+  /// No description provided for @posPdfDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date: '**
+  String get posPdfDate;
+
+  /// No description provided for @posPdfReceiptNo.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt No. {number}'**
+  String posPdfReceiptNo(String number);
+
+  /// No description provided for @posPdfItemName.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Name'**
+  String get posPdfItemName;
+
+  /// No description provided for @posPdfUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get posPdfUnit;
+
+  /// No description provided for @posPdfQty.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get posPdfQty;
+
+  /// No description provided for @posPdfPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get posPdfPrice;
+
+  /// No description provided for @posPdfAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get posPdfAmount;
+
+  /// No description provided for @posPdfSubtotal.
+  ///
+  /// In en, this message translates to:
+  /// **'SUBTOTAL'**
+  String get posPdfSubtotal;
+
+  /// No description provided for @posPdfDiscount.
+  ///
+  /// In en, this message translates to:
+  /// **'DISCOUNT ({percent}%)'**
+  String posPdfDiscount(String percent);
+
+  /// No description provided for @posPdfCustomerDiscount.
+  ///
+  /// In en, this message translates to:
+  /// **'CUSTOMER DISCOUNT ({percent}%)'**
+  String posPdfCustomerDiscount(String percent);
+
+  /// No description provided for @posPdfBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'BALANCE'**
+  String get posPdfBalance;
+
+  /// No description provided for @posPdfDeliveredBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivered by'**
+  String get posPdfDeliveredBy;
+
+  /// No description provided for @posPdfReceivedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Received by'**
+  String get posPdfReceivedBy;
+
+  /// No description provided for @posPdfUnitPcs.
+  ///
+  /// In en, this message translates to:
+  /// **'pcs'**
+  String get posPdfUnitPcs;
+
+  /// No description provided for @posPaymentCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get posPaymentCash;
+
+  /// No description provided for @posPaymentCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Card'**
+  String get posPaymentCard;
+
+  /// No description provided for @posPaymentTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer'**
+  String get posPaymentTransfer;
+
+  /// No description provided for @posPriceRetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Retail'**
+  String get posPriceRetail;
+
+  /// No description provided for @posPriceWholesale.
+  ///
+  /// In en, this message translates to:
+  /// **'Wholesale'**
+  String get posPriceWholesale;
 }
 
 class _AppLocalizationsDelegate

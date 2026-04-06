@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:inventory/core/network/api_result.dart';
+import 'package:inventory/l10n/app_localizations.dart';
 import 'package:inventory/features/auth/auth_service.dart';
 import 'package:inventory/features/loyal_customers/data/models/customer_model.dart';
 import 'package:inventory/features/loyal_customers/data/repositories/customers_repository.dart';
@@ -379,9 +380,13 @@ class _PosPageState extends State<PosPage> {
         _showSaleSuccessDialog(data, total);
       case Failure(:final message):
         log(message);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Xəta: $message'), backgroundColor: Colors.red, duration: const Duration(seconds: 4)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.posErrorPrefix(message)),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
     }
   }
 
@@ -391,12 +396,14 @@ class _PosPageState extends State<PosPage> {
     final inventoryName = data.sellingLocationInventoryDetails?.name;
     final inventoryAddress = data.sellingLocationInventoryDetails?.address ?? '';
     final paymentMethodLabel = switch (data.paymentMethod) {
-      'cash' => 'Nağd',
-      'card' => 'Kart',
-      'transfer' => 'Köçürmə',
+      'cash' => AppLocalizations.of(context)!.posPaymentCash,
+      'card' => AppLocalizations.of(context)!.posPaymentCard,
+      'transfer' => AppLocalizations.of(context)!.posPaymentTransfer,
       _ => data.paymentMethod,
     };
-    final priceTypeLabel = data.priceType == 'retail_sale' ? 'Pərakəndə' : 'Topdan';
+    final priceTypeLabel = data.priceType == 'retail_sale'
+        ? AppLocalizations.of(context)!.posPriceRetail
+        : AppLocalizations.of(context)!.posPriceWholesale;
     final itemCount = data.items.fold<int>(0, (sum, i) => sum + i.count);
     final now = data.createdAt ?? DateTime.now();
     final dateStr = DateFormat('dd.MM.yyyy  HH:mm').format(now);
@@ -436,9 +443,9 @@ class _PosPageState extends State<PosPage> {
                       child: const Icon(Icons.check_rounded, color: Colors.white, size: 48),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      'Satış Uğurla Tamamlandı!',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                    Text(
+                      AppLocalizations.of(context)!.posSaleSuccess,
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                     const SizedBox(height: 6),
                     Text(dateStr, style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.85))),
@@ -483,7 +490,7 @@ class _PosPageState extends State<PosPage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Ödəniləcək:', style: TextStyle(fontSize: 15, color: Color(0xFF4A5568))),
+                          Text(AppLocalizations.of(context)!.posAmountDue, style: const TextStyle(fontSize: 15, color: Color(0xFF4A5568))),
                           Text(
                             '${total.toStringAsFixed(2)} AZN',
                             style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
@@ -493,11 +500,17 @@ class _PosPageState extends State<PosPage> {
                     ),
                     const SizedBox(height: 16),
                     // Info rows
-                    _buildReceiptRow(Icons.local_atm_outlined, 'Ödəniş', paymentMethodLabel),
-                    _buildReceiptRow(Icons.sell_outlined, 'Qiymət növü', priceTypeLabel),
-                    _buildReceiptRow(Icons.shopping_bag_outlined, 'Məhsul sayı', '$itemCount ədəd'),
-                    if (sellerName != null && sellerName.isNotEmpty) _buildReceiptRow(Icons.person_outline, 'Satıcı', sellerName),
-                    if (inventoryName != null && inventoryName.isNotEmpty) _buildReceiptRow(Icons.store_outlined, 'Mağaza', inventoryName),
+                    _buildReceiptRow(Icons.local_atm_outlined, AppLocalizations.of(context)!.posPaymentLabel, paymentMethodLabel),
+                    _buildReceiptRow(Icons.sell_outlined, AppLocalizations.of(context)!.posPriceTypeLabel, priceTypeLabel),
+                    _buildReceiptRow(
+                      Icons.shopping_bag_outlined,
+                      AppLocalizations.of(context)!.posProductCount,
+                      AppLocalizations.of(context)!.posProductCountValue(itemCount),
+                    ),
+                    if (sellerName != null && sellerName.isNotEmpty)
+                      _buildReceiptRow(Icons.person_outline, AppLocalizations.of(context)!.posSeller, sellerName),
+                    if (inventoryName != null && inventoryName.isNotEmpty)
+                      _buildReceiptRow(Icons.store_outlined, AppLocalizations.of(context)!.posStoreLabel, inventoryName),
                   ],
                 ),
               ),
@@ -522,9 +535,10 @@ class _PosPageState extends State<PosPage> {
                           manualDiscountPercent: _discountEnabled ? _globalDiscountPercent : 0.0,
                           customerDiscountPercent: _selectedCustomer?.discountPercentage ?? 0.0,
                           customerName: _selectedCustomer?.fullName,
+                          l10n: AppLocalizations.of(context)!,
                         ),
                         icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
-                        label: const Text('Qaimə PDF yüklə', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                        label: Text(AppLocalizations.of(context)!.posDownloadPdf, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF667EEA),
                           side: const BorderSide(color: Color(0xFF667EEA), width: 1.5),
@@ -557,7 +571,7 @@ class _PosPageState extends State<PosPage> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                           elevation: 0,
                         ),
-                        child: const Text('Yeni Satış', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        child: Text(AppLocalizations.of(context)!.posNewSale, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],
@@ -581,6 +595,7 @@ class _PosPageState extends State<PosPage> {
     required double manualDiscountPercent,
     required double customerDiscountPercent,
     required String? customerName,
+    required AppLocalizations l10n,
   }) async {
     try {
       // ── Load Unicode font from bundled assets (supports all Azerbaijani chars) ──
@@ -646,7 +661,7 @@ class _PosPageState extends State<PosPage> {
               tableRows.add([
                 '${i + 1}',
                 item.product.displayName,
-                'ədəd',
+                l10n.posPdfUnitPcs,
                 '${item.quantity}',
                 '${unitPrice.toStringAsFixed(2)} AZN',
                 '${lineTotal.toStringAsFixed(2)} AZN',
@@ -699,7 +714,7 @@ class _PosPageState extends State<PosPage> {
                             padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                             color: headerBlue,
                             child: pw.Text(
-                              'Qəbz № ${data.receiptNumber}',
+                              l10n.posPdfReceiptNo(data.receiptNumber),
                               style: body(bold: true, color: darkText),
                               textAlign: pw.TextAlign.center,
                             ),
@@ -714,11 +729,11 @@ class _PosPageState extends State<PosPage> {
                 // ── From / To / Date row ───────────────────────────────────
                 pw.Row(
                   children: [
-                    pw.Text('Kimdən: ', style: body(bold: true, color: tableHeaderRed)),
+                    pw.Text(l10n.posPdfFrom, style: body(bold: true, color: tableHeaderRed)),
                     pw.Text('Aydınoğlu MMC', style: body()),
                     pw.Spacer(),
                     if (sellerName != null && sellerName.isNotEmpty) ...[
-                      pw.Text('Satıcı: ', style: body(bold: true, color: tableHeaderRed)),
+                      pw.Text(l10n.posPdfSeller, style: body(bold: true, color: tableHeaderRed)),
                       pw.Text(sellerName, style: body()),
                     ],
                   ],
@@ -726,17 +741,17 @@ class _PosPageState extends State<PosPage> {
                 pw.SizedBox(height: 4),
                 pw.Row(
                   children: [
-                    pw.Text('Kimə: ', style: body(bold: true, color: tableHeaderRed)),
+                    pw.Text(l10n.posPdfTo, style: body(bold: true, color: tableHeaderRed)),
                     pw.Text(customerName ?? '—', style: body()),
                     pw.Spacer(),
-                    pw.Text('Ödəniş: ', style: body(bold: true, color: tableHeaderRed)),
+                    pw.Text(l10n.posPdfPayment, style: body(bold: true, color: tableHeaderRed)),
                     pw.Text(paymentMethodLabel, style: body()),
                   ],
                 ),
                 pw.SizedBox(height: 4),
                 pw.Row(
                   children: [
-                    pw.Text('Tarix: ', style: body(bold: true, color: tableHeaderRed)),
+                    pw.Text(l10n.posPdfDate, style: body(bold: true, color: tableHeaderRed)),
                     pw.Text(dateStr, style: body()),
                   ],
                 ),
@@ -758,11 +773,11 @@ class _PosPageState extends State<PosPage> {
                       decoration: const pw.BoxDecoration(color: tableHeaderBg),
                       children: [
                         cell('№', bold: true, color: tableHeaderRed),
-                        cell('Malın adı', bold: true, color: tableHeaderRed),
-                        cell('Ölçü vahidi', bold: true, color: tableHeaderRed),
-                        cell('Miqdarı', bold: true, color: tableHeaderRed),
-                        cell('Qiyməti', bold: true, color: tableHeaderRed),
-                        cell('Məbləğ', bold: true, color: tableHeaderRed),
+                        cell(l10n.posPdfItemName, bold: true, color: tableHeaderRed),
+                        cell(l10n.posPdfUnit, bold: true, color: tableHeaderRed),
+                        cell(l10n.posPdfQty, bold: true, color: tableHeaderRed),
+                        cell(l10n.posPdfPrice, bold: true, color: tableHeaderRed),
+                        cell(l10n.posPdfAmount, bold: true, color: tableHeaderRed),
                       ],
                     ),
                     ...tableRows.asMap().entries.map((e) {
@@ -783,11 +798,11 @@ class _PosPageState extends State<PosPage> {
                     pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.end,
                       children: [
-                        _totalRow('CƏMİ', '${subtotal.toStringAsFixed(2)} AZN', body, borderColor, redText),
+                        _totalRow(l10n.posPdfSubtotal, '${subtotal.toStringAsFixed(2)} AZN', body, borderColor, redText),
                         pw.SizedBox(height: 4),
                         if (manualDiscountAmount > 0.001) ...[
                           _totalRow(
-                            'ENDİRİM (${manualDiscountPercent.toStringAsFixed(0)}%)',
+                            l10n.posPdfDiscount(manualDiscountPercent.toStringAsFixed(0)),
                             '- ${manualDiscountAmount.toStringAsFixed(2)} AZN',
                             body,
                             borderColor,
@@ -797,7 +812,7 @@ class _PosPageState extends State<PosPage> {
                         ],
                         if (customerDiscountAmount > 0.001) ...[
                           _totalRow(
-                            'MÜŞTƏRİ ENDİRİMİ (${customerDiscountPercent.toStringAsFixed(0)}%)',
+                            l10n.posPdfCustomerDiscount(customerDiscountPercent.toStringAsFixed(0)),
                             '- ${customerDiscountAmount.toStringAsFixed(2)} AZN',
                             body,
                             borderColor,
@@ -805,7 +820,7 @@ class _PosPageState extends State<PosPage> {
                           ),
                           pw.SizedBox(height: 4),
                         ],
-                        _totalRow('QALIQ', '${total.toStringAsFixed(2)} AZN', body, borderColor, redText),
+                        _totalRow(l10n.posPdfBalance, '${total.toStringAsFixed(2)} AZN', body, borderColor, redText),
                       ],
                     ),
                   ],
@@ -818,14 +833,14 @@ class _PosPageState extends State<PosPage> {
                   children: [
                     pw.Row(
                       children: [
-                        pw.Text('Təhvil verdi', style: body()),
+                        pw.Text(l10n.posPdfDeliveredBy, style: body()),
                         pw.SizedBox(width: 60),
                         pw.Container(width: 120, height: 0.5, color: borderColor),
                       ],
                     ),
                     pw.Row(
                       children: [
-                        pw.Text('Təhvil aldı', style: body()),
+                        pw.Text(l10n.posPdfReceivedBy, style: body()),
                         pw.SizedBox(width: 60),
                         pw.Container(width: 120, height: 0.5, color: borderColor),
                       ],
@@ -850,7 +865,7 @@ class _PosPageState extends State<PosPage> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('PDF yaradılarkən xəta: $e'), backgroundColor: Colors.red, duration: const Duration(seconds: 4)));
+        ).showSnackBar(SnackBar(content: Text(l10n.posPdfError(e.toString())), backgroundColor: Colors.red, duration: const Duration(seconds: 4)));
       }
     }
   }
@@ -955,8 +970,9 @@ class _PosPageState extends State<PosPage> {
   }
 
   Widget _buildTopBar() {
+    final l10n = AppLocalizations.of(context)!;
     final String currentUser = _authUser != null ? '${_authUser!.firstName} ${_authUser!.lastName[0]}.' : '—';
-    final String inventoryName = _loggedInInventory?.name ?? 'Kassa';
+    final String inventoryName = _loggedInInventory?.name ?? l10n.posKassa;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
@@ -1006,6 +1022,7 @@ class _PosPageState extends State<PosPage> {
   }
 
   Widget _buildSearchBar() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -1031,7 +1048,7 @@ class _PosPageState extends State<PosPage> {
               controller: _searchController,
               focusNode: _searchFocusNode,
               decoration: InputDecoration(
-                hintText: 'Barkod oxut və ya məhsul axtar...',
+                hintText: l10n.posScanOrSearch,
                 hintStyle: const TextStyle(color: Color(0xFFA0AEC0), fontSize: 15),
                 border: InputBorder.none,
                 isDense: true,
@@ -1067,12 +1084,12 @@ class _PosPageState extends State<PosPage> {
                 value: _selectedDropdownProduct,
                 hint: Text(
                   _searchController.text.isEmpty
-                      ? 'Siyahıdan seçin...'
+                      ? l10n.posSelectFromList
                       : _isSearching
-                      ? 'Axtarılır...'
+                      ? l10n.posSearching
                       : _searchResults.isEmpty
-                      ? 'Nəticə tapılmadı'
-                      : 'Siyahıdan seçin...',
+                      ? l10n.posNoResults
+                      : l10n.posSelectFromList,
                   style: const TextStyle(color: Color(0xFFA0AEC0), fontSize: 15),
                 ),
                 isExpanded: true,
@@ -1095,7 +1112,7 @@ class _PosPageState extends State<PosPage> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'Barkod: ${product.barcode ?? '—'}  •  Stok: ${product.quantity}',
+                                l10n.posBarcodeStockInfo(product.barcode ?? '—', product.quantity),
                                 style: const TextStyle(fontSize: 12, color: Color(0xFF718096)),
                               ),
                             ],
@@ -1129,6 +1146,7 @@ class _PosPageState extends State<PosPage> {
   }
 
   Widget _buildProductTable() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -1143,21 +1161,21 @@ class _PosPageState extends State<PosPage> {
               gradient: const LinearGradient(colors: [Color(0xFF667EEA), Color(0xFF764BA2)], begin: Alignment.topLeft, end: Alignment.bottomRight),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             ),
-            child: const Row(
+            child: Row(
               children: [
                 Expanded(
                   flex: 3,
                   child: Text(
-                    'Məhsul',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                    l10n.posProduct,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                 ),
                 SizedBox(
                   width: 100,
                   child: Center(
                     child: Text(
-                      'Miqdar',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      l10n.posQuantity,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                     ),
                   ),
                 ),
@@ -1165,8 +1183,8 @@ class _PosPageState extends State<PosPage> {
                   width: 120,
                   child: Center(
                     child: Text(
-                      'Vahid Qiymət',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      l10n.posUnitPrice,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                     ),
                   ),
                 ),
@@ -1174,8 +1192,8 @@ class _PosPageState extends State<PosPage> {
                   width: 180,
                   child: Center(
                     child: Text(
-                      'Endirim',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      l10n.posDiscountCol,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                     ),
                   ),
                 ),
@@ -1183,8 +1201,8 @@ class _PosPageState extends State<PosPage> {
                   width: 120,
                   child: Center(
                     child: Text(
-                      'Toplam',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      l10n.posTotal,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                     ),
                   ),
                 ),
@@ -1192,8 +1210,8 @@ class _PosPageState extends State<PosPage> {
                   width: 60,
                   child: Center(
                     child: Text(
-                      'Sil',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      l10n.posDeleteCol,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                     ),
                   ),
                 ),
@@ -1212,12 +1230,12 @@ class _PosPageState extends State<PosPage> {
                           child: const Icon(Icons.shopping_cart_outlined, size: 64, color: Color(0xFFCBD5E0)),
                         ),
                         const SizedBox(height: 16),
-                        const Text(
-                          'Səbət boşdur',
-                          style: TextStyle(color: Color(0xFFA0AEC0), fontSize: 16, fontWeight: FontWeight.w500),
+                        Text(
+                          l10n.posCartEmpty,
+                          style: const TextStyle(color: Color(0xFFA0AEC0), fontSize: 16, fontWeight: FontWeight.w500),
                         ),
                         const SizedBox(height: 4),
-                        const Text('Məhsul əlavə etmək üçün axtar', style: TextStyle(color: Color(0xFFCBD5E0), fontSize: 13)),
+                        Text(l10n.posCartEmptyHint, style: const TextStyle(color: Color(0xFFCBD5E0), fontSize: 13)),
                       ],
                     ),
                   )
@@ -1347,7 +1365,7 @@ class _PosPageState extends State<PosPage> {
                                         if (percent > maxDiscountPercent) {
                                           ScaffoldMessenger.of(context).showSnackBar(
                                             SnackBar(
-                                              content: Text('Endirim maya dəyərindən (${costPrice.toStringAsFixed(2)} AZN) aşağı düşə bilməz!'),
+                                              content: Text(AppLocalizations.of(context)!.posDiscountBelowCost(costPrice.toStringAsFixed(2))),
                                               backgroundColor: Colors.orange,
                                               duration: const Duration(seconds: 2),
                                             ),
@@ -1404,7 +1422,9 @@ class _PosPageState extends State<PosPage> {
                                           ScaffoldMessenger.of(context).showSnackBar(
                                             SnackBar(
                                               content: Text(
-                                                'Maksimum endirim: ${maxDiscountAmount.toStringAsFixed(2)} AZN (Maya: ${costPrice.toStringAsFixed(2)} AZN)',
+                                                AppLocalizations.of(
+                                                  context,
+                                                )!.posMaxDiscount(maxDiscountAmount.toStringAsFixed(2), costPrice.toStringAsFixed(2)),
                                               ),
                                               backgroundColor: Colors.orange,
                                               duration: const Duration(seconds: 2),
@@ -1480,13 +1500,14 @@ class _PosPageState extends State<PosPage> {
   }
 
   Widget _buildBottomButtons() {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         Expanded(
           child: ElevatedButton.icon(
             onPressed: _clearCart,
             icon: const Icon(Icons.delete_outline, size: 20),
-            label: const Text('Səbəti Təmizlə', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            label: Text(l10n.posClearCart, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFF7FAFC),
               foregroundColor: const Color(0xFF718096),
@@ -1501,6 +1522,7 @@ class _PosPageState extends State<PosPage> {
   }
 
   Widget _buildSummaryPanel() {
+    final l10n = AppLocalizations.of(context)!;
     final subtotal = _calculateSubtotal();
     final customDiscount = _calculateCustomDiscount();
     final customerDiscount = _calculateCustomerDiscount();
@@ -1524,16 +1546,16 @@ class _PosPageState extends State<PosPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Qiymət Növü',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
+                  Text(
+                    l10n.posPriceType,
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Expanded(child: _buildPriceTypeButton(PriceType.retail, 'Pərakəndə')),
+                      Expanded(child: _buildPriceTypeButton(PriceType.retail, l10n.posRetail)),
                       const SizedBox(width: 8),
-                      Expanded(child: _buildPriceTypeButton(PriceType.wholesale, 'Topdan')),
+                      Expanded(child: _buildPriceTypeButton(PriceType.wholesale, l10n.posWholesale)),
                     ],
                   ),
                 ],
@@ -1546,18 +1568,18 @@ class _PosPageState extends State<PosPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Ödəniş Metodu',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
+                  Text(
+                    l10n.posPaymentMethod,
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Expanded(child: _buildPaymentMethodButton(PaymentMethod.cash, 'Nağd')),
+                      Expanded(child: _buildPaymentMethodButton(PaymentMethod.cash, l10n.posCash)),
                       const SizedBox(width: 6),
-                      Expanded(child: _buildPaymentMethodButton(PaymentMethod.card, 'Kart')),
+                      Expanded(child: _buildPaymentMethodButton(PaymentMethod.card, l10n.posCard)),
                       const SizedBox(width: 6),
-                      Expanded(child: _buildPaymentMethodButton(PaymentMethod.transfer, 'Köçürmə')),
+                      Expanded(child: _buildPaymentMethodButton(PaymentMethod.transfer, l10n.posTransfer)),
                     ],
                   ),
                 ],
@@ -1574,9 +1596,9 @@ class _PosPageState extends State<PosPage> {
                     children: [
                       const Icon(Icons.local_offer, size: 18, color: Color(0xFF667EEA)),
                       const SizedBox(width: 8),
-                      const Text(
-                        'Endirim',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
+                      Text(
+                        l10n.posDiscountCol,
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
                       ),
                       const Spacer(),
                       Container(
@@ -1734,18 +1756,18 @@ class _PosPageState extends State<PosPage> {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  _buildSummaryRow('Ara Cəmi:', '${subtotal.toStringAsFixed(2)} AZN'),
+                  _buildSummaryRow(l10n.posSubtotal, '${subtotal.toStringAsFixed(2)} AZN'),
                   if (customDiscount > 0)
                     _buildSummaryRow(
                       _discountIsPercent
-                          ? 'Endirim (${_globalDiscountPercent.toStringAsFixed(0)}%):'
-                          : 'Endirim (${customDiscount.toStringAsFixed(2)} AZN):',
+                          ? l10n.posDiscountLabel(_globalDiscountPercent.toStringAsFixed(0))
+                          : l10n.posDiscountAmountLabel(customDiscount.toStringAsFixed(2)),
                       '- ${customDiscount.toStringAsFixed(2)} AZN',
                       isDiscount: true,
                     ),
                   if (customerDiscount > 0 && _selectedCustomer != null)
                     _buildSummaryRow(
-                      'Müştəri Endirimi (${_selectedCustomer!.discountPercentage.toStringAsFixed(0)}%):',
+                      l10n.posCustomerDiscountLabel(_selectedCustomer!.discountPercentage.toStringAsFixed(0)),
                       '- ${customerDiscount.toStringAsFixed(2)} AZN',
                       isDiscount: true,
                     ),
@@ -1755,7 +1777,7 @@ class _PosPageState extends State<PosPage> {
                       child: Divider(color: Color(0xFFE2E8F0), thickness: 1),
                     ),
                     _buildSummaryRow(
-                      'Ümumi Endirim (${combinedPercent.toStringAsFixed(0)}%):',
+                      l10n.posTotalDiscountLabel(combinedPercent.toStringAsFixed(0)),
                       '- ${totalDiscount.toStringAsFixed(2)} AZN',
                       isDiscount: true,
                       isBold: true,
@@ -1775,9 +1797,9 @@ class _PosPageState extends State<PosPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Ödəniləcək:',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                        Text(
+                          l10n.posAmountDue,
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                         Text(
                           '${total.toStringAsFixed(2)} AZN',
@@ -1810,12 +1832,12 @@ class _PosPageState extends State<PosPage> {
                       ),
                       child: _isCompletingSale
                           ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
-                          : const Row(
+                          : Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.print, size: 22),
-                                SizedBox(width: 12),
-                                Text('SATIŞI TAMAMLA', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                                const Icon(Icons.print, size: 22),
+                                const SizedBox(width: 12),
+                                Text(l10n.posCompleteSale, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                               ],
                             ),
                     ),
@@ -1828,7 +1850,7 @@ class _PosPageState extends State<PosPage> {
                           onPressed: _showCustomerDialog,
                           icon: Icon(_selectedCustomer != null ? Icons.person : Icons.person_add_outlined, size: 20),
                           label: Text(
-                            _selectedCustomer != null ? 'Müştəri: ${_selectedCustomer!.fullName}' : 'Müştəri Seç',
+                            _selectedCustomer != null ? l10n.posCustomerLabel(_selectedCustomer!.fullName) : l10n.posSelectCustomer,
                             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -2060,6 +2082,7 @@ class _CustomerSearchDialogState extends State<_CustomerSearchDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       backgroundColor: Colors.white,
@@ -2084,15 +2107,15 @@ class _CustomerSearchDialogState extends State<_CustomerSearchDialog> {
                     child: const Icon(Icons.person_search, color: Colors.white, size: 22),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Müştəri Axtarışı',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                          l10n.posCustomerSearchTitle,
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
-                        Text('Ad, soyad, telefon və ya kart nömrəsi ilə axtarın', style: TextStyle(fontSize: 12, color: Colors.white70)),
+                        Text(l10n.posCustomerSearchSubtitle, style: const TextStyle(fontSize: 12, color: Colors.white70)),
                       ],
                     ),
                   ),
@@ -2125,12 +2148,12 @@ class _CustomerSearchDialogState extends State<_CustomerSearchDialog> {
                         controller: _searchController,
                         focusNode: _focusNode,
                         style: const TextStyle(fontSize: 15, color: Color(0xFF2D3748)),
-                        decoration: const InputDecoration(
-                          hintText: 'Ad, soyad, telefon və ya kart nömrəsi...',
-                          hintStyle: TextStyle(color: Color(0xFFA0AEC0), fontSize: 14),
+                        decoration: InputDecoration(
+                          hintText: l10n.posCustomerSearchField,
+                          hintStyle: const TextStyle(color: Color(0xFFA0AEC0), fontSize: 14),
                           border: InputBorder.none,
                           isDense: true,
-                          contentPadding: EdgeInsets.symmetric(vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 14),
                         ),
                         onChanged: _onSearchChanged,
                       ),
@@ -2191,8 +2214,8 @@ class _CustomerSearchDialogState extends State<_CustomerSearchDialog> {
                       ),
                     )
                   else
-                    const Expanded(
-                      child: Text('Müştəri seçilməyib', style: TextStyle(fontSize: 13, color: Color(0xFFA0AEC0))),
+                    Expanded(
+                      child: Text(l10n.posNoCustomerSelected, style: const TextStyle(fontSize: 13, color: Color(0xFFA0AEC0))),
                     ),
                   const SizedBox(width: 12),
                   TextButton(
@@ -2201,13 +2224,13 @@ class _CustomerSearchDialogState extends State<_CustomerSearchDialog> {
                       foregroundColor: const Color(0xFF718096),
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     ),
-                    child: const Text('Ləğv et'),
+                    child: Text(l10n.cancel),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton.icon(
                     onPressed: _selectedCustomer != null ? _confirm : null,
                     icon: const Icon(Icons.person_add, size: 18),
-                    label: const Text('Seç', style: TextStyle(fontWeight: FontWeight.bold)),
+                    label: Text(l10n.posConfirmSelect, style: const TextStyle(fontWeight: FontWeight.bold)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF667EEA),
                       foregroundColor: Colors.white,
@@ -2228,13 +2251,14 @@ class _CustomerSearchDialogState extends State<_CustomerSearchDialog> {
   }
 
   Widget _buildResultsBody() {
+    final l10n = AppLocalizations.of(context)!;
     if (!_hasSearched && !_isLoading) {
       return _buildEmptyState(
         icon: Icons.manage_search_rounded,
         iconColor: const Color(0xFF667EEA),
         bgColor: const Color(0xFFEBF4FF),
-        title: 'Axtarışa başlayın',
-        subtitle: 'Ad, soyad, telefon və ya loayallıq kart nömrəsini daxil edin',
+        title: l10n.posStartSearch,
+        subtitle: l10n.posStartSearchHint,
       );
     }
 
@@ -2252,8 +2276,8 @@ class _CustomerSearchDialogState extends State<_CustomerSearchDialog> {
         icon: Icons.person_off_outlined,
         iconColor: const Color(0xFFA0AEC0),
         bgColor: const Color(0xFFF7FAFC),
-        title: 'Müştəri tapılmadı',
-        subtitle: 'Başqa açar söz ilə yenidən cəhd edin',
+        title: l10n.posCustomerNotFound,
+        subtitle: l10n.posCustomerNotFoundHint,
       );
     }
 

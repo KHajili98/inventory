@@ -1413,4 +1413,262 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get viewPriceHistory => 'View all price changes';
+
+  @override
+  String get posKassa => 'Cashier';
+
+  @override
+  String get posScanOrSearch => 'Scan barcode or search product...';
+
+  @override
+  String get posSelectFromList => 'Select from list...';
+
+  @override
+  String get posSearching => 'Searching...';
+
+  @override
+  String get posNoResults => 'No results found';
+
+  @override
+  String posBarcodeStockInfo(String barcode, int qty) {
+    return 'Barcode: $barcode  •  Stock: $qty';
+  }
+
+  @override
+  String get posProduct => 'Product';
+
+  @override
+  String get posQuantity => 'Quantity';
+
+  @override
+  String get posUnitPrice => 'Unit Price';
+
+  @override
+  String get posDiscountCol => 'Discount';
+
+  @override
+  String get posTotal => 'Total';
+
+  @override
+  String get posDeleteCol => 'Delete';
+
+  @override
+  String get posCartEmpty => 'Cart is empty';
+
+  @override
+  String get posCartEmptyHint => 'Search to add products';
+
+  @override
+  String get posClearCart => 'Clear Cart';
+
+  @override
+  String get posPriceType => 'Price Type';
+
+  @override
+  String get posRetail => 'Retail';
+
+  @override
+  String get posWholesale => 'Wholesale';
+
+  @override
+  String get posPaymentMethod => 'Payment Method';
+
+  @override
+  String get posCash => 'Cash';
+
+  @override
+  String get posCard => 'Card';
+
+  @override
+  String get posTransfer => 'Transfer';
+
+  @override
+  String get posSubtotal => 'Subtotal:';
+
+  @override
+  String posDiscountLabel(String percent) {
+    return 'Discount ($percent%):';
+  }
+
+  @override
+  String posDiscountAmountLabel(String amount) {
+    return 'Discount ($amount AZN):';
+  }
+
+  @override
+  String posCustomerDiscountLabel(String percent) {
+    return 'Customer Discount ($percent%):';
+  }
+
+  @override
+  String posTotalDiscountLabel(String percent) {
+    return 'Total Discount ($percent%):';
+  }
+
+  @override
+  String get posAmountDue => 'Amount Due:';
+
+  @override
+  String get posCompleteSale => 'COMPLETE SALE';
+
+  @override
+  String get posSelectCustomer => 'Select Customer';
+
+  @override
+  String posCustomerLabel(String name) {
+    return 'Customer: $name';
+  }
+
+  @override
+  String get posSaleSuccess => 'Sale Completed Successfully!';
+
+  @override
+  String get posPaymentLabel => 'Payment';
+
+  @override
+  String get posPriceTypeLabel => 'Price type';
+
+  @override
+  String get posProductCount => 'Product count';
+
+  @override
+  String posProductCountValue(int count) {
+    return '$count pcs';
+  }
+
+  @override
+  String get posSeller => 'Seller';
+
+  @override
+  String get posStoreLabel => 'Store';
+
+  @override
+  String get posDownloadPdf => 'Download Receipt PDF';
+
+  @override
+  String get posNewSale => 'New Sale';
+
+  @override
+  String posErrorPrefix(String message) {
+    return 'Error: $message';
+  }
+
+  @override
+  String posPdfError(String error) {
+    return 'Error creating PDF: $error';
+  }
+
+  @override
+  String posDiscountBelowCost(String price) {
+    return 'Discount cannot go below cost price ($price AZN)!';
+  }
+
+  @override
+  String posMaxDiscount(String max, String cost) {
+    return 'Maximum discount: $max AZN (Cost: $cost AZN)';
+  }
+
+  @override
+  String get posCustomerSearchTitle => 'Customer Search';
+
+  @override
+  String get posCustomerSearchSubtitle =>
+      'Search by name, surname, phone or card number';
+
+  @override
+  String get posCustomerSearchField => 'Name, surname, phone or card number...';
+
+  @override
+  String get posStartSearch => 'Start searching';
+
+  @override
+  String get posStartSearchHint =>
+      'Enter name, surname, phone or loyalty card number';
+
+  @override
+  String get posCustomerNotFound => 'Customer not found';
+
+  @override
+  String get posCustomerNotFoundHint => 'Try again with a different keyword';
+
+  @override
+  String get posNoCustomerSelected => 'No customer selected';
+
+  @override
+  String get posConfirmSelect => 'Select';
+
+  @override
+  String get posPdfFrom => 'From: ';
+
+  @override
+  String get posPdfTo => 'To: ';
+
+  @override
+  String get posPdfSeller => 'Seller: ';
+
+  @override
+  String get posPdfPayment => 'Payment: ';
+
+  @override
+  String get posPdfDate => 'Date: ';
+
+  @override
+  String posPdfReceiptNo(String number) {
+    return 'Receipt No. $number';
+  }
+
+  @override
+  String get posPdfItemName => 'Product Name';
+
+  @override
+  String get posPdfUnit => 'Unit';
+
+  @override
+  String get posPdfQty => 'Quantity';
+
+  @override
+  String get posPdfPrice => 'Price';
+
+  @override
+  String get posPdfAmount => 'Amount';
+
+  @override
+  String get posPdfSubtotal => 'SUBTOTAL';
+
+  @override
+  String posPdfDiscount(String percent) {
+    return 'DISCOUNT ($percent%)';
+  }
+
+  @override
+  String posPdfCustomerDiscount(String percent) {
+    return 'CUSTOMER DISCOUNT ($percent%)';
+  }
+
+  @override
+  String get posPdfBalance => 'BALANCE';
+
+  @override
+  String get posPdfDeliveredBy => 'Delivered by';
+
+  @override
+  String get posPdfReceivedBy => 'Received by';
+
+  @override
+  String get posPdfUnitPcs => 'pcs';
+
+  @override
+  String get posPaymentCash => 'Cash';
+
+  @override
+  String get posPaymentCard => 'Card';
+
+  @override
+  String get posPaymentTransfer => 'Transfer';
+
+  @override
+  String get posPriceRetail => 'Retail';
+
+  @override
+  String get posPriceWholesale => 'Wholesale';
 }

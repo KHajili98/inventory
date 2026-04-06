@@ -1813,5 +1813,154 @@
   "@priceChange": { "description": "Label for a price change history entry" },
 
   "viewPriceHistory": "View all price changes",
-  "@viewPriceHistory": { "description": "Subtitle for the price history action button" }
+  "@viewPriceHistory": { "description": "Subtitle for the price history action button" },
+
+  "posKassa": "Cashier",
+  "posScanOrSearch": "Scan barcode or search product...",
+  "posSelectFromList": "Select from list...",
+  "posSearching": "Searching...",
+  "posNoResults": "No results found",
+  "posBarcodeStockInfo": "Barcode: {barcode}  •  Stock: {qty}",
+  "@posBarcodeStockInfo": {
+    "placeholders": {
+      "barcode": { "type": "String" },
+      "qty": { "type": "int" }
+    }
+  },
+  "posProduct": "Product",
+  "posQuantity": "Quantity",
+  "posUnitPrice": "Unit Price",
+  "posDiscountCol": "Discount",
+  "posTotal": "Total",
+  "posDeleteCol": "Delete",
+  "posCartEmpty": "Cart is empty",
+  "posCartEmptyHint": "Search to add products",
+  "posClearCart": "Clear Cart",
+  "posPriceType": "Price Type",
+  "posRetail": "Retail",
+  "posWholesale": "Wholesale",
+  "posPaymentMethod": "Payment Method",
+  "posCash": "Cash",
+  "posCard": "Card",
+  "posTransfer": "Transfer",
+  "posSubtotal": "Subtotal:",
+  "posDiscountLabel": "Discount ({percent}%):",
+  "@posDiscountLabel": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
+  "posDiscountAmountLabel": "Discount ({amount} AZN):",
+  "@posDiscountAmountLabel": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "posCustomerDiscountLabel": "Customer Discount ({percent}%):",
+  "@posCustomerDiscountLabel": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
+  "posTotalDiscountLabel": "Total Discount ({percent}%):",
+  "@posTotalDiscountLabel": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
+  "posAmountDue": "Amount Due:",
+  "posCompleteSale": "COMPLETE SALE",
+  "posSelectCustomer": "Select Customer",
+  "posCustomerLabel": "Customer: {name}",
+  "@posCustomerLabel": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "posSaleSuccess": "Sale Completed Successfully!",
+  "posPaymentLabel": "Payment",
+  "posPriceTypeLabel": "Price type",
+  "posProductCount": "Product count",
+  "posProductCountValue": "{count} pcs",
+  "@posProductCountValue": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "posSeller": "Seller",
+  "posStoreLabel": "Store",
+  "posDownloadPdf": "Download Receipt PDF",
+  "posNewSale": "New Sale",
+  "posErrorPrefix": "Error: {message}",
+  "@posErrorPrefix": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "posPdfError": "Error creating PDF: {error}",
+  "@posPdfError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "posDiscountBelowCost": "Discount cannot go below cost price ({price} AZN)!",
+  "@posDiscountBelowCost": {
+    "placeholders": {
+      "price": { "type": "String" }
+    }
+  },
+  "posMaxDiscount": "Maximum discount: {max} AZN (Cost: {cost} AZN)",
+  "@posMaxDiscount": {
+    "placeholders": {
+      "max": { "type": "String" },
+      "cost": { "type": "String" }
+    }
+  },
+  "posCustomerSearchTitle": "Customer Search",
+  "posCustomerSearchSubtitle": "Search by name, surname, phone or card number",
+  "posCustomerSearchField": "Name, surname, phone or card number...",
+  "posStartSearch": "Start searching",
+  "posStartSearchHint": "Enter name, surname, phone or loyalty card number",
+  "posCustomerNotFound": "Customer not found",
+  "posCustomerNotFoundHint": "Try again with a different keyword",
+  "posNoCustomerSelected": "No customer selected",
+  "posConfirmSelect": "Select",
+  "posPdfFrom": "From: ",
+  "posPdfTo": "To: ",
+  "posPdfSeller": "Seller: ",
+  "posPdfPayment": "Payment: ",
+  "posPdfDate": "Date: ",
+  "posPdfReceiptNo": "Receipt No. {number}",
+  "@posPdfReceiptNo": {
+    "placeholders": {
+      "number": { "type": "String" }
+    }
+  },
+  "posPdfItemName": "Product Name",
+  "posPdfUnit": "Unit",
+  "posPdfQty": "Quantity",
+  "posPdfPrice": "Price",
+  "posPdfAmount": "Amount",
+  "posPdfSubtotal": "SUBTOTAL",
+  "posPdfDiscount": "DISCOUNT ({percent}%)",
+  "@posPdfDiscount": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
+  "posPdfCustomerDiscount": "CUSTOMER DISCOUNT ({percent}%)",
+  "@posPdfCustomerDiscount": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
+  "posPdfBalance": "BALANCE",
+  "posPdfDeliveredBy": "Delivered by",
+  "posPdfReceivedBy": "Received by",
+  "posPdfUnitPcs": "pcs",
+  "posPaymentCash": "Cash",
+  "posPaymentCard": "Card",
+  "posPaymentTransfer": "Transfer",
+  "posPriceRetail": "Retail",
+  "posPriceWholesale": "Wholesale"
 }

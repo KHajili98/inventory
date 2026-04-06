@@ -675,5 +675,154 @@
   "wholeUnitSalesPriceLabel": "Topdan Qiymət",
   "retailUnitPriceLabel": "Pərakəndə Qiymət",
   "priceChange": "Qiymət Dəyişikliyi",
-  "viewPriceHistory": "Bütün qiymət dəyişikliklərini gör"
+  "viewPriceHistory": "Bütün qiymət dəyişikliklərini gör",
+
+  "posKassa": "Kassa",
+  "posScanOrSearch": "Barkod oxut və ya məhsul axtar...",
+  "posSelectFromList": "Siyahıdan seçin...",
+  "posSearching": "Axtarılır...",
+  "posNoResults": "Nəticə tapılmadı",
+  "posBarcodeStockInfo": "Barkod: {barcode}  •  Stok: {qty}",
+  "@posBarcodeStockInfo": {
+    "placeholders": {
+      "barcode": { "type": "String" },
+      "qty": { "type": "int" }
+    }
+  },
+  "posProduct": "Məhsul",
+  "posQuantity": "Miqdar",
+  "posUnitPrice": "Vahid Qiymət",
+  "posDiscountCol": "Endirim",
+  "posTotal": "Toplam",
+  "posDeleteCol": "Sil",
+  "posCartEmpty": "Səbət boşdur",
+  "posCartEmptyHint": "Məhsul əlavə etmək üçün axtar",
+  "posClearCart": "Səbəti Təmizlə",
+  "posPriceType": "Qiymət Növü",
+  "posRetail": "Pərakəndə",
+  "posWholesale": "Topdan",
+  "posPaymentMethod": "Ödəniş Metodu",
+  "posCash": "Nağd",
+  "posCard": "Kart",
+  "posTransfer": "Köçürmə",
+  "posSubtotal": "Ara Cəmi:",
+  "posDiscountLabel": "Endirim ({percent}%):",
+  "@posDiscountLabel": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
+  "posDiscountAmountLabel": "Endirim ({amount} AZN):",
+  "@posDiscountAmountLabel": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "posCustomerDiscountLabel": "Müştəri Endirimi ({percent}%):",
+  "@posCustomerDiscountLabel": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
+  "posTotalDiscountLabel": "Ümumi Endirim ({percent}%):",
+  "@posTotalDiscountLabel": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
+  "posAmountDue": "Ödəniləcək:",
+  "posCompleteSale": "SATIŞI TAMAMLA",
+  "posSelectCustomer": "Müştəri Seç",
+  "posCustomerLabel": "Müştəri: {name}",
+  "@posCustomerLabel": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "posSaleSuccess": "Satış Uğurla Tamamlandı!",
+  "posPaymentLabel": "Ödəniş",
+  "posPriceTypeLabel": "Qiymət növü",
+  "posProductCount": "Məhsul sayı",
+  "posProductCountValue": "{count} ədəd",
+  "@posProductCountValue": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "posSeller": "Satıcı",
+  "posStoreLabel": "Mağaza",
+  "posDownloadPdf": "Qaimə PDF yüklə",
+  "posNewSale": "Yeni Satış",
+  "posErrorPrefix": "Xəta: {message}",
+  "@posErrorPrefix": {
+    "placeholders": {
+      "message": { "type": "String" }
+    }
+  },
+  "posPdfError": "PDF yaradılarkən xəta: {error}",
+  "@posPdfError": {
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "posDiscountBelowCost": "Endirim maya dəyərindən ({price} AZN) aşağı düşə bilməz!",
+  "@posDiscountBelowCost": {
+    "placeholders": {
+      "price": { "type": "String" }
+    }
+  },
+  "posMaxDiscount": "Maksimum endirim: {max} AZN (Maya: {cost} AZN)",
+  "@posMaxDiscount": {
+    "placeholders": {
+      "max": { "type": "String" },
+      "cost": { "type": "String" }
+    }
+  },
+  "posCustomerSearchTitle": "Müştəri Axtarışı",
+  "posCustomerSearchSubtitle": "Ad, soyad, telefon və ya kart nömrəsi ilə axtarın",
+  "posCustomerSearchField": "Ad, soyad, telefon və ya kart nömrəsi...",
+  "posStartSearch": "Axtarışa başlayın",
+  "posStartSearchHint": "Ad, soyad, telefon və ya loayallıq kart nömrəsini daxil edin",
+  "posCustomerNotFound": "Müştəri tapılmadı",
+  "posCustomerNotFoundHint": "Başqa açar söz ilə yenidən cəhd edin",
+  "posNoCustomerSelected": "Müştəri seçilməyib",
+  "posConfirmSelect": "Seç",
+  "posPdfFrom": "Kimdən: ",
+  "posPdfTo": "Kimə: ",
+  "posPdfSeller": "Satıcı: ",
+  "posPdfPayment": "Ödəniş: ",
+  "posPdfDate": "Tarix: ",
+  "posPdfReceiptNo": "Qəbz № {number}",
+  "@posPdfReceiptNo": {
+    "placeholders": {
+      "number": { "type": "String" }
+    }
+  },
+  "posPdfItemName": "Malın adı",
+  "posPdfUnit": "Ölçü vahidi",
+  "posPdfQty": "Miqdarı",
+  "posPdfPrice": "Qiyməti",
+  "posPdfAmount": "Məbləğ",
+  "posPdfSubtotal": "CƏMİ",
+  "posPdfDiscount": "ENDİRİM ({percent}%)",
+  "@posPdfDiscount": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
+  "posPdfCustomerDiscount": "MÜŞTƏRİ ENDİRİMİ ({percent}%)",
+  "@posPdfCustomerDiscount": {
+    "placeholders": {
+      "percent": { "type": "String" }
+    }
+  },
+  "posPdfBalance": "QALIQ",
+  "posPdfDeliveredBy": "Təhvil verdi",
+  "posPdfReceivedBy": "Təhvil aldı",
+  "posPdfUnitPcs": "ədəd",
+  "posPaymentCash": "Nağd",
+  "posPaymentCard": "Kart",
+  "posPaymentTransfer": "Köçürmə",
+  "posPriceRetail": "Pərakəndə",
+  "posPriceWholesale": "Topdan"
 }
