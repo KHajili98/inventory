@@ -328,7 +328,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
           FilledButton.icon(
             onPressed: () => context.read<InvoiceListCubit>().refresh(),
             icon: const Icon(Icons.refresh_rounded, size: 16),
-            label: const Text('Retry'),
+            label: Text(AppLocalizations.of(context)!.retry),
             style: FilledButton.styleFrom(backgroundColor: const Color(0xFF6366F1)),
           ),
         ],
@@ -385,9 +385,9 @@ class _InvoicesPageState extends State<InvoicesPage> {
         child: TextButton.icon(
           onPressed: () => context.read<InvoiceListCubit>().loadMoreInvoices(),
           icon: const Icon(Icons.expand_more_rounded, size: 18, color: Color(0xFF6366F1)),
-          label: const Text(
-            'Load more',
-            style: TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.w600),
+          label: Text(
+            AppLocalizations.of(context)!.loadMore,
+            style: const TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.w600),
           ),
           style: TextButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -599,7 +599,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
     if (result is Failure && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to delete invoice: ${(result as dynamic).message}'),
+          content: Text(AppLocalizations.of(context)!.failedToDeleteInvoice((result as dynamic).message as String)),
           backgroundColor: const Color(0xFFDC2626),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -745,7 +745,7 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
         Text(_responses.isEmpty ? widget.filename : 'Page $pageCount', style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
         if (_responses.isNotEmpty) ...[
           const SizedBox(height: 4),
-          Text('Processing additional page...', style: const TextStyle(fontSize: 12, color: Color(0xFF6366F1))),
+          Text(AppLocalizations.of(context)!.processingAdditionalPage, style: const TextStyle(fontSize: 12, color: Color(0xFF6366F1))),
         ],
         const SizedBox(height: 24),
         const LinearProgressIndicator(backgroundColor: Color(0xFFE2E8F0), color: Color(0xFF6366F1)),
@@ -823,7 +823,7 @@ class _OcrProcessingDialogState extends State<_OcrProcessingDialog> {
             IconButton(
               onPressed: _addAnotherImage,
               icon: const Icon(Icons.add_circle_outline_rounded),
-              tooltip: 'Add another page',
+              tooltip: AppLocalizations.of(context)!.addAnotherPage,
               style: IconButton.styleFrom(backgroundColor: const Color(0xFFEEF2FF), foregroundColor: const Color(0xFF6366F1)),
             ),
           ],
@@ -1196,22 +1196,23 @@ class _DeleteButton extends StatefulWidget {
 
 class _DeleteButtonState extends State<_DeleteButton> {
   Future<void> _confirmAndDelete(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Delete Invoice',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+        title: Text(
+          l10n.deleteInvoiceTitle,
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
         ),
-        content: const Text(
-          'Are you sure you want to delete this invoice? This action cannot be undone.',
-          style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+        content: Text(
+          l10n.deleteInvoiceConfirm,
+          style: const TextStyle(fontSize: 14, color: Color(0xFF64748B)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B))),
+            child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF64748B))),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
@@ -1219,7 +1220,7 @@ class _DeleteButtonState extends State<_DeleteButton> {
               backgroundColor: const Color(0xFFDC2626),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
-            child: const Text('Delete'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -1235,7 +1236,7 @@ class _DeleteButtonState extends State<_DeleteButton> {
     return IconButton(
       onPressed: () => _confirmAndDelete(context),
       icon: const Icon(Icons.delete_outline_rounded, size: 18),
-      tooltip: 'Delete invoice',
+      tooltip: AppLocalizations.of(context)!.deleteInvoiceTooltip,
       style: IconButton.styleFrom(
         foregroundColor: const Color(0xFFDC2626),
         backgroundColor: const Color(0xFFFEF2F2),

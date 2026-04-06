@@ -177,7 +177,7 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
                           decoration: InputDecoration(
                             isDense: true,
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                            hintText: 'Invoice No.',
+                            hintText: l10n.invoiceNoHint,
                             filled: true,
                             fillColor: const Color(0xFFF1F5F9),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
@@ -205,7 +205,7 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
                           decoration: InputDecoration(
                             isDense: true,
                             contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                            hintText: 'Supplier Name',
+                            hintText: l10n.supplierNameHint,
                             filled: true,
                             fillColor: const Color(0xFFF1F5F9),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
@@ -242,6 +242,7 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
 
   // ── Header info (editable) ────────────────────────────────────────────────────
   Widget _buildHeaderInfo() {
+    final l10n = AppLocalizations.of(context)!;
     final isMobile = context.isMobile;
     final screenWidth = MediaQuery.of(context).size.width;
     final fullWidth = screenWidth - (context.responsivePadding * 2);
@@ -253,13 +254,13 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _infoField(label: 'Supplier Address', controller: _supplierAddressController, width: fullWidth, onChanged: (_) => _markEdited()),
+                _infoField(label: l10n.supplierAddress, controller: _supplierAddressController, width: fullWidth, onChanged: (_) => _markEdited()),
                 const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
                       child: _infoField(
-                        label: 'Tax ID',
+                        label: l10n.taxIdLabel,
                         controller: _supplierTaxIdController,
                         width: double.infinity,
                         onChanged: (_) => _markEdited(),
@@ -268,7 +269,7 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _infoField(
-                        label: 'Invoice Date',
+                        label: l10n.invoiceDateLabel,
                         controller: _invoiceDateController,
                         width: double.infinity,
                         hint: 'YYYY-MM-DD',
@@ -278,26 +279,26 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                _infoField(label: 'Contact Number', controller: _contactNumberController, width: fullWidth, onChanged: (_) => _markEdited()),
+                _infoField(label: l10n.contactNumber, controller: _contactNumberController, width: fullWidth, onChanged: (_) => _markEdited()),
                 const SizedBox(height: 12),
-                _infoField(label: 'Contract Number', controller: _contractNumberController, width: fullWidth, onChanged: (_) => _markEdited()),
+                _infoField(label: l10n.contractNumber, controller: _contractNumberController, width: fullWidth, onChanged: (_) => _markEdited()),
               ],
             )
           : Wrap(
               spacing: 16,
               runSpacing: 12,
               children: [
-                _infoField(label: 'Supplier Address', controller: _supplierAddressController, width: 340, onChanged: (_) => _markEdited()),
-                _infoField(label: 'Tax ID', controller: _supplierTaxIdController, width: 140, onChanged: (_) => _markEdited()),
-                _infoField(label: 'Contact Number', controller: _contactNumberController, width: 180, onChanged: (_) => _markEdited()),
+                _infoField(label: l10n.supplierAddress, controller: _supplierAddressController, width: 340, onChanged: (_) => _markEdited()),
+                _infoField(label: l10n.taxIdLabel, controller: _supplierTaxIdController, width: 140, onChanged: (_) => _markEdited()),
+                _infoField(label: l10n.contactNumber, controller: _contactNumberController, width: 180, onChanged: (_) => _markEdited()),
                 _infoField(
-                  label: 'Invoice Date',
+                  label: l10n.invoiceDateLabel,
                   controller: _invoiceDateController,
                   width: 140,
                   hint: 'YYYY-MM-DD',
                   onChanged: (_) => _markEdited(),
                 ),
-                _infoField(label: 'Contract Number', controller: _contractNumberController, width: 160, onChanged: (_) => _markEdited()),
+                _infoField(label: l10n.contractNumber, controller: _contractNumberController, width: 160, onChanged: (_) => _markEdited()),
               ],
             ),
     );
@@ -392,7 +393,7 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
                     (e) => Row(
                       children: [
                         const SizedBox(width: 10),
-                        _ImageSummaryCard(url: e.value, label: inv.invoiceUrls.length > 1 ? 'Page ${e.key + 1}' : null),
+                        _ImageSummaryCard(url: e.value, label: inv.invoiceUrls.length > 1 ? l10n.pageN(e.key + 1) : null),
                       ],
                     ),
                   ),
@@ -431,7 +432,7 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
                   (e) => Row(
                     children: [
                       const SizedBox(width: 12),
-                      _ImageSummaryCard(url: e.value, label: inv.invoiceUrls.length > 1 ? 'Page ${e.key + 1}' : null),
+                      _ImageSummaryCard(url: e.value, label: inv.invoiceUrls.length > 1 ? l10n.pageN(e.key + 1) : null),
                     ],
                   ),
                 ),
@@ -952,25 +953,23 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
   }
 
   Future<void> _onConfirmAndSave() async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text(
-          'Confirm & Save',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+        title: Text(
+          l10n.confirmAndSave,
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
         ),
-        content: const Text(
-          'Are you sure you want to confirm and save this invoice? This action cannot be undone.',
-          style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
-        ),
+        content: Text(l10n.confirmAndSaveDialogBody, style: const TextStyle(fontSize: 14, color: Color(0xFF64748B))),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop(false);
               context.read<InvoiceListCubit>().fetchInvoices();
             },
-            child: const Text('No', style: TextStyle(color: Color(0xFF64748B))),
+            child: Text(l10n.noLabel, style: const TextStyle(color: Color(0xFF64748B))),
           ),
           FilledButton(
             onPressed: () {
@@ -980,7 +979,7 @@ class _InvoiceEditPageState extends State<InvoiceEditPage> {
               backgroundColor: const Color(0xFF6366F1),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
-            child: const Text('Yes'),
+            child: Text(l10n.yesLabel),
           ),
         ],
       ),
@@ -1110,8 +1109,9 @@ class _ImageSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const color = Color(0xFF0EA5E9);
+    final l10n = AppLocalizations.of(context)!;
     return Tooltip(
-      message: 'View original invoice image',
+      message: l10n.viewOriginalImage,
       child: InkWell(
         onTap: () => html.window.open(url, '_blank'),
         borderRadius: BorderRadius.circular(10),
@@ -1129,10 +1129,10 @@ class _ImageSummaryCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label ?? 'Invoice Image', style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
-                  const Text(
-                    'View original',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                  Text(label ?? l10n.invoiceImageTitle, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                  Text(
+                    l10n.viewOriginal,
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
                   ),
                 ],
               ),

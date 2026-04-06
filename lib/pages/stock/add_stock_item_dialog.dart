@@ -114,24 +114,24 @@ class _AddStockItemDialogState extends State<AddStockItemDialog> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Inventory selector
-                      _sectionLabel('Inventory'),
+                      _sectionLabel(l10n.inventoryLabel),
                       const SizedBox(height: 8),
                       _buildInventoryDropdown(l10n),
                       const SizedBox(height: 20),
 
                       // Product Name (required)
-                      _buildField(controller: _productNameCtrl, label: l10n.productName, hint: 'e.g. 3 gang 1 way switch', required: true),
+                      _buildField(l10n: l10n, controller: _productNameCtrl, label: l10n.productName, hint: 'e.g. 3 gang 1 way switch', required: true),
                       const SizedBox(height: 14),
 
                       // Model Code + Product Code
                       Row(
                         children: [
                           Expanded(
-                            child: _buildField(controller: _modelCodeCtrl, label: l10n.modelCode, hint: 'e.g. MDL-001'),
+                            child: _buildField(l10n: l10n, controller: _modelCodeCtrl, label: l10n.modelCode, hint: 'e.g. MDL-001'),
                           ),
                           const SizedBox(width: 14),
                           Expanded(
-                            child: _buildField(controller: _productCodeCtrl, label: l10n.productCode, hint: 'e.g. PRD-001'),
+                            child: _buildField(l10n: l10n, controller: _productCodeCtrl, label: l10n.productCode, hint: 'e.g. PRD-001'),
                           ),
                         ],
                       ),
@@ -141,15 +141,15 @@ class _AddStockItemDialogState extends State<AddStockItemDialog> {
                       Row(
                         children: [
                           Expanded(
-                            child: _buildField(controller: _sizeCtrl, label: l10n.size, hint: 'e.g. M'),
+                            child: _buildField(l10n: l10n, controller: _sizeCtrl, label: l10n.size, hint: 'e.g. M'),
                           ),
                           const SizedBox(width: 14),
                           Expanded(
-                            child: _buildField(controller: _colorCtrl, label: l10n.color, hint: 'e.g. Black'),
+                            child: _buildField(l10n: l10n, controller: _colorCtrl, label: l10n.color, hint: 'e.g. Black'),
                           ),
                           const SizedBox(width: 14),
                           Expanded(
-                            child: _buildField(controller: _colorCodeCtrl, label: l10n.colorCode, hint: 'e.g. BLK'),
+                            child: _buildField(l10n: l10n, controller: _colorCodeCtrl, label: l10n.colorCode, hint: 'e.g. BLK'),
                           ),
                         ],
                       ),
@@ -161,6 +161,7 @@ class _AddStockItemDialogState extends State<AddStockItemDialog> {
                           SizedBox(
                             width: 120,
                             child: _buildField(
+                              l10n: l10n,
                               controller: _quantityCtrl,
                               label: l10n.quantity,
                               hint: '1',
@@ -168,16 +169,16 @@ class _AddStockItemDialogState extends State<AddStockItemDialog> {
                               keyboardType: TextInputType.number,
                               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                               validator: (v) {
-                                if (v == null || v.isEmpty) return 'Required';
+                                if (v == null || v.isEmpty) return l10n.fieldRequired;
                                 final n = int.tryParse(v);
-                                if (n == null || n < 0) return 'Invalid';
+                                if (n == null || n < 0) return l10n.invalidNumber;
                                 return null;
                               },
                             ),
                           ),
                           const SizedBox(width: 14),
                           Expanded(
-                            child: _buildField(controller: _barcodeCtrl, label: l10n.barcode, hint: 'e.g. AY-000001', required: true),
+                            child: _buildField(l10n: l10n, controller: _barcodeCtrl, label: l10n.barcode, hint: 'e.g. AY-000001', required: true),
                           ),
                         ],
                       ),
@@ -187,6 +188,7 @@ class _AddStockItemDialogState extends State<AddStockItemDialog> {
                       SizedBox(
                         width: 200,
                         child: _buildField(
+                          l10n: l10n,
                           controller: _invoicePriceCtrl,
                           label: l10n.invoicePriceAznLabel,
                           hint: '0.00',
@@ -257,16 +259,21 @@ class _AddStockItemDialogState extends State<AddStockItemDialog> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(color: const Color(0xFF6366F1).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.lock_rounded, size: 10, color: Color(0xFF6366F1)),
-                SizedBox(width: 3),
-                Text(
-                  'Your inventory',
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFF6366F1)),
-                ),
-              ],
+            child: Builder(
+              builder: (context) {
+                final l10n = AppLocalizations.of(context)!;
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.lock_rounded, size: 10, color: Color(0xFF6366F1)),
+                    const SizedBox(width: 3),
+                    Text(
+                      l10n.yourInventory,
+                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFF6366F1)),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ],
@@ -318,6 +325,7 @@ class _AddStockItemDialogState extends State<AddStockItemDialog> {
   Widget _buildField({
     required TextEditingController controller,
     required String label,
+    required AppLocalizations l10n,
     String? hint,
     bool required = false,
     TextInputType? keyboardType,
@@ -371,7 +379,7 @@ class _AddStockItemDialogState extends State<AddStockItemDialog> {
               borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
             ),
           ),
-          validator: validator ?? (required ? (v) => (v == null || v.trim().isEmpty) ? 'Required' : null : null),
+          validator: validator ?? (required ? (v) => (v == null || v.trim().isEmpty) ? l10n.required : null : null),
         ),
       ],
     );

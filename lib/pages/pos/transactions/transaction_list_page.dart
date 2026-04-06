@@ -637,7 +637,10 @@ class _TransactionTableRowState extends State<_TransactionTableRow> {
                       tx.receiptNumber,
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
                     ),
-                    SelectableText('${tx.items.length} item(s)', style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+                    SelectableText(
+                      AppLocalizations.of(context)!.nItemsParens(tx.items.length),
+                      style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+                    ),
                   ],
                 ),
               ),
@@ -767,7 +770,10 @@ class _TransactionCard extends StatelessWidget {
                 const Spacer(),
                 const Icon(Icons.inventory_2_outlined, size: 13, color: Color(0xFF94A3B8)),
                 const SizedBox(width: 4),
-                SelectableText('${tx.items.length} item(s)', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                SelectableText(
+                  AppLocalizations.of(context)!.nItemsParens(tx.items.length),
+                  style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                ),
               ],
             ),
             if (tx.discountAmount > 0) ...[
@@ -860,7 +866,7 @@ class _ErrorView extends StatelessWidget {
           ElevatedButton.icon(
             onPressed: onRetry,
             icon: const Icon(Icons.refresh_rounded, size: 16),
-            label: const Text('Retry'),
+            label: Text(AppLocalizations.of(context)!.retry),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF6366F1),
               foregroundColor: Colors.white,
@@ -1031,7 +1037,7 @@ class _TransactionDetailDialog extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
-                    child: const Text('Close', style: TextStyle(fontWeight: FontWeight.w600)),
+                    child: Text(AppLocalizations.of(context)!.close, style: const TextStyle(fontWeight: FontWeight.w600)),
                   ),
                 ),
               ),

@@ -5,6 +5,7 @@ import 'package:inventory/core/network/api_result.dart';
 import 'package:inventory/features/auth/auth_cubit.dart';
 import 'package:inventory/features/inventory_products/data/models/inventory_model.dart';
 import 'package:inventory/features/inventory_products/data/repositories/inventory_repository.dart';
+import 'package:inventory/l10n/app_localizations.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -75,6 +76,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
     final isWide = size.width > 700;
+    final l10n = AppLocalizations.of(context)!;
 
     return BlocConsumer<AuthCubit, AuthState>(
       listener: (context, state) {
@@ -125,12 +127,12 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 24),
 
                     // ── Heading ──────────────────────────────────────────────
-                    const Text(
-                      'Welcome back',
-                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700, color: Color(0xFF1E293B), letterSpacing: -0.3),
+                    Text(
+                      l10n.welcomeBack,
+                      style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700, color: Color(0xFF1E293B), letterSpacing: -0.3),
                     ),
                     const SizedBox(height: 6),
-                    const Text('Sign in to your account to continue', style: TextStyle(fontSize: 14, color: Color(0xFF64748B))),
+                    Text(l10n.signInSubtitle, style: const TextStyle(fontSize: 14, color: Color(0xFF64748B))),
                     const SizedBox(height: 36),
 
                     // ── Card ─────────────────────────────────────────────────
@@ -148,7 +150,7 @@ class _LoginPageState extends State<LoginPage> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             // Username
-                            const _FieldLabel(label: 'Username'),
+                            _FieldLabel(label: l10n.usernameLabel),
                             const SizedBox(height: 6),
                             TextFormField(
                               controller: _usernameController,
@@ -156,16 +158,16 @@ class _LoginPageState extends State<LoginPage> {
                               textInputAction: TextInputAction.next,
                               autocorrect: false,
                               style: const TextStyle(fontSize: 14, color: Color(0xFF1E293B)),
-                              decoration: _inputDecoration(hint: 'Enter your username', prefixIcon: Icons.person_outline_rounded),
+                              decoration: _inputDecoration(hint: l10n.enterUsername, prefixIcon: Icons.person_outline_rounded),
                               validator: (v) {
-                                if (v == null || v.trim().isEmpty) return 'Username is required';
+                                if (v == null || v.trim().isEmpty) return l10n.usernameRequired;
                                 return null;
                               },
                             ),
                             const SizedBox(height: 20),
 
                             // Password
-                            const _FieldLabel(label: 'Password'),
+                            _FieldLabel(label: l10n.passwordLabel),
                             const SizedBox(height: 6),
                             TextFormField(
                               controller: _passwordController,
@@ -188,15 +190,15 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               ),
                               validator: (v) {
-                                if (v == null || v.isEmpty) return 'Password is required';
-                                if (v.length < 6) return 'Password must be at least 6 characters';
+                                if (v == null || v.isEmpty) return l10n.passwordRequired;
+                                if (v.length < 6) return l10n.passwordMinLength;
                                 return null;
                               },
                             ),
                             const SizedBox(height: 20),
 
                             // Inventory
-                            const _FieldLabel(label: 'Inventory'),
+                            _FieldLabel(label: l10n.inventoryLabel),
                             const SizedBox(height: 6),
                             _InventoryDropdown(
                               inventories: _inventories,
@@ -223,7 +225,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                                 child: isLoading
                                     ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
-                                    : const Text('Sign in'),
+                                    : Text(l10n.signIn),
                               ),
                             ),
                           ],
@@ -232,12 +234,12 @@ class _LoginPageState extends State<LoginPage> {
                     ),
 
                     const SizedBox(height: 24),
-                    const Row(
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.lock_outlined, size: 13, color: Color(0xFF94A3B8)),
-                        SizedBox(width: 5),
-                        Text('Secured connection', style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+                        const Icon(Icons.lock_outlined, size: 13, color: Color(0xFF94A3B8)),
+                        const SizedBox(width: 5),
+                        Text(l10n.securedConnection, style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
                       ],
                     ),
                   ],
@@ -303,6 +305,7 @@ class _InventoryDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (isLoading) {
       return Container(
         height: 48,
@@ -336,7 +339,7 @@ class _InventoryDropdown extends StatelessWidget {
             TextButton(
               onPressed: onRetry,
               style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(50, 36)),
-              child: const Text('Retry', style: TextStyle(fontSize: 12, color: Color(0xFF6366F1))),
+              child: Text(l10n.retry, style: const TextStyle(fontSize: 12, color: Color(0xFF6366F1))),
             ),
           ],
         ),
@@ -349,7 +352,7 @@ class _InventoryDropdown extends StatelessWidget {
       icon: const Icon(Icons.unfold_more_rounded, size: 18, color: Color(0xFF94A3B8)),
       style: const TextStyle(fontSize: 14, color: Color(0xFF1E293B)),
       decoration: InputDecoration(
-        hintText: 'Select an inventory',
+        hintText: l10n.selectAnInventory,
         hintStyle: const TextStyle(color: Color(0xFFCBD5E1), fontSize: 14),
         prefixIcon: const Icon(Icons.warehouse_outlined, size: 18, color: Color(0xFF94A3B8)),
         filled: true,
@@ -386,7 +389,7 @@ class _InventoryDropdown extends StatelessWidget {
           )
           .toList(),
       onChanged: onChanged,
-      validator: (v) => v == null ? 'Please select an inventory' : null,
+      validator: (v) => v == null ? l10n.pleaseSelectAnInventory : null,
     );
   }
 }

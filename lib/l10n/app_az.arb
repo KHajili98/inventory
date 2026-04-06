@@ -848,5 +848,158 @@
   "posPaymentCard": "Kart",
   "posPaymentTransfer": "Köçürmə",
   "posPriceRetail": "Pərakəndə",
-  "posPriceWholesale": "Topdan"
+  "posPriceWholesale": "Topdan",
+
+  "welcomeBack": "Xoş gəldiniz",
+  "signInSubtitle": "Davam etmək üçün hesabınıza daxil olun",
+  "signIn": "Daxil ol",
+  "usernameLabel": "İstifadəçi adı",
+  "passwordLabel": "Şifrə",
+  "inventoryLabel": "Anbar",
+  "enterUsername": "İstifadəçi adınızı daxil edin",
+  "usernameRequired": "İstifadəçi adı tələb olunur",
+  "passwordRequired": "Şifrə tələb olunur",
+  "passwordMinLength": "Şifrə ən azı 6 simvoldan ibarət olmalıdır",
+  "selectAnInventory": "Anbar seçin",
+  "pleaseSelectAnInventory": "Zəhmət olmasa anbar seçin",
+  "securedConnection": "Təhlükəsiz bağlantı",
+
+  "goBack": "Geri qayıt",
+  "openInNewTab": "Yeni sekmədə aç",
+  "closeImageViewer": "Bağla",
+  "invoiceImageTitle": "Qaimə Şəkli",
+  "invoiceImageOf": "{current}/{total} şəkil",
+  "@invoiceImageOf": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "failedToDeleteInvoice": "Qaiməni silmək alınmadı: {error}",
+  "@failedToDeleteInvoice": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "deleteInvoiceTooltip": "Qaiməni sil",
+  "invoiceNoHint": "Qaimə №",
+  "supplierNameHint": "Təchizatçı adı",
+
+  "yesLabel": "Bəli",
+  "noLabel": "Xeyr",
+  "okLabel": "Tamam",
+  "errorTitle": "Xəta",
+
+  "printLabel": "Çap et",
+  "printTooltip": "Çap et",
+  "printedLabelsSuccess": "{name} üçün {count} etiket çap edildi",
+  "@printedLabelsSuccess": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "name": { "type": "String" }
+    }
+  },
+  "printFailed": "Çap xətası: {error}",
+  "@printFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+
+  "deleteProductTitle": "Məhsulu Sil",
+  "deleteProductConfirm": "Bu məhsulu silmək istədiyinizə əminsiniz? Bu əməliyyat geri alına bilməz.",
+  "productDeletedSuccess": "{name} uğurla silindi.",
+  "@productDeletedSuccess": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "deleteFailed": "Silmə xətası: {error}",
+  "@deleteFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "deleteCount": "{count} məhsulu sil",
+  "@deleteCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "productsDeletedSuccess": "{count} məhsul uğurla silindi.",
+  "@productsDeletedSuccess": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "nItemsParens": "{count} element",
+  "@nItemsParens": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "paginationShowing": "{start}–{end} arası, cəmi {total}",
+  "@paginationShowing": {
+    "placeholders": {
+      "start": { "type": "int" },
+      "end": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "failedToLoadRetry": "Yükləmə xətası — yenidən cəhd edin",
+  "inventoryDropdownNone": "— Heç biri —",
+  "processingAdditionalPage": "Əlavə səhifə emal edilir...",
+  "failedToLoadImage": "Şəkil yüklənmədi",
+  "initializingLabel": "Başladılır...",
+
+  "itemsTotal": "{count} element cəmi",
+  "@itemsTotal": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "deleteInvoiceTitle": "Fakturanı Sil",
+  "deleteInvoiceConfirm": "Bu fakturanı silmək istədiyinizə əminsiniz? Bu əməliyyat geri alına bilməz.",
+
+  "bulkDeleteProductsTitle": "{count} Məhsul Silinsin",
+  "@bulkDeleteProductsTitle": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "bulkDeleteProductsConfirm": "Aşağıdakı məhsulları silmək istədiyinizə əminsiniz? Bu əməliyyat geri alına bilməz.",
+
+  "printBarcode": "Barkod Çap Et",
+  "barcodeLabel": "Barkod",
+  "productLabel": "Məhsul",
+  "countLabel": "Say",
+  "confirmAndSaveDialogBody": "Bu fakturanı təsdiqləyib saxlamaq istədiyinizə əminsiniz? Bu əməliyyat geri alına bilməz.",
+
+  "loadMore": "Daha çox yüklə",
+  "addAnotherPage": "Başqa səhifə əlavə et",
+  "viewOriginalImage": "Orijinal faktura şəkilini gör",
+  "viewOriginal": "Orijinalı gör",
+  "viewImage": "Şəkilə bax",
+  "viewImages": "{count} şəkilə bax",
+  "@viewImages": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "taxIdLabel": "Vergi Nömrəsi",
+  "invoiceDateLabel": "Faktura Tarixi",
+  "addressLabel": "Ünvan",
+  "contactLabel": "Əlaqə",
+  "modelLabel": "Model",
+  "colorLabel": "Rəng",
+  "sizeLabel": "Ölçü",
+  "invoiceQtyShort": "Faktura Miqdarı",
+  "unitPriceUsdLabel": "Vahid Qiymət (USD)",
+  "exchangeRateLabel": "Məzənnə",
+  "productCodeLabel": "Məhsul Kodu",
+  "printerError": "Çap xətası",
+  "pageN": "Səhifə {n}",
+  "@pageN": {
+    "placeholders": { "n": { "type": "int" } }
+  },
+
+  "supplierAddress": "Təchizatçı Ünvanı",
+  "contactNumber": "Əlaqə Nömrəsi",
+  "contractNumber": "Müqavilə Nömrəsi",
+
+  "inventoryWarehouse": "Anbar (İnventar)",
+
+  "editInvoiceProduct": "Faktura Məhsulunu Redaktə Et",
+  "invoiceDetailsReadOnly": "Faktura Detalları (yalnız oxu)",
+
+  "unitPriceAzn": "Vahid Qiymət (AZN)",
+
+  "stockTypeBadge": "ANBAR",
+  "inventoryTypeBadge": "İNVENTAR",
+  "invTypeBadge": "İNV"
 }

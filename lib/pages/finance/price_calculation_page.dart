@@ -294,7 +294,7 @@ class _PriceCalculationPageState extends State<PriceCalculationPage> {
                           if (!state.hasMore && state.products.isNotEmpty)
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 12),
-                              child: Text('${state.totalCount} items total', style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+                              child: Text(l10n.itemsTotal(state.totalCount), style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
                             ),
                         ],
                       ),
@@ -622,7 +622,7 @@ class _ErrorView extends StatelessWidget {
           ElevatedButton(
             onPressed: onRetry,
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6366F1), foregroundColor: Colors.white, elevation: 0),
-            child: const Text('Retry'),
+            child: Text(AppLocalizations.of(context)!.retry),
           ),
         ],
       ),

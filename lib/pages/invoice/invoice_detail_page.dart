@@ -76,7 +76,7 @@ class _InvoiceDetailView extends StatelessWidget {
               }
             },
             icon: const Icon(Icons.arrow_back_rounded, size: 16),
-            label: const Text('Go Back'),
+            label: Text(AppLocalizations.of(context)!.goBack),
             style: FilledButton.styleFrom(backgroundColor: const Color(0xFF6366F1)),
           ),
         ],
@@ -193,7 +193,7 @@ class _InvoiceDetailContent extends StatelessWidget {
                   OutlinedButton.icon(
                     onPressed: () => _showImageDialog(context, invoice.invoiceImageUrls, 0),
                     icon: const Icon(Icons.image_search_rounded, size: 16),
-                    label: Text(invoice.invoiceImageUrls.length > 1 ? 'View Images (${invoice.invoiceImageUrls.length})' : 'View Image'),
+                    label: Text(invoice.invoiceImageUrls.length > 1 ? l10n.viewImages(invoice.invoiceImageUrls.length) : l10n.viewImage),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF0EA5E9),
                       side: const BorderSide(color: Color(0xFF0EA5E9)),
@@ -245,7 +245,7 @@ class _InvoiceDetailContent extends StatelessWidget {
             _InfoCard(
               icon: Icons.location_on_outlined,
               color: const Color(0xFF64748B),
-              label: 'Address',
+              label: l10n.addressLabel,
               value: invoice.supplierAddress!,
               maxWidth: isMobile ? null : 340,
               isMobile: isMobile,
@@ -254,7 +254,7 @@ class _InvoiceDetailContent extends StatelessWidget {
             _InfoCard(
               icon: Icons.phone_outlined,
               color: const Color(0xFF64748B),
-              label: 'Contact',
+              label: l10n.contactLabel,
               value: invoice.contactNumber!,
               isMobile: isMobile,
             ),
@@ -548,6 +548,7 @@ class _ImageViewerDialogState extends State<_ImageViewerDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final total = widget.urls.length;
     final url = widget.urls[_current];
     final isSingle = total == 1;
@@ -576,7 +577,7 @@ class _ImageViewerDialogState extends State<_ImageViewerDialog> {
                     const Spacer(),
                     // Open in new tab
                     IconButton(
-                      tooltip: 'Open in new tab',
+                      tooltip: l10n.openInNewTab,
                       onPressed: () {
                         // ignore: avoid_web_libraries_in_flutter
                         html.window.open(url, '_blank');
@@ -584,7 +585,7 @@ class _ImageViewerDialogState extends State<_ImageViewerDialog> {
                       icon: const Icon(Icons.open_in_new_rounded, size: 18, color: Color(0xFF94A3B8)),
                     ),
                     IconButton(
-                      tooltip: 'Close',
+                      tooltip: l10n.closeImageViewer,
                       onPressed: () => Navigator.of(context).pop(),
                       icon: const Icon(Icons.close_rounded, size: 18, color: Color(0xFF94A3B8)),
                     ),
@@ -641,14 +642,14 @@ class _ImageViewerDialogState extends State<_ImageViewerDialog> {
                             ),
                           );
                         },
-                        errorBuilder: (_, __, ___) => const Padding(
-                          padding: EdgeInsets.all(40),
+                        errorBuilder: (ctx2, __, ___) => Padding(
+                          padding: const EdgeInsets.all(40),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.broken_image_rounded, color: Color(0xFF475569), size: 48),
-                              SizedBox(height: 8),
-                              Text('Failed to load image', style: TextStyle(color: Color(0xFF64748B), fontSize: 13)),
+                              const Icon(Icons.broken_image_rounded, color: Color(0xFF475569), size: 48),
+                              const SizedBox(height: 8),
+                              Text(AppLocalizations.of(ctx2)!.failedToLoadImage, style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
                             ],
                           ),
                         ),

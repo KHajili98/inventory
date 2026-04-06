@@ -129,7 +129,7 @@ class _LoyalCustomersViewState extends State<_LoyalCustomersView> {
                         IconButton(
                           onPressed: () => context.read<CustomersCubit>().refresh(),
                           icon: const Icon(Icons.refresh_rounded, color: Color(0xFF64748B)),
-                          tooltip: 'Refresh',
+                          tooltip: l10n.refresh,
                         ),
                       ],
                     ),

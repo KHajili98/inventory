@@ -128,6 +128,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
     // Collect the product models for the selected IDs
     final loaded = context.read<InventoryProductsCubit>().state;
     if (loaded is! InventoryProductsLoaded) return;
+    final l10n = AppLocalizations.of(context)!;
 
     final toDelete = loaded.products.where((p) => _selectedIds.contains(p.id)).toList();
 
@@ -146,7 +147,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
             ),
             const SizedBox(width: 10),
             Text(
-              'Delete ${toDelete.length} Product${toDelete.length == 1 ? '' : 's'}',
+              l10n.bulkDeleteProductsTitle(toDelete.length),
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
             ),
           ],
@@ -157,10 +158,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Are you sure you want to delete the following products? This action cannot be undone.',
-                style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
-              ),
+              Text(l10n.bulkDeleteProductsConfirm, style: const TextStyle(fontSize: 14, color: Color(0xFF64748B))),
               const SizedBox(height: 12),
               ConstrainedBox(
                 constraints: const BoxConstraints(maxHeight: 260),
@@ -212,12 +210,12 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel', style: TextStyle(color: Color(0xFF94A3B8))),
+            child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF94A3B8))),
           ),
           FilledButton.icon(
             onPressed: () => Navigator.of(ctx).pop(true),
             icon: const Icon(Icons.delete_sweep_rounded, size: 16),
-            label: Text('Delete ${toDelete.length}'),
+            label: Text(l10n.deleteCount(toDelete.length)),
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -243,7 +241,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
       setState(() => _selectedIds.removeWhere((id) => results.where((r) => r.result is Success).map((r) => r.product.id).contains(id)));
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('$successCount product${successCount == 1 ? '' : 's'} deleted successfully.'),
+          content: Text(l10n.productsDeletedSuccess(successCount)),
           backgroundColor: const Color(0xFF22C55E),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -705,7 +703,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                     FilledButton.icon(
                       onPressed: () => context.read<InventoryProductsCubit>().refresh(),
                       icon: const Icon(Icons.refresh_rounded, size: 18),
-                      label: const Text('Retry'),
+                      label: Text(AppLocalizations.of(context)!.retry),
                       style: FilledButton.styleFrom(backgroundColor: const Color(0xFF6366F1)),
                     ),
                   ],
@@ -765,6 +763,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
 
   Widget _buildPaginationFooter(InventoryProductsLoaded state) {
     final cubit = context.read<InventoryProductsCubit>();
+    final l10n = AppLocalizations.of(context)!;
     final currentPage = state.currentPage;
     final totalPages = state.totalPages;
     final pageSize = state.pageSize;
@@ -795,7 +794,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
       ),
       child: Row(
         children: [
-          Text('Showing $startItem–$endItem of $totalCount', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+          Text(l10n.paginationShowing(startItem, endItem, totalCount), style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
           const Spacer(),
           // Previous
           _PaginationBtn(icon: Icons.chevron_left_rounded, enabled: currentPage > 1, onTap: () => cubit.goToPage(currentPage - 1)),
@@ -1116,7 +1115,12 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _IconBtn(icon: Icons.print_rounded, tooltip: 'Print', color: const Color(0xFF6366F1), onTap: () => _showPrintDialog(product)),
+                    _IconBtn(
+                      icon: Icons.print_rounded,
+                      tooltip: l10n.printTooltip,
+                      color: const Color(0xFF6366F1),
+                      onTap: () => _showPrintDialog(product),
+                    ),
                     _IconBtn(icon: Icons.edit_outlined, tooltip: l10n.edit, color: const Color(0xFF8B5CF6), onTap: () => _showEditDialog(product)),
                     _IconBtn(
                       icon: Icons.delete_outline_rounded,
@@ -1150,6 +1154,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
   // ── Print barcode ────────────────────────────────────────────────────────────
   void _showPrintDialog(InventoryProductItemModel product) {
     final countCtrl = TextEditingController(text: '${product.actualQuantity ?? 1}');
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) {
@@ -1164,9 +1169,9 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                 child: const Icon(Icons.print_rounded, color: Color(0xFF6366F1), size: 18),
               ),
               const SizedBox(width: 10),
-              const Text(
-                'Print Barcode',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+              Text(
+                l10n.printBarcode,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
               ),
             ],
           ),
@@ -1174,13 +1179,13 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _PrintInfoRow(label: 'Barcode', value: product.barcode ?? '—'),
+              _PrintInfoRow(label: l10n.barcodeLabel, value: product.barcode ?? '—'),
               const SizedBox(height: 6),
-              _PrintInfoRow(label: 'Product', value: product.productGeneratedName ?? product.productName ?? '—'),
+              _PrintInfoRow(label: l10n.productLabel, value: product.productGeneratedName ?? product.productName ?? '—'),
               const SizedBox(height: 16),
-              const Text(
-                'Count',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
+              Text(
+                l10n.countLabel,
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
               ),
               const SizedBox(height: 6),
               TextField(
@@ -1212,7 +1217,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Cancel', style: TextStyle(color: Color(0xFF94A3B8))),
+              child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF94A3B8))),
             ),
             FilledButton.icon(
               onPressed: () {
@@ -1221,7 +1226,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                 _printProduct(product, count);
               },
               icon: const Icon(Icons.print_rounded, size: 16),
-              label: const Text('Print'),
+              label: Text(l10n.printLabel),
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFF6366F1),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -1234,6 +1239,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
   }
 
   Future<void> _printProduct(InventoryProductItemModel product, int count) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final Dio dio = DioClient.instance;
       await dio.post(
@@ -1244,7 +1250,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Printed $count label${count == 1 ? '' : 's'} for ${product.productGeneratedName ?? product.productName ?? ''}'),
+          content: Text(l10n.printedLabelsSuccess(count, product.productGeneratedName ?? product.productName ?? '')),
           backgroundColor: const Color(0xFF22C55E),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -1260,7 +1266,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
               const Icon(Icons.print_disabled_rounded, color: Colors.white, size: 18),
               const SizedBox(width: 8),
               Expanded(
-                child: Text('Print failed: $msg', style: const TextStyle(color: Colors.white)),
+                child: Text(l10n.printFailed(msg), style: const TextStyle(color: Colors.white)),
               ),
             ],
           ),
@@ -1287,6 +1293,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
 
   // ── Delete confirmation dialog ───────────────────────────────────────────────
   Future<void> _confirmDeleteProduct(InventoryProductItemModel product) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       barrierColor: Colors.black26,
@@ -1301,9 +1308,9 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
               child: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444), size: 18),
             ),
             const SizedBox(width: 10),
-            const Text(
-              'Delete Product',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+            Text(
+              l10n.deleteProductTitle,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
             ),
           ],
         ),
@@ -1311,10 +1318,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Are you sure you want to delete this product? This action cannot be undone.',
-              style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
-            ),
+            Text(l10n.deleteProductConfirm, style: const TextStyle(fontSize: 14, color: Color(0xFF64748B))),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
@@ -1342,12 +1346,12 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancel', style: TextStyle(color: Color(0xFF94A3B8))),
+            child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF94A3B8))),
           ),
           FilledButton.icon(
             onPressed: () => Navigator.of(ctx).pop(true),
             icon: const Icon(Icons.delete_outline_rounded, size: 16),
-            label: const Text('Delete'),
+            label: Text(l10n.delete),
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -1368,7 +1372,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
       case Success():
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${product.productGeneratedName ?? product.productName ?? 'Product'} deleted successfully.'),
+            content: Text(l10n.productDeletedSuccess(product.productGeneratedName ?? product.productName ?? '—')),
             backgroundColor: const Color(0xFF22C55E),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -1382,7 +1386,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                 const Icon(Icons.error_outline_rounded, color: Colors.white, size: 18),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text('Delete failed: $message', style: const TextStyle(color: Colors.white)),
+                  child: Text(l10n.deleteFailed(message), style: const TextStyle(color: Colors.white)),
                 ),
               ],
             ),
@@ -2046,9 +2050,9 @@ class _EditInvoiceProductDialogState extends State<_EditInvoiceProductDialog> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Edit Invoice Product',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                            Text(
+                              l10n.editInvoiceProduct,
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
                             ),
                             Text(
                               p.productGeneratedName ?? p.productName ?? '—',
@@ -2100,9 +2104,9 @@ class _EditInvoiceProductDialogState extends State<_EditInvoiceProductDialog> {
                           children: [
                             const Icon(Icons.lock_outline_rounded, size: 14, color: Color(0xFF94A3B8)),
                             const SizedBox(width: 6),
-                            const Text(
-                              'Invoice Details (read-only)',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                            Text(
+                              l10n.invoiceDetailsReadOnly,
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
                             ),
                           ],
                         ),
@@ -2111,13 +2115,13 @@ class _EditInvoiceProductDialogState extends State<_EditInvoiceProductDialog> {
                           spacing: 16,
                           runSpacing: 8,
                           children: [
-                            if (p.productName != null) _InfoChip(label: 'Product', value: p.productName!),
-                            if (p.modelCode != null) _InfoChip(label: 'Model', value: p.modelCode!),
-                            if (p.color != null && p.color!.isNotEmpty) _InfoChip(label: 'Color', value: p.color!),
-                            if (p.size != null && p.size!.isNotEmpty) _InfoChip(label: 'Size', value: p.size!),
-                            if (p.invoiceQuantity != null) _InfoChip(label: 'Invoice Qty', value: '${p.invoiceQuantity}'),
+                            if (p.productName != null) _InfoChip(label: l10n.productLabel, value: p.productName!),
+                            if (p.modelCode != null) _InfoChip(label: l10n.modelLabel, value: p.modelCode!),
+                            if (p.color != null && p.color!.isNotEmpty) _InfoChip(label: l10n.colorLabel, value: p.color!),
+                            if (p.size != null && p.size!.isNotEmpty) _InfoChip(label: l10n.sizeLabel, value: p.size!),
+                            if (p.invoiceQuantity != null) _InfoChip(label: l10n.invoiceQtyShort, value: '${p.invoiceQuantity}'),
                             if (p.invoiceUnitPriceUsd != null)
-                              _InfoChip(label: 'Unit Price (USD)', value: '\$${p.invoiceUnitPriceUsd!.toStringAsFixed(4)}'),
+                              _InfoChip(label: l10n.unitPriceUsdLabel, value: '\$${p.invoiceUnitPriceUsd!.toStringAsFixed(4)}'),
                           ],
                         ),
                       ],
@@ -3417,7 +3421,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                             // Product Code
                             _DetailField(
                               ctrl: _productCodeCtrl[idx]!,
-                              label: 'Product Code',
+                              label: l10n.productCodeLabel,
                               hint: 'e.g. PC-001',
                               required: true,
                               icon: Icons.tag_rounded,
@@ -3548,7 +3552,7 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                                   flex: 2,
                                   child: _DetailField(
                                     ctrl: _exchangeRateCtrl[idx]!,
-                                    label: 'Exchange Rate',
+                                    label: l10n.exchangeRateLabel,
                                     hint: '1.70',
                                     isDecimal: true,
                                     icon: Icons.currency_exchange_rounded,
@@ -3571,9 +3575,9 @@ class _InvoiceRowsDialogState extends State<_InvoiceRowsDialog> {
                                       return Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          const Text(
-                                            'Unit Price (AZN)',
-                                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
+                                          Text(
+                                            l10n.unitPriceAzn,
+                                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
                                           ),
                                           const SizedBox(height: 6),
                                           Container(
@@ -4345,6 +4349,7 @@ class _InventoryDropdownState extends State<_InventoryDropdown> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -4352,9 +4357,9 @@ class _InventoryDropdownState extends State<_InventoryDropdown> {
           children: [
             const Icon(Icons.warehouse_outlined, size: 13, color: Color(0xFF6366F1)),
             const SizedBox(width: 5),
-            const Text(
-              'Inventory (Warehouse)',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
+            Text(
+              l10n.inventoryWarehouse,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
             ),
             if (widget.required) const Text(' *', style: TextStyle(fontSize: 12, color: Color(0xFFEF4444))),
           ],
@@ -4388,7 +4393,7 @@ class _InventoryDropdownState extends State<_InventoryDropdown> {
                   const Icon(Icons.refresh_rounded, size: 14, color: Color(0xFFEF4444)),
                   const SizedBox(width: 6),
                   Expanded(
-                    child: Text('Failed to load — tap to retry', style: const TextStyle(fontSize: 12, color: Color(0xFFEF4444)), softWrap: true),
+                    child: Text(l10n.failedToLoadRetry, style: const TextStyle(fontSize: 12, color: Color(0xFFEF4444)), softWrap: true),
                   ),
                 ],
               ),
@@ -4416,15 +4421,15 @@ class _InventoryDropdownState extends State<_InventoryDropdown> {
                 borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
               ),
             ),
-            hint: const Text('Select inventory…', style: TextStyle(fontSize: 13, color: Color(0xFFCBD5E1))),
+            hint: Text(l10n.selectInventory, style: const TextStyle(fontSize: 13, color: Color(0xFFCBD5E1))),
             style: const TextStyle(fontSize: 13, color: Color(0xFF1E293B)),
             icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: Color(0xFF94A3B8)),
-            validator: widget.required ? (val) => (val == null || val.isEmpty) ? 'Please select an inventory' : null : null,
+            validator: widget.required ? (val) => (val == null || val.isEmpty) ? l10n.pleaseSelectAnInventory : null : null,
             items: [
               if (!widget.required)
-                const DropdownMenuItem<String>(
+                DropdownMenuItem<String>(
                   value: null,
-                  child: Text('— None —', style: TextStyle(fontSize: 13, color: Color(0xFF94A3B8))),
+                  child: Text(l10n.inventoryDropdownNone, style: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8))),
                 ),
               ..._inventories.map(
                 (inv) => DropdownMenuItem<String>(

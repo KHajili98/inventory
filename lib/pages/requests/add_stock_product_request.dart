@@ -327,7 +327,7 @@ class _AddStockProductRequestState extends State<AddStockProductRequest> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                src.isStock ? 'STOCK' : 'INVENTORY',
+                src.isStock ? l10n.stockTypeBadge : l10n.inventoryTypeBadge,
                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: src.isStock ? const Color(0xFF6366F1) : const Color(0xFF10B981)),
               ),
             ),
@@ -464,7 +464,7 @@ class _AddStockProductRequestState extends State<AddStockProductRequest> {
       ),
       child: Row(
         children: [
-          if (_cart.isNotEmpty) _CountBadge(count: _cart.fold(0, (s, c) => s + c.creatingCount), suffix: ' pcs'),
+          if (_cart.isNotEmpty) _CountBadge(count: _cart.fold(0, (s, c) => s + c.creatingCount), suffix: ' ${l10n.pcs}'),
           const Spacer(),
           TextButton(
             onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
@@ -555,7 +555,7 @@ class _LockedInventoryField extends StatelessWidget {
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    inventory!.isStock ? 'STOCK' : 'INV',
+                    inventory!.isStock ? l10n.stockTypeBadge : l10n.invTypeBadge,
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
@@ -593,6 +593,7 @@ class _InventoryDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -632,7 +633,7 @@ class _InventoryDropdown extends StatelessWidget {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          inv.isStock ? 'STOCK' : 'INV',
+                          inv.isStock ? l10n.stockTypeBadge : l10n.invTypeBadge,
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,

@@ -1702,4 +1702,282 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get posPriceWholesale => 'Topdan';
+
+  @override
+  String get welcomeBack => 'Xoş gəldiniz';
+
+  @override
+  String get signInSubtitle => 'Davam etmək üçün hesabınıza daxil olun';
+
+  @override
+  String get signIn => 'Daxil ol';
+
+  @override
+  String get usernameLabel => 'İstifadəçi adı';
+
+  @override
+  String get passwordLabel => 'Şifrə';
+
+  @override
+  String get inventoryLabel => 'Anbar';
+
+  @override
+  String get enterUsername => 'İstifadəçi adınızı daxil edin';
+
+  @override
+  String get usernameRequired => 'İstifadəçi adı tələb olunur';
+
+  @override
+  String get passwordRequired => 'Şifrə tələb olunur';
+
+  @override
+  String get passwordMinLength => 'Şifrə ən azı 6 simvoldan ibarət olmalıdır';
+
+  @override
+  String get selectAnInventory => 'Anbar seçin';
+
+  @override
+  String get pleaseSelectAnInventory => 'Zəhmət olmasa anbar seçin';
+
+  @override
+  String get securedConnection => 'Təhlükəsiz bağlantı';
+
+  @override
+  String get goBack => 'Geri qayıt';
+
+  @override
+  String get openInNewTab => 'Yeni sekmədə aç';
+
+  @override
+  String get closeImageViewer => 'Bağla';
+
+  @override
+  String get invoiceImageTitle => 'Qaimə Şəkli';
+
+  @override
+  String invoiceImageOf(int current, int total) {
+    return '$current/$total şəkil';
+  }
+
+  @override
+  String failedToDeleteInvoice(String error) {
+    return 'Qaiməni silmək alınmadı: $error';
+  }
+
+  @override
+  String get deleteInvoiceTooltip => 'Qaiməni sil';
+
+  @override
+  String get invoiceNoHint => 'Qaimə №';
+
+  @override
+  String get supplierNameHint => 'Təchizatçı adı';
+
+  @override
+  String get yesLabel => 'Bəli';
+
+  @override
+  String get noLabel => 'Xeyr';
+
+  @override
+  String get okLabel => 'Tamam';
+
+  @override
+  String get errorTitle => 'Xəta';
+
+  @override
+  String get printLabel => 'Çap et';
+
+  @override
+  String get printTooltip => 'Çap et';
+
+  @override
+  String printedLabelsSuccess(int count, String name) {
+    return '$name üçün $count etiket çap edildi';
+  }
+
+  @override
+  String printFailed(String error) {
+    return 'Çap xətası: $error';
+  }
+
+  @override
+  String get deleteProductTitle => 'Məhsulu Sil';
+
+  @override
+  String get deleteProductConfirm =>
+      'Bu məhsulu silmək istədiyinizə əminsiniz? Bu əməliyyat geri alına bilməz.';
+
+  @override
+  String productDeletedSuccess(String name) {
+    return '$name uğurla silindi.';
+  }
+
+  @override
+  String deleteFailed(String error) {
+    return 'Silmə xətası: $error';
+  }
+
+  @override
+  String deleteCount(int count) {
+    return '$count məhsulu sil';
+  }
+
+  @override
+  String productsDeletedSuccess(int count) {
+    return '$count məhsul uğurla silindi.';
+  }
+
+  @override
+  String nItemsParens(int count) {
+    return '$count element';
+  }
+
+  @override
+  String paginationShowing(int start, int end, int total) {
+    return '$start–$end arası, cəmi $total';
+  }
+
+  @override
+  String get failedToLoadRetry => 'Yükləmə xətası — yenidən cəhd edin';
+
+  @override
+  String get inventoryDropdownNone => '— Heç biri —';
+
+  @override
+  String get processingAdditionalPage => 'Əlavə səhifə emal edilir...';
+
+  @override
+  String get failedToLoadImage => 'Şəkil yüklənmədi';
+
+  @override
+  String get initializingLabel => 'Başladılır...';
+
+  @override
+  String itemsTotal(int count) {
+    return '$count element cəmi';
+  }
+
+  @override
+  String get deleteInvoiceTitle => 'Fakturanı Sil';
+
+  @override
+  String get deleteInvoiceConfirm =>
+      'Bu fakturanı silmək istədiyinizə əminsiniz? Bu əməliyyat geri alına bilməz.';
+
+  @override
+  String bulkDeleteProductsTitle(int count) {
+    return '$count Məhsul Silinsin';
+  }
+
+  @override
+  String get bulkDeleteProductsConfirm =>
+      'Aşağıdakı məhsulları silmək istədiyinizə əminsiniz? Bu əməliyyat geri alına bilməz.';
+
+  @override
+  String get printBarcode => 'Barkod Çap Et';
+
+  @override
+  String get barcodeLabel => 'Barkod';
+
+  @override
+  String get productLabel => 'Məhsul';
+
+  @override
+  String get countLabel => 'Say';
+
+  @override
+  String get confirmAndSaveDialogBody =>
+      'Bu fakturanı təsdiqləyib saxlamaq istədiyinizə əminsiniz? Bu əməliyyat geri alına bilməz.';
+
+  @override
+  String get loadMore => 'Daha çox yüklə';
+
+  @override
+  String get addAnotherPage => 'Başqa səhifə əlavə et';
+
+  @override
+  String get viewOriginalImage => 'Orijinal faktura şəkilini gör';
+
+  @override
+  String get viewOriginal => 'Orijinalı gör';
+
+  @override
+  String get viewImage => 'Şəkilə bax';
+
+  @override
+  String viewImages(int count) {
+    return '$count şəkilə bax';
+  }
+
+  @override
+  String get taxIdLabel => 'Vergi Nömrəsi';
+
+  @override
+  String get invoiceDateLabel => 'Faktura Tarixi';
+
+  @override
+  String get addressLabel => 'Ünvan';
+
+  @override
+  String get contactLabel => 'Əlaqə';
+
+  @override
+  String get modelLabel => 'Model';
+
+  @override
+  String get colorLabel => 'Rəng';
+
+  @override
+  String get sizeLabel => 'Ölçü';
+
+  @override
+  String get invoiceQtyShort => 'Faktura Miqdarı';
+
+  @override
+  String get unitPriceUsdLabel => 'Vahid Qiymət (USD)';
+
+  @override
+  String get exchangeRateLabel => 'Məzənnə';
+
+  @override
+  String get productCodeLabel => 'Məhsul Kodu';
+
+  @override
+  String get printerError => 'Çap xətası';
+
+  @override
+  String pageN(int n) {
+    return 'Səhifə $n';
+  }
+
+  @override
+  String get supplierAddress => 'Təchizatçı Ünvanı';
+
+  @override
+  String get contactNumber => 'Əlaqə Nömrəsi';
+
+  @override
+  String get contractNumber => 'Müqavilə Nömrəsi';
+
+  @override
+  String get inventoryWarehouse => 'Anbar (İnventar)';
+
+  @override
+  String get editInvoiceProduct => 'Faktura Məhsulunu Redaktə Et';
+
+  @override
+  String get invoiceDetailsReadOnly => 'Faktura Detalları (yalnız oxu)';
+
+  @override
+  String get unitPriceAzn => 'Vahid Qiymət (AZN)';
+
+  @override
+  String get stockTypeBadge => 'ANBAR';
+
+  @override
+  String get inventoryTypeBadge => 'İNVENTAR';
+
+  @override
+  String get invTypeBadge => 'İNV';
 }

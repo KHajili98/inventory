@@ -1996,5 +1996,329 @@
   "posPaymentCard": "Card",
   "posPaymentTransfer": "Transfer",
   "posPriceRetail": "Retail",
-  "posPriceWholesale": "Wholesale"
+  "posPriceWholesale": "Wholesale",
+
+  "welcomeBack": "Welcome back",
+  "@welcomeBack": { "description": "Login page heading" },
+
+  "signInSubtitle": "Sign in to your account to continue",
+  "@signInSubtitle": { "description": "Login page subheading" },
+
+  "signIn": "Sign in",
+  "@signIn": { "description": "Login button label" },
+
+  "usernameLabel": "Username",
+  "@usernameLabel": { "description": "Username field label on login page" },
+
+  "passwordLabel": "Password",
+  "@passwordLabel": { "description": "Password field label on login page" },
+
+  "inventoryLabel": "Inventory",
+  "@inventoryLabel": { "description": "Inventory field label on login page" },
+
+  "enterUsername": "Enter your username",
+  "@enterUsername": { "description": "Username hint text" },
+
+  "usernameRequired": "Username is required",
+  "@usernameRequired": { "description": "Validation error when username is empty" },
+
+  "passwordRequired": "Password is required",
+  "@passwordRequired": { "description": "Validation error when password is empty" },
+
+  "passwordMinLength": "Password must be at least 6 characters",
+  "@passwordMinLength": { "description": "Validation error when password is too short" },
+
+  "selectAnInventory": "Select an inventory",
+  "@selectAnInventory": { "description": "Hint text for inventory dropdown on login page" },
+
+  "pleaseSelectAnInventory": "Please select an inventory",
+  "@pleaseSelectAnInventory": { "description": "Validation error when no inventory is selected on login" },
+
+  "securedConnection": "Secured connection",
+  "@securedConnection": { "description": "Security label at bottom of login page" },
+
+  "goBack": "Go Back",
+  "@goBack": { "description": "Go back button label" },
+
+  "openInNewTab": "Open in new tab",
+  "@openInNewTab": { "description": "Tooltip for opening image in new browser tab" },
+
+  "closeImageViewer": "Close",
+  "@closeImageViewer": { "description": "Tooltip for closing the image viewer" },
+
+  "invoiceImageTitle": "Invoice Image",
+  "@invoiceImageTitle": { "description": "Title in image viewer when there is one image" },
+
+  "invoiceImageOf": "Image {current} of {total}",
+  "@invoiceImageOf": {
+    "description": "Title in image viewer when there are multiple images",
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "failedToDeleteInvoice": "Failed to delete invoice: {error}",
+  "@failedToDeleteInvoice": {
+    "description": "Snackbar error when invoice deletion fails",
+    "placeholders": { "error": { "type": "String" } }
+  },
+
+  "deleteInvoiceTooltip": "Delete invoice",
+  "@deleteInvoiceTooltip": { "description": "Tooltip for the delete invoice icon button" },
+
+  "invoiceNoHint": "Invoice No.",
+  "@invoiceNoHint": { "description": "Hint text for invoice number inline field" },
+
+  "supplierNameHint": "Supplier Name",
+  "@supplierNameHint": { "description": "Hint text for supplier name inline field" },
+
+  "yesLabel": "Yes",
+  "@yesLabel": { "description": "Yes button label in confirmation dialogs" },
+
+  "noLabel": "No",
+  "@noLabel": { "description": "No button label in confirmation dialogs" },
+
+  "okLabel": "OK",
+  "@okLabel": { "description": "OK button label in dialogs" },
+
+  "errorTitle": "Error",
+  "@errorTitle": { "description": "Title for generic error dialogs" },
+
+  "printLabel": "Print",
+  "@printLabel": { "description": "Print button label" },
+
+  "printTooltip": "Print",
+  "@printTooltip": { "description": "Tooltip for print icon button" },
+
+  "printedLabelsSuccess": "Printed {count} label(s) for {name}",
+  "@printedLabelsSuccess": {
+    "description": "Snackbar shown after successfully printing barcode labels",
+    "placeholders": {
+      "count": { "type": "int" },
+      "name": { "type": "String" }
+    }
+  },
+
+  "printFailed": "Print failed: {error}",
+  "@printFailed": {
+    "description": "Snackbar error when printing fails",
+    "placeholders": { "error": { "type": "String" } }
+  },
+
+  "deleteProductTitle": "Delete Product",
+  "@deleteProductTitle": { "description": "Title for delete product confirmation dialog" },
+
+  "deleteProductConfirm": "Are you sure you want to delete this product? This action cannot be undone.",
+  "@deleteProductConfirm": { "description": "Body text for delete product confirmation dialog" },
+
+  "productDeletedSuccess": "{name} deleted successfully.",
+  "@productDeletedSuccess": {
+    "description": "Snackbar when a product is deleted successfully",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "deleteFailed": "Delete failed: {error}",
+  "@deleteFailed": {
+    "description": "Snackbar when a delete operation fails",
+    "placeholders": { "error": { "type": "String" } }
+  },
+
+  "deleteCount": "Delete {count}",
+  "@deleteCount": {
+    "description": "Label on bulk delete button showing count",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "productsDeletedSuccess": "{count} product(s) deleted successfully.",
+  "@productsDeletedSuccess": {
+    "description": "Snackbar after bulk delete success",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "nItemsParens": "{count} item(s)",
+  "@nItemsParens": {
+    "description": "Number of items with parenthetical suffix, e.g. in transaction list",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "paginationShowing": "Showing {start}–{end} of {total}",
+  "@paginationShowing": {
+    "description": "Pagination info text",
+    "placeholders": {
+      "start": { "type": "int" },
+      "end": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "failedToLoadRetry": "Failed to load — tap to retry",
+  "@failedToLoadRetry": {
+    "description": "Error message in dropdown when inventory list fails to load"
+  },
+
+  "inventoryDropdownNone": "— None —",
+  "@inventoryDropdownNone": {
+    "description": "None option in inventory dropdown"
+  },
+
+  "processingAdditionalPage": "Processing additional page...",
+  "@processingAdditionalPage": {
+    "description": "Label shown when processing additional pages of an invoice OCR"
+  },
+
+  "failedToLoadImage": "Failed to load image",
+  "@failedToLoadImage": {
+    "description": "Error message when an image fails to load"
+  },
+
+  "initializingLabel": "Initializing...",
+  "@initializingLabel": {
+    "description": "Placeholder text while a page is initializing"
+  },
+
+  "itemsTotal": "{count} items total",
+  "@itemsTotal": {
+    "description": "Footer text showing total item count",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "deleteInvoiceTitle": "Delete Invoice",
+  "@deleteInvoiceTitle": {
+    "description": "Title of the delete invoice confirmation dialog"
+  },
+
+  "deleteInvoiceConfirm": "Are you sure you want to delete this invoice? This action cannot be undone.",
+  "@deleteInvoiceConfirm": {
+    "description": "Body text of the delete invoice confirmation dialog"
+  },
+
+  "bulkDeleteProductsTitle": "Delete {count} Product(s)",
+  "@bulkDeleteProductsTitle": {
+    "description": "Title of the bulk delete products dialog",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "bulkDeleteProductsConfirm": "Are you sure you want to delete the following products? This action cannot be undone.",
+  "@bulkDeleteProductsConfirm": {
+    "description": "Body text of the bulk delete products confirmation dialog"
+  },
+
+  "printBarcode": "Print Barcode",
+  "@printBarcode": {
+    "description": "Title for the print barcode dialog"
+  },
+
+  "barcodeLabel": "Barcode",
+  "@barcodeLabel": {
+    "description": "Label for barcode field in print dialog"
+  },
+
+  "productLabel": "Product",
+  "@productLabel": {
+    "description": "Generic product label"
+  },
+
+  "countLabel": "Count",
+  "@countLabel": {
+    "description": "Label for count/quantity field"
+  },
+
+  "confirmAndSaveDialogBody": "Are you sure you want to confirm and save this invoice? This action cannot be undone.",
+  "@confirmAndSaveDialogBody": {
+    "description": "Body text of the confirm and save invoice dialog"
+  },
+
+  "loadMore": "Load more",
+  "@loadMore": { "description": "Button label to load more items" },
+
+  "addAnotherPage": "Add another page",
+  "@addAnotherPage": { "description": "Tooltip for adding another invoice page" },
+
+  "viewOriginalImage": "View original invoice image",
+  "@viewOriginalImage": { "description": "Tooltip for viewing the original invoice image" },
+
+  "viewOriginal": "View original",
+  "@viewOriginal": { "description": "Button label to view the original invoice" },
+
+  "viewImage": "View Image",
+  "@viewImage": { "description": "Button label to view a single image" },
+
+  "viewImages": "View Images ({count})",
+  "@viewImages": {
+    "description": "Button label to view multiple images",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "taxIdLabel": "Tax ID",
+  "@taxIdLabel": { "description": "Label for tax ID field" },
+
+  "invoiceDateLabel": "Invoice Date",
+  "@invoiceDateLabel": { "description": "Label for invoice date field" },
+
+  "addressLabel": "Address",
+  "@addressLabel": { "description": "Label for address field" },
+
+  "contactLabel": "Contact",
+  "@contactLabel": { "description": "Label for contact field" },
+
+  "modelLabel": "Model",
+  "@modelLabel": { "description": "Label for model field" },
+
+  "colorLabel": "Color",
+  "@colorLabel": { "description": "Label for color field" },
+
+  "sizeLabel": "Size",
+  "@sizeLabel": { "description": "Label for size field" },
+
+  "invoiceQtyShort": "Invoice Qty",
+  "@invoiceQtyShort": { "description": "Short label for invoice quantity" },
+
+  "unitPriceUsdLabel": "Unit Price (USD)",
+  "@unitPriceUsdLabel": { "description": "Label for unit price in USD" },
+
+  "exchangeRateLabel": "Exchange Rate",
+  "@exchangeRateLabel": { "description": "Label for exchange rate field" },
+
+  "productCodeLabel": "Product Code",
+  "@productCodeLabel": { "description": "Label for product code field" },
+
+  "printerError": "Printer error",
+  "@printerError": { "description": "Fallback message when printer raises an error" },
+
+  "pageN": "Page {n}",
+  "@pageN": {
+    "description": "Label for a numbered page",
+    "placeholders": { "n": { "type": "int" } }
+  },
+
+  "supplierAddress": "Supplier Address",
+  "@supplierAddress": { "description": "Label for supplier address field" },
+
+  "contactNumber": "Contact Number",
+  "@contactNumber": { "description": "Label for contact number field" },
+
+  "contractNumber": "Contract Number",
+  "@contractNumber": { "description": "Label for contract number field" },
+
+  "inventoryWarehouse": "Inventory (Warehouse)",
+  "@inventoryWarehouse": { "description": "Label for the inventory warehouse dropdown" },
+
+  "editInvoiceProduct": "Edit Invoice Product",
+  "@editInvoiceProduct": { "description": "Title for editing an invoice-sourced product dialog" },
+
+  "invoiceDetailsReadOnly": "Invoice Details (read-only)",
+  "@invoiceDetailsReadOnly": { "description": "Section header for read-only invoice details" },
+
+  "unitPriceAzn": "Unit Price (AZN)",
+  "@unitPriceAzn": { "description": "Label for the unit price in AZN" },
+
+  "stockTypeBadge": "STOCK",
+  "@stockTypeBadge": { "description": "Short badge label for stock-type inventory" },
+
+  "inventoryTypeBadge": "INVENTORY",
+  "@inventoryTypeBadge": { "description": "Short badge label for inventory type (full)" },
+
+  "invTypeBadge": "INV",
+  "@invTypeBadge": { "description": "Short abbreviated badge label for inventory type" }
 }

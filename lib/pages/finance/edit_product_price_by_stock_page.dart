@@ -882,7 +882,7 @@ class _EditProductPriceByStockPageState extends State<EditProductPriceByStockPag
                 decoration: const BoxDecoration(
                   border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
                 ),
-                child: Text('$_totalCount items total', style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+                child: Text(AppLocalizations.of(context)!.itemsTotal(_totalCount), style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
               ),
           ],
         ),

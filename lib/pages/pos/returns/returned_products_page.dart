@@ -375,7 +375,7 @@ class _ReturnedProductsViewState extends State<_ReturnedProductsView> {
     return BlocBuilder<ReturnedProductsCubit, ReturnedProductsState>(
       builder: (context, state) {
         return switch (state) {
-          ReturnedProductsInitial() => const Center(child: Text('Initialize...')),
+          ReturnedProductsInitial() => Center(child: Text(l10n.initializingLabel)),
           ReturnedProductsLoading() => const Center(child: CircularProgressIndicator()),
           ReturnedProductsError(:final message) => Center(
             child: Column(

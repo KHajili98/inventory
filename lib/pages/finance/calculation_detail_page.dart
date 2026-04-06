@@ -166,27 +166,30 @@ class _CalculationDetailPageState extends State<CalculationDetailPage> {
         showDialog(
           context: context,
           useRootNavigator: false,
-          builder: (ctx) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: const Row(
-              children: [
-                Icon(Icons.error_outline_rounded, color: Color(0xFFEF4444)),
-                SizedBox(width: 10),
-                Text('Error', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-              ],
-            ),
-            content: Text(message, style: const TextStyle(fontSize: 14, color: Color(0xFF475569))),
-            actions: [
-              FilledButton(
-                onPressed: () => Navigator.of(ctx).pop(),
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF6366F1),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                child: const Text('OK'),
+          builder: (ctx) {
+            final l10n = AppLocalizations.of(ctx)!;
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Row(
+                children: [
+                  const Icon(Icons.error_outline_rounded, color: Color(0xFFEF4444)),
+                  const SizedBox(width: 10),
+                  Text(l10n.errorTitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                ],
               ),
-            ],
-          ),
+              content: Text(message, style: const TextStyle(fontSize: 14, color: Color(0xFF475569))),
+              actions: [
+                FilledButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF6366F1),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: Text(l10n.okLabel),
+                ),
+              ],
+            );
+          },
         );
     }
   }

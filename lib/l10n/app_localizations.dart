@@ -3271,6 +3271,498 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Wholesale'**
   String get posPriceWholesale;
+
+  /// Login page heading
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get welcomeBack;
+
+  /// Login page subheading
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to your account to continue'**
+  String get signInSubtitle;
+
+  /// Login button label
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get signIn;
+
+  /// Username field label on login page
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get usernameLabel;
+
+  /// Password field label on login page
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get passwordLabel;
+
+  /// Inventory field label on login page
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory'**
+  String get inventoryLabel;
+
+  /// Username hint text
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your username'**
+  String get enterUsername;
+
+  /// Validation error when username is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Username is required'**
+  String get usernameRequired;
+
+  /// Validation error when password is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Password is required'**
+  String get passwordRequired;
+
+  /// Validation error when password is too short
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 6 characters'**
+  String get passwordMinLength;
+
+  /// Hint text for inventory dropdown on login page
+  ///
+  /// In en, this message translates to:
+  /// **'Select an inventory'**
+  String get selectAnInventory;
+
+  /// Validation error when no inventory is selected on login
+  ///
+  /// In en, this message translates to:
+  /// **'Please select an inventory'**
+  String get pleaseSelectAnInventory;
+
+  /// Security label at bottom of login page
+  ///
+  /// In en, this message translates to:
+  /// **'Secured connection'**
+  String get securedConnection;
+
+  /// Go back button label
+  ///
+  /// In en, this message translates to:
+  /// **'Go Back'**
+  String get goBack;
+
+  /// Tooltip for opening image in new browser tab
+  ///
+  /// In en, this message translates to:
+  /// **'Open in new tab'**
+  String get openInNewTab;
+
+  /// Tooltip for closing the image viewer
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get closeImageViewer;
+
+  /// Title in image viewer when there is one image
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice Image'**
+  String get invoiceImageTitle;
+
+  /// Title in image viewer when there are multiple images
+  ///
+  /// In en, this message translates to:
+  /// **'Image {current} of {total}'**
+  String invoiceImageOf(int current, int total);
+
+  /// Snackbar error when invoice deletion fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete invoice: {error}'**
+  String failedToDeleteInvoice(String error);
+
+  /// Tooltip for the delete invoice icon button
+  ///
+  /// In en, this message translates to:
+  /// **'Delete invoice'**
+  String get deleteInvoiceTooltip;
+
+  /// Hint text for invoice number inline field
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice No.'**
+  String get invoiceNoHint;
+
+  /// Hint text for supplier name inline field
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier Name'**
+  String get supplierNameHint;
+
+  /// Yes button label in confirmation dialogs
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get yesLabel;
+
+  /// No button label in confirmation dialogs
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get noLabel;
+
+  /// OK button label in dialogs
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get okLabel;
+
+  /// Title for generic error dialogs
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get errorTitle;
+
+  /// Print button label
+  ///
+  /// In en, this message translates to:
+  /// **'Print'**
+  String get printLabel;
+
+  /// Tooltip for print icon button
+  ///
+  /// In en, this message translates to:
+  /// **'Print'**
+  String get printTooltip;
+
+  /// Snackbar shown after successfully printing barcode labels
+  ///
+  /// In en, this message translates to:
+  /// **'Printed {count} label(s) for {name}'**
+  String printedLabelsSuccess(int count, String name);
+
+  /// Snackbar error when printing fails
+  ///
+  /// In en, this message translates to:
+  /// **'Print failed: {error}'**
+  String printFailed(String error);
+
+  /// Title for delete product confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Product'**
+  String get deleteProductTitle;
+
+  /// Body text for delete product confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this product? This action cannot be undone.'**
+  String get deleteProductConfirm;
+
+  /// Snackbar when a product is deleted successfully
+  ///
+  /// In en, this message translates to:
+  /// **'{name} deleted successfully.'**
+  String productDeletedSuccess(String name);
+
+  /// Snackbar when a delete operation fails
+  ///
+  /// In en, this message translates to:
+  /// **'Delete failed: {error}'**
+  String deleteFailed(String error);
+
+  /// Label on bulk delete button showing count
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {count}'**
+  String deleteCount(int count);
+
+  /// Snackbar after bulk delete success
+  ///
+  /// In en, this message translates to:
+  /// **'{count} product(s) deleted successfully.'**
+  String productsDeletedSuccess(int count);
+
+  /// Number of items with parenthetical suffix, e.g. in transaction list
+  ///
+  /// In en, this message translates to:
+  /// **'{count} item(s)'**
+  String nItemsParens(int count);
+
+  /// Pagination info text
+  ///
+  /// In en, this message translates to:
+  /// **'Showing {start}–{end} of {total}'**
+  String paginationShowing(int start, int end, int total);
+
+  /// Error message in dropdown when inventory list fails to load
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load — tap to retry'**
+  String get failedToLoadRetry;
+
+  /// None option in inventory dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'— None —'**
+  String get inventoryDropdownNone;
+
+  /// Label shown when processing additional pages of an invoice OCR
+  ///
+  /// In en, this message translates to:
+  /// **'Processing additional page...'**
+  String get processingAdditionalPage;
+
+  /// Error message when an image fails to load
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load image'**
+  String get failedToLoadImage;
+
+  /// Placeholder text while a page is initializing
+  ///
+  /// In en, this message translates to:
+  /// **'Initializing...'**
+  String get initializingLabel;
+
+  /// Footer text showing total item count
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items total'**
+  String itemsTotal(int count);
+
+  /// Title of the delete invoice confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Invoice'**
+  String get deleteInvoiceTitle;
+
+  /// Body text of the delete invoice confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this invoice? This action cannot be undone.'**
+  String get deleteInvoiceConfirm;
+
+  /// Title of the bulk delete products dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {count} Product(s)'**
+  String bulkDeleteProductsTitle(int count);
+
+  /// Body text of the bulk delete products confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete the following products? This action cannot be undone.'**
+  String get bulkDeleteProductsConfirm;
+
+  /// Title for the print barcode dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Print Barcode'**
+  String get printBarcode;
+
+  /// Label for barcode field in print dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode'**
+  String get barcodeLabel;
+
+  /// Generic product label
+  ///
+  /// In en, this message translates to:
+  /// **'Product'**
+  String get productLabel;
+
+  /// Label for count/quantity field
+  ///
+  /// In en, this message translates to:
+  /// **'Count'**
+  String get countLabel;
+
+  /// Body text of the confirm and save invoice dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to confirm and save this invoice? This action cannot be undone.'**
+  String get confirmAndSaveDialogBody;
+
+  /// Button label to load more items
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get loadMore;
+
+  /// Tooltip for adding another invoice page
+  ///
+  /// In en, this message translates to:
+  /// **'Add another page'**
+  String get addAnotherPage;
+
+  /// Tooltip for viewing the original invoice image
+  ///
+  /// In en, this message translates to:
+  /// **'View original invoice image'**
+  String get viewOriginalImage;
+
+  /// Button label to view the original invoice
+  ///
+  /// In en, this message translates to:
+  /// **'View original'**
+  String get viewOriginal;
+
+  /// Button label to view a single image
+  ///
+  /// In en, this message translates to:
+  /// **'View Image'**
+  String get viewImage;
+
+  /// Button label to view multiple images
+  ///
+  /// In en, this message translates to:
+  /// **'View Images ({count})'**
+  String viewImages(int count);
+
+  /// Label for tax ID field
+  ///
+  /// In en, this message translates to:
+  /// **'Tax ID'**
+  String get taxIdLabel;
+
+  /// Label for invoice date field
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice Date'**
+  String get invoiceDateLabel;
+
+  /// Label for address field
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get addressLabel;
+
+  /// Label for contact field
+  ///
+  /// In en, this message translates to:
+  /// **'Contact'**
+  String get contactLabel;
+
+  /// Label for model field
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get modelLabel;
+
+  /// Label for color field
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get colorLabel;
+
+  /// Label for size field
+  ///
+  /// In en, this message translates to:
+  /// **'Size'**
+  String get sizeLabel;
+
+  /// Short label for invoice quantity
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice Qty'**
+  String get invoiceQtyShort;
+
+  /// Label for unit price in USD
+  ///
+  /// In en, this message translates to:
+  /// **'Unit Price (USD)'**
+  String get unitPriceUsdLabel;
+
+  /// Label for exchange rate field
+  ///
+  /// In en, this message translates to:
+  /// **'Exchange Rate'**
+  String get exchangeRateLabel;
+
+  /// Label for product code field
+  ///
+  /// In en, this message translates to:
+  /// **'Product Code'**
+  String get productCodeLabel;
+
+  /// Fallback message when printer raises an error
+  ///
+  /// In en, this message translates to:
+  /// **'Printer error'**
+  String get printerError;
+
+  /// Label for a numbered page
+  ///
+  /// In en, this message translates to:
+  /// **'Page {n}'**
+  String pageN(int n);
+
+  /// Label for supplier address field
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier Address'**
+  String get supplierAddress;
+
+  /// Label for contact number field
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Number'**
+  String get contactNumber;
+
+  /// Label for contract number field
+  ///
+  /// In en, this message translates to:
+  /// **'Contract Number'**
+  String get contractNumber;
+
+  /// Label for the inventory warehouse dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory (Warehouse)'**
+  String get inventoryWarehouse;
+
+  /// Title for editing an invoice-sourced product dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Invoice Product'**
+  String get editInvoiceProduct;
+
+  /// Section header for read-only invoice details
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice Details (read-only)'**
+  String get invoiceDetailsReadOnly;
+
+  /// Label for the unit price in AZN
+  ///
+  /// In en, this message translates to:
+  /// **'Unit Price (AZN)'**
+  String get unitPriceAzn;
+
+  /// Short badge label for stock-type inventory
+  ///
+  /// In en, this message translates to:
+  /// **'STOCK'**
+  String get stockTypeBadge;
+
+  /// Short badge label for inventory type (full)
+  ///
+  /// In en, this message translates to:
+  /// **'INVENTORY'**
+  String get inventoryTypeBadge;
+
+  /// Short abbreviated badge label for inventory type
+  ///
+  /// In en, this message translates to:
+  /// **'INV'**
+  String get invTypeBadge;
 }
 
 class _AppLocalizationsDelegate

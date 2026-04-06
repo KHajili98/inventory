@@ -1697,4 +1697,282 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get posPriceWholesale => 'Wholesale';
+
+  @override
+  String get welcomeBack => 'Welcome back';
+
+  @override
+  String get signInSubtitle => 'Sign in to your account to continue';
+
+  @override
+  String get signIn => 'Sign in';
+
+  @override
+  String get usernameLabel => 'Username';
+
+  @override
+  String get passwordLabel => 'Password';
+
+  @override
+  String get inventoryLabel => 'Inventory';
+
+  @override
+  String get enterUsername => 'Enter your username';
+
+  @override
+  String get usernameRequired => 'Username is required';
+
+  @override
+  String get passwordRequired => 'Password is required';
+
+  @override
+  String get passwordMinLength => 'Password must be at least 6 characters';
+
+  @override
+  String get selectAnInventory => 'Select an inventory';
+
+  @override
+  String get pleaseSelectAnInventory => 'Please select an inventory';
+
+  @override
+  String get securedConnection => 'Secured connection';
+
+  @override
+  String get goBack => 'Go Back';
+
+  @override
+  String get openInNewTab => 'Open in new tab';
+
+  @override
+  String get closeImageViewer => 'Close';
+
+  @override
+  String get invoiceImageTitle => 'Invoice Image';
+
+  @override
+  String invoiceImageOf(int current, int total) {
+    return 'Image $current of $total';
+  }
+
+  @override
+  String failedToDeleteInvoice(String error) {
+    return 'Failed to delete invoice: $error';
+  }
+
+  @override
+  String get deleteInvoiceTooltip => 'Delete invoice';
+
+  @override
+  String get invoiceNoHint => 'Invoice No.';
+
+  @override
+  String get supplierNameHint => 'Supplier Name';
+
+  @override
+  String get yesLabel => 'Yes';
+
+  @override
+  String get noLabel => 'No';
+
+  @override
+  String get okLabel => 'OK';
+
+  @override
+  String get errorTitle => 'Error';
+
+  @override
+  String get printLabel => 'Print';
+
+  @override
+  String get printTooltip => 'Print';
+
+  @override
+  String printedLabelsSuccess(int count, String name) {
+    return 'Printed $count label(s) for $name';
+  }
+
+  @override
+  String printFailed(String error) {
+    return 'Print failed: $error';
+  }
+
+  @override
+  String get deleteProductTitle => 'Delete Product';
+
+  @override
+  String get deleteProductConfirm =>
+      'Are you sure you want to delete this product? This action cannot be undone.';
+
+  @override
+  String productDeletedSuccess(String name) {
+    return '$name deleted successfully.';
+  }
+
+  @override
+  String deleteFailed(String error) {
+    return 'Delete failed: $error';
+  }
+
+  @override
+  String deleteCount(int count) {
+    return 'Delete $count';
+  }
+
+  @override
+  String productsDeletedSuccess(int count) {
+    return '$count product(s) deleted successfully.';
+  }
+
+  @override
+  String nItemsParens(int count) {
+    return '$count item(s)';
+  }
+
+  @override
+  String paginationShowing(int start, int end, int total) {
+    return 'Showing $start–$end of $total';
+  }
+
+  @override
+  String get failedToLoadRetry => 'Failed to load — tap to retry';
+
+  @override
+  String get inventoryDropdownNone => '— None —';
+
+  @override
+  String get processingAdditionalPage => 'Processing additional page...';
+
+  @override
+  String get failedToLoadImage => 'Failed to load image';
+
+  @override
+  String get initializingLabel => 'Initializing...';
+
+  @override
+  String itemsTotal(int count) {
+    return '$count items total';
+  }
+
+  @override
+  String get deleteInvoiceTitle => 'Delete Invoice';
+
+  @override
+  String get deleteInvoiceConfirm =>
+      'Are you sure you want to delete this invoice? This action cannot be undone.';
+
+  @override
+  String bulkDeleteProductsTitle(int count) {
+    return 'Delete $count Product(s)';
+  }
+
+  @override
+  String get bulkDeleteProductsConfirm =>
+      'Are you sure you want to delete the following products? This action cannot be undone.';
+
+  @override
+  String get printBarcode => 'Print Barcode';
+
+  @override
+  String get barcodeLabel => 'Barcode';
+
+  @override
+  String get productLabel => 'Product';
+
+  @override
+  String get countLabel => 'Count';
+
+  @override
+  String get confirmAndSaveDialogBody =>
+      'Are you sure you want to confirm and save this invoice? This action cannot be undone.';
+
+  @override
+  String get loadMore => 'Load more';
+
+  @override
+  String get addAnotherPage => 'Add another page';
+
+  @override
+  String get viewOriginalImage => 'View original invoice image';
+
+  @override
+  String get viewOriginal => 'View original';
+
+  @override
+  String get viewImage => 'View Image';
+
+  @override
+  String viewImages(int count) {
+    return 'View Images ($count)';
+  }
+
+  @override
+  String get taxIdLabel => 'Tax ID';
+
+  @override
+  String get invoiceDateLabel => 'Invoice Date';
+
+  @override
+  String get addressLabel => 'Address';
+
+  @override
+  String get contactLabel => 'Contact';
+
+  @override
+  String get modelLabel => 'Model';
+
+  @override
+  String get colorLabel => 'Color';
+
+  @override
+  String get sizeLabel => 'Size';
+
+  @override
+  String get invoiceQtyShort => 'Invoice Qty';
+
+  @override
+  String get unitPriceUsdLabel => 'Unit Price (USD)';
+
+  @override
+  String get exchangeRateLabel => 'Exchange Rate';
+
+  @override
+  String get productCodeLabel => 'Product Code';
+
+  @override
+  String get printerError => 'Printer error';
+
+  @override
+  String pageN(int n) {
+    return 'Page $n';
+  }
+
+  @override
+  String get supplierAddress => 'Supplier Address';
+
+  @override
+  String get contactNumber => 'Contact Number';
+
+  @override
+  String get contractNumber => 'Contract Number';
+
+  @override
+  String get inventoryWarehouse => 'Inventory (Warehouse)';
+
+  @override
+  String get editInvoiceProduct => 'Edit Invoice Product';
+
+  @override
+  String get invoiceDetailsReadOnly => 'Invoice Details (read-only)';
+
+  @override
+  String get unitPriceAzn => 'Unit Price (AZN)';
+
+  @override
+  String get stockTypeBadge => 'STOCK';
+
+  @override
+  String get inventoryTypeBadge => 'INVENTORY';
+
+  @override
+  String get invTypeBadge => 'INV';
 }
