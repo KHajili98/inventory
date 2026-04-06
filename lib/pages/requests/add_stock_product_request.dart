@@ -314,7 +314,7 @@ class _AddStockProductRequestState extends State<AddStockProductRequest> {
             const SizedBox(width: 6),
             Expanded(
               child: Text(
-                src.isStock ? 'Search Stock Products (${src.name})' : 'Search Inventory Products (${src.name})',
+                src.isStock ? l10n.searchStockProducts(src.name) : l10n.searchInventoryProducts(src.name),
                 style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -500,6 +500,7 @@ class _LockedInventoryField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -513,14 +514,14 @@ class _LockedInventoryField extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(color: const Color(0xFF6366F1).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.lock_rounded, size: 10, color: Color(0xFF6366F1)),
-                  SizedBox(width: 3),
+                  const Icon(Icons.lock_rounded, size: 10, color: Color(0xFF6366F1)),
+                  const SizedBox(width: 3),
                   Text(
-                    'Your inventory',
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFF6366F1)),
+                    l10n.yourInventory,
+                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFF6366F1)),
                   ),
                 ],
               ),
@@ -694,7 +695,7 @@ class _StockProductTileState extends State<_StockProductTile> {
       onToggle: () => setState(() => _expanded = !_expanded),
       name: p.displayName,
       barcode: p.barcode ?? '—',
-      subtitle: 'Code: ${p.productCode ?? '—'}  •  Qty: ${p.quantity}',
+      subtitle: '${l10n.codeLabel}: ${p.productCode ?? '—'}  •  ${l10n.quantity}: ${p.quantity}',
       qtyLabel: '${p.barcode}',
       expandedContent: _ExpandedQtyRow(
         qtyCtrl: _qtyCtrl,
@@ -749,7 +750,7 @@ class _InvProductTileState extends State<_InvProductTile> {
       onToggle: () => setState(() => _expanded = !_expanded),
       name: name,
       barcode: p.barcode ?? '—',
-      subtitle: 'Code: ${p.productCode ?? '—'}  •  Qty: ${p.actualQuantity ?? 0}',
+      subtitle: '${l10n.codeLabel}: ${p.productCode ?? '—'}  •  ${l10n.quantity}: ${p.actualQuantity ?? 0}',
       qtyLabel: '${p.actualQuantity ?? 0}',
       expandedContent: _ExpandedQtyRow(
         qtyCtrl: _qtyCtrl,
@@ -1007,7 +1008,7 @@ class _ErrorCard extends StatelessWidget {
           ),
           TextButton(
             onPressed: onRetry,
-            child: const Text('Retry', style: TextStyle(color: Color(0xFF6366F1))),
+            child: Text(AppLocalizations.of(context)!.retry, style: const TextStyle(color: Color(0xFF6366F1))),
           ),
         ],
       ),

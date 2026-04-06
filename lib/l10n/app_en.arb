@@ -1462,6 +1462,24 @@
   "sentQty": "Sent",
   "@sentQty": { "description": "Sent quantity column header" },
 
+  "receivedQty": "Received",
+  "@receivedQty": { "description": "Received quantity column header" },
+
+  "yourInventory": "Your inventory",
+  "@yourInventory": { "description": "Badge shown next to the locked destination inventory field" },
+
+  "searchStockProducts": "Search Stock Products ({name})",
+  "@searchStockProducts": {
+    "description": "Label above the product search field when source is a stock",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "searchInventoryProducts": "Search Inventory Products ({name})",
+  "@searchInventoryProducts": {
+    "description": "Label above the product search field when source is an inventory",
+    "placeholders": { "name": { "type": "String" } }
+  },
+
   "markAsReady": "Mark as Ready for Delivery",
   "@markAsReady": { "description": "Button to mark request as ready for delivery" },
 
@@ -1769,6 +1787,22 @@
 
   "validatingReceipt": "Validating receipt...",
   "@validatingReceipt": { "description": "Loading message when validating receipt" },
+
+  "productsInReceipt": "{count} product(s) in receipt",
+  "@productsInReceipt": {
+    "description": "Info label showing how many products are in the found receipt",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "availableInReceipt": "Available in receipt: {count}",
+  "@availableInReceipt": {
+    "description": "Info label showing available quantity for a barcode in the receipt",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
 
   "logout": "Logout",
   "@logout": { "description": "Logout button label" },

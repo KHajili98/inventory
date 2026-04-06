@@ -2102,6 +2102,30 @@ abstract class AppLocalizations {
   /// **'Sent'**
   String get sentQty;
 
+  /// Received quantity column header
+  ///
+  /// In en, this message translates to:
+  /// **'Received'**
+  String get receivedQty;
+
+  /// Badge shown next to the locked destination inventory field
+  ///
+  /// In en, this message translates to:
+  /// **'Your inventory'**
+  String get yourInventory;
+
+  /// Label above the product search field when source is a stock
+  ///
+  /// In en, this message translates to:
+  /// **'Search Stock Products ({name})'**
+  String searchStockProducts(String name);
+
+  /// Label above the product search field when source is an inventory
+  ///
+  /// In en, this message translates to:
+  /// **'Search Inventory Products ({name})'**
+  String searchInventoryProducts(String name);
+
   /// Button to mark request as ready for delivery
   ///
   /// In en, this message translates to:
@@ -2689,6 +2713,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Validating receipt...'**
   String get validatingReceipt;
+
+  /// Info label showing how many products are in the found receipt
+  ///
+  /// In en, this message translates to:
+  /// **'{count} product(s) in receipt'**
+  String productsInReceipt(int count);
+
+  /// Info label showing available quantity for a barcode in the receipt
+  ///
+  /// In en, this message translates to:
+  /// **'Available in receipt: {count}'**
+  String availableInReceipt(int count);
 
   /// Logout button label
   ///

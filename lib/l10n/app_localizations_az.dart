@@ -1065,6 +1065,22 @@ class AppLocalizationsAz extends AppLocalizations {
   String get sentQty => 'Göndərilən';
 
   @override
+  String get receivedQty => 'Alınan';
+
+  @override
+  String get yourInventory => 'Sizin anbar';
+
+  @override
+  String searchStockProducts(String name) {
+    return 'Stok Məhsullarını Axtar ($name)';
+  }
+
+  @override
+  String searchInventoryProducts(String name) {
+    return 'Anbar Məhsullarını Axtar ($name)';
+  }
+
+  @override
   String get markAsReady => 'Çatdırılmağa Hazır Kimi İşarələ';
 
   @override
@@ -1372,6 +1388,16 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get validatingReceipt => 'Qəbz yoxlanılır...';
+
+  @override
+  String productsInReceipt(int count) {
+    return 'Qəbzdə $count məhsul var';
+  }
+
+  @override
+  String availableInReceipt(int count) {
+    return 'Qəbzdə mövcuddur: $count';
+  }
 
   @override
   String get logout => 'Çıxış';

@@ -332,7 +332,7 @@ class _AddReturnedProductDialogState extends State<AddReturnedProductDialog> {
                               const Icon(Icons.info_outline, size: 14, color: Color(0xFF10B981)),
                               const SizedBox(width: 4),
                               Text(
-                                '${_receiptData!.items.length} product(s) in receipt',
+                                l10n.productsInReceipt(_receiptData!.items.length),
                                 style: const TextStyle(fontSize: 12, color: Color(0xFF10B981)),
                               ),
                             ],
@@ -399,7 +399,7 @@ class _AddReturnedProductDialogState extends State<AddReturnedProductDialog> {
                                 children: [
                                   const Icon(Icons.inventory_2_outlined, size: 14, color: Color(0xFF6366F1)),
                                   const SizedBox(width: 4),
-                                  Text('Available in receipt: ${item.count}', style: const TextStyle(fontSize: 12, color: Color(0xFF6366F1))),
+                                  Text(l10n.availableInReceipt(item.count), style: const TextStyle(fontSize: 12, color: Color(0xFF6366F1))),
                                 ],
                               );
                             },

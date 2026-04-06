@@ -1061,6 +1061,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sentQty => 'Sent';
 
   @override
+  String get receivedQty => 'Received';
+
+  @override
+  String get yourInventory => 'Your inventory';
+
+  @override
+  String searchStockProducts(String name) {
+    return 'Search Stock Products ($name)';
+  }
+
+  @override
+  String searchInventoryProducts(String name) {
+    return 'Search Inventory Products ($name)';
+  }
+
+  @override
   String get markAsReady => 'Mark as Ready for Delivery';
 
   @override
@@ -1368,6 +1384,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get validatingReceipt => 'Validating receipt...';
+
+  @override
+  String productsInReceipt(int count) {
+    return '$count product(s) in receipt';
+  }
+
+  @override
+  String availableInReceipt(int count) {
+    return 'Available in receipt: $count';
+  }
 
   @override
   String get logout => 'Logout';

@@ -550,6 +550,16 @@
   "acceptedQty": "Qəbul Edilən Miqdar",
   "requestedQty": "Tələb Edilən",
   "sentQty": "Göndərilən",
+  "receivedQty": "Alınan",
+  "yourInventory": "Sizin anbar",
+  "searchStockProducts": "Stok Məhsullarını Axtar ({name})",
+  "@searchStockProducts": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "searchInventoryProducts": "Anbar Məhsullarını Axtar ({name})",
+  "@searchInventoryProducts": {
+    "placeholders": { "name": { "type": "String" } }
+  },
   "markAsReady": "Çatdırılmağa Hazır Kimi İşarələ",
   "acceptDelivery": "Çatdırılmanı Qəbul Et",
   "preparingHint": "Göndərə biləcəyiniz miqdarı daxil edin (tələb ediləndən az ola bilər)",
@@ -659,6 +669,20 @@
   "quantityExceedsReceipt": "Miqdar qəbzdəki miqdardan çoxdur. Mövcud: {available}",
   "receiptNotFound": "Qəbz tapılmadı",
   "validatingReceipt": "Qəbz yoxlanılır...",
+
+  "productsInReceipt": "Qəbzdə {count} məhsul var",
+  "@productsInReceipt": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "availableInReceipt": "Qəbzdə mövcuddur: {count}",
+  "@availableInReceipt": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
 
   "logout": "Çıxış",
   "logoutConfirmTitle": "Çıxmaq istəyirsiniz?",

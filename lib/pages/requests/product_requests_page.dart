@@ -163,7 +163,7 @@ class _ProductRequestsViewState extends State<_ProductRequestsView> {
                         IconButton(
                           onPressed: () => context.read<ProductRequestsCubit>().refresh(),
                           icon: const Icon(Icons.refresh_rounded, color: Color(0xFF64748B)),
-                          tooltip: 'Refresh',
+                          tooltip: l10n.refresh,
                         ),
                       ],
                     ),
@@ -240,7 +240,7 @@ class _ProductRequestsViewState extends State<_ProductRequestsView> {
                         ElevatedButton.icon(
                           onPressed: () => context.read<ProductRequestsCubit>().refresh(),
                           icon: const Icon(Icons.refresh_rounded, size: 18),
-                          label: const Text('Retry'),
+                          label: Text(l10n.retry),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF6366F1),
                             foregroundColor: Colors.white,
@@ -769,7 +769,7 @@ class _ApiRequestCardState extends State<_ApiRequestCard> {
           SizedBox(
             width: 80,
             child: Text(
-              'Sent',
+              l10n.sentQty,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -784,7 +784,7 @@ class _ApiRequestCardState extends State<_ApiRequestCard> {
           SizedBox(
             width: 80,
             child: Text(
-              'Received',
+              l10n.receivedQty,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
