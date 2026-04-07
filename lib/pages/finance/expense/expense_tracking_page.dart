@@ -12,6 +12,7 @@ import 'package:inventory/features/expense/data/repositories/fee_category_reposi
 import 'package:inventory/features/expense/data/repositories/fee_repository.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 import 'package:inventory/pages/finance/expense/expense_categories_page.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // ── Payment type enum (for UI labels) ─────────────────────────────────────────
 
@@ -240,6 +241,15 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
     'transfer' => const Color(0xFF0EA5E9),
     _ => const Color(0xFF94A3B8),
   };
+
+  Future<void> _openFileUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not open file'), backgroundColor: Color(0xFFEF4444)));
+    }
+  }
 
   // ── Build ─────────────────────────────────────────────────────────────────
 
@@ -754,18 +764,23 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
           Expanded(
             flex: 2,
             child: e.fileUrl != null
-                ? Row(
-                    children: [
-                      const Icon(Icons.attach_file_rounded, size: 14, color: Color(0xFF6366F1)),
-                      const SizedBox(width: 4),
-                      const Flexible(
-                        child: Text(
-                          'Document',
-                          style: TextStyle(fontSize: 12, color: Color(0xFF6366F1)),
-                          overflow: TextOverflow.ellipsis,
+                ? InkWell(
+                    onTap: () => _openFileUrl(e.fileUrl!),
+                    borderRadius: BorderRadius.circular(6),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.download_rounded, size: 15, color: Color(0xFF6366F1)),
+                        const SizedBox(width: 4),
+                        const Flexible(
+                          child: Text(
+                            'Document',
+                            style: TextStyle(fontSize: 12, color: Color(0xFF6366F1), decoration: TextDecoration.underline),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   )
                 : const Text('—', style: TextStyle(fontSize: 13, color: Color(0xFFCBD5E1))),
           ),
@@ -831,9 +846,21 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
                     Text(dateStr, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
                     if (e.fileUrl != null) ...[
                       const SizedBox(width: 10),
-                      const Icon(Icons.attach_file_rounded, size: 12, color: Color(0xFF6366F1)),
-                      const SizedBox(width: 2),
-                      const Text('Doc', style: TextStyle(fontSize: 12, color: Color(0xFF6366F1))),
+                      InkWell(
+                        onTap: () => _openFileUrl(e.fileUrl!),
+                        borderRadius: BorderRadius.circular(4),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.download_rounded, size: 13, color: Color(0xFF6366F1)),
+                            SizedBox(width: 2),
+                            Text(
+                              'Doc',
+                              style: TextStyle(fontSize: 12, color: Color(0xFF6366F1), decoration: TextDecoration.underline),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ],
                 ),
