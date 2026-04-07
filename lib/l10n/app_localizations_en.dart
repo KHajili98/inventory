@@ -1799,6 +1799,50 @@ class AppLocalizationsEn extends AppLocalizations {
   String get posPriceWholesale => 'Wholesale';
 
   @override
+  String get posNisye => 'Credit (Nisye)';
+
+  @override
+  String get posNisyeToggle => 'Credit Sale';
+
+  @override
+  String get posNisyeSection => 'Credit Details';
+
+  @override
+  String get posNisyeCustomerFullname => 'Customer Full Name';
+
+  @override
+  String get posNisyeCustomerFullnameHint => 'Enter full name...';
+
+  @override
+  String get posNisyeCustomerPhone => 'Customer Phone';
+
+  @override
+  String get posNisyeCustomerPhoneHint => '+994XXXXXXXXX';
+
+  @override
+  String get posNisyeAmount => 'Credit Amount (AZN)';
+
+  @override
+  String get posNisyePaidAmount => 'Paid Amount (AZN)';
+
+  @override
+  String get posNisyeDate => 'Due Date';
+
+  @override
+  String get posNisyeDateHint => 'Select due date';
+
+  @override
+  String get posNisyeFullnameRequired =>
+      'Full name is required for credit sale';
+
+  @override
+  String get posNisyePhoneRequired =>
+      'Phone number is required for credit sale';
+
+  @override
+  String get posNisyeDateRequired => 'Due date is required for credit sale';
+
+  @override
   String get welcomeBack => 'Welcome back';
 
   @override

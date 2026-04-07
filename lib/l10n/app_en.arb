@@ -2046,6 +2046,21 @@
   "posPriceRetail": "Retail",
   "posPriceWholesale": "Wholesale",
 
+  "posNisye": "Credit (Nisye)",
+  "posNisyeToggle": "Credit Sale",
+  "posNisyeSection": "Credit Details",
+  "posNisyeCustomerFullname": "Customer Full Name",
+  "posNisyeCustomerFullnameHint": "Enter full name...",
+  "posNisyeCustomerPhone": "Customer Phone",
+  "posNisyeCustomerPhoneHint": "+994XXXXXXXXX",
+  "posNisyeAmount": "Credit Amount (AZN)",
+  "posNisyePaidAmount": "Paid Amount (AZN)",
+  "posNisyeDate": "Due Date",
+  "posNisyeDateHint": "Select due date",
+  "posNisyeFullnameRequired": "Full name is required for credit sale",
+  "posNisyePhoneRequired": "Phone number is required for credit sale",
+  "posNisyeDateRequired": "Due date is required for credit sale",
+
   "welcomeBack": "Welcome back",
   "@welcomeBack": { "description": "Login page heading" },
 

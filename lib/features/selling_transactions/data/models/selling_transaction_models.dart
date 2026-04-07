@@ -58,6 +58,13 @@ class CompletePaymentRequest {
   final double discountPercentage;
   final List<SellingTransactionItemRequest> items;
 
+  // Nisye (credit) fields
+  final bool paymentNisye;
+  final double? nisyeAmount;
+  final double? paidAmount;
+  final String? nisyeCustomerPhoneNumber;
+  final String? nisyeCustomerFullname;
+
   const CompletePaymentRequest({
     required this.loggedInInventoryId,
     this.selectedLoyalCustomerId,
@@ -67,6 +74,11 @@ class CompletePaymentRequest {
     required this.discountAmount,
     required this.discountPercentage,
     required this.items,
+    this.paymentNisye = false,
+    this.nisyeAmount,
+    this.paidAmount,
+    this.nisyeCustomerPhoneNumber,
+    this.nisyeCustomerFullname,
   });
 
   Map<String, dynamic> toJson() => {
@@ -78,6 +90,13 @@ class CompletePaymentRequest {
     'discount_amount': discountAmount,
     'discount_percentage': discountPercentage,
     'items': items.map((e) => e.toJson()).toList(),
+    if (paymentNisye) ...{
+      'payment_nisye': true,
+      if (nisyeAmount != null) 'nisye_amount': nisyeAmount,
+      if (paidAmount != null) 'paid_amount': paidAmount,
+      if (nisyeCustomerPhoneNumber != null && nisyeCustomerPhoneNumber!.isNotEmpty) 'nisye_customer_phone_number': nisyeCustomerPhoneNumber,
+      if (nisyeCustomerFullname != null && nisyeCustomerFullname!.isNotEmpty) 'nisye_customer_fullname': nisyeCustomerFullname,
+    },
   };
 }
 

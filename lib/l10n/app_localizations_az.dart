@@ -1805,6 +1805,50 @@ class AppLocalizationsAz extends AppLocalizations {
   String get posPriceWholesale => 'Topdan';
 
   @override
+  String get posNisye => 'Nisyə';
+
+  @override
+  String get posNisyeToggle => 'Nisyə Satış';
+
+  @override
+  String get posNisyeSection => 'Nisyə Məlumatları';
+
+  @override
+  String get posNisyeCustomerFullname => 'Müştəri Adı Soyadı';
+
+  @override
+  String get posNisyeCustomerFullnameHint => 'Ad və soyad daxil edin...';
+
+  @override
+  String get posNisyeCustomerPhone => 'Müştəri Telefonu';
+
+  @override
+  String get posNisyeCustomerPhoneHint => '+994XXXXXXXXX';
+
+  @override
+  String get posNisyeAmount => 'Nisyə Məbləği (AZN)';
+
+  @override
+  String get posNisyePaidAmount => 'Ödənilən Məbləğ (AZN)';
+
+  @override
+  String get posNisyeDate => 'Son Ödəniş Tarixi';
+
+  @override
+  String get posNisyeDateHint => 'Tarix seçin';
+
+  @override
+  String get posNisyeFullnameRequired =>
+      'Nisyə satış üçün ad soyad tələb olunur';
+
+  @override
+  String get posNisyePhoneRequired =>
+      'Nisyə satış üçün telefon nömrəsi tələb olunur';
+
+  @override
+  String get posNisyeDateRequired => 'Nisyə satış üçün son tarix tələb olunur';
+
+  @override
   String get welcomeBack => 'Xoş gəldiniz';
 
   @override

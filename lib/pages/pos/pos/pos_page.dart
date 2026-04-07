@@ -48,6 +48,14 @@ class _PosPageState extends State<PosPage> {
   CustomerModel? _selectedCustomer;
   PaymentMethod _selectedPaymentMethod = PaymentMethod.card;
 
+  // Nisye (credit) state
+  bool _nisyeEnabled = false;
+  bool _nisyeSubmitAttempted = false;
+  final TextEditingController _nisyeFullnameController = TextEditingController();
+  final TextEditingController _nisyePhoneController = TextEditingController();
+  final TextEditingController _nisyeAmountController = TextEditingController();
+  final TextEditingController _nisyePaidAmountController = TextEditingController();
+
   final String _currentDate = DateFormat('dd.MM.yyyy').format(DateTime.now());
 
   AuthUser? _authUser;
@@ -65,6 +73,10 @@ class _PosPageState extends State<PosPage> {
     _debounce?.cancel();
     _searchController.dispose();
     _discountController.dispose();
+    _nisyeFullnameController.dispose();
+    _nisyePhoneController.dispose();
+    _nisyeAmountController.dispose();
+    _nisyePaidAmountController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
   }
@@ -323,6 +335,24 @@ class _PosPageState extends State<PosPage> {
     if (_loggedInInventory == null) return;
     if (_isCompletingSale) return;
 
+    // Nisye validation
+    if (_nisyeEnabled) {
+      final l10n = AppLocalizations.of(context)!;
+      if (_nisyeFullnameController.text.trim().isEmpty || _nisyePhoneController.text.trim().isEmpty) {
+        setState(() => _nisyeSubmitAttempted = true);
+        if (_nisyeFullnameController.text.trim().isEmpty) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.posNisyeFullnameRequired), backgroundColor: Colors.red, duration: const Duration(seconds: 3)));
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.posNisyePhoneRequired), backgroundColor: Colors.red, duration: const Duration(seconds: 3)));
+        }
+        return;
+      }
+    }
+
     setState(() => _isCompletingSale = true);
 
     final totalDiscount = _rPrice(_calculateTotalDiscount());
@@ -359,6 +389,8 @@ class _PosPageState extends State<PosPage> {
     // Log the complete request for debugging
     log('Complete payment request items: ${items.map((i) => 'barcode: ${i.barcode}').join(', ')}');
 
+    final nisyeAmountVal = _nisyeEnabled ? (_rPrice(double.tryParse(_nisyeAmountController.text) ?? total)) : null;
+    final paidAmountVal = _nisyeEnabled ? (_rPrice(double.tryParse(_nisyePaidAmountController.text) ?? 0.0)) : null;
     final request = CompletePaymentRequest(
       loggedInInventoryId: _loggedInInventory!.id,
       selectedLoyalCustomerId: _selectedCustomer?.id,
@@ -368,6 +400,11 @@ class _PosPageState extends State<PosPage> {
       discountAmount: totalDiscount,
       discountPercentage: combinedPercent,
       items: items,
+      paymentNisye: _nisyeEnabled,
+      nisyeAmount: nisyeAmountVal,
+      paidAmount: paidAmountVal,
+      nisyeCustomerPhoneNumber: _nisyeEnabled ? _nisyePhoneController.text.trim() : null,
+      nisyeCustomerFullname: _nisyeEnabled ? _nisyeFullnameController.text.trim() : null,
     );
 
     final result = await SellingTransactionsRepository.instance.completePayment(request);
@@ -1812,6 +1849,115 @@ class _PosPageState extends State<PosPage> {
               ),
             ),
             Container(height: 1, color: const Color(0xFFE2E8F0)),
+            // Nisye (Credit) Section
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.credit_score, size: 18, color: Color(0xFFE53E3E)),
+                      const SizedBox(width: 8),
+                      Text(
+                        l10n.posNisyeToggle,
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
+                      ),
+                      const Spacer(),
+                      Transform.scale(
+                        scale: 0.85,
+                        child: Switch(
+                          value: _nisyeEnabled,
+                          onChanged: (val) => setState(() {
+                            _nisyeEnabled = val;
+                            if (!val) {
+                              _nisyeFullnameController.clear();
+                              _nisyePhoneController.clear();
+                              _nisyeAmountController.clear();
+                              _nisyePaidAmountController.clear();
+                              _nisyeSubmitAttempted = false;
+                            } else {
+                              // Pre-fill nisye amount with total
+                              _nisyeAmountController.text = _calculateTotal().toStringAsFixed(2);
+                            }
+                          }),
+                          activeThumbColor: const Color(0xFFE53E3E),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (_nisyeEnabled) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF5F5),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFFC8181)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.posNisyeSection,
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFE53E3E)),
+                          ),
+                          const SizedBox(height: 10),
+                          // Full name
+                          _buildNisyeTextField(
+                            controller: _nisyeFullnameController,
+                            label: l10n.posNisyeCustomerFullname,
+                            hint: l10n.posNisyeCustomerFullnameHint,
+                            icon: Icons.person_outline,
+                            isRequired: true,
+                            hasError: _nisyeSubmitAttempted && _nisyeFullnameController.text.trim().isEmpty,
+                            onChanged: (_) => setState(() {}),
+                          ),
+                          const SizedBox(height: 8),
+                          // Phone
+                          _buildNisyeTextField(
+                            controller: _nisyePhoneController,
+                            label: l10n.posNisyeCustomerPhone,
+                            hint: l10n.posNisyeCustomerPhoneHint,
+                            icon: Icons.phone_outlined,
+                            keyboardType: TextInputType.phone,
+                            isRequired: true,
+                            hasError: _nisyeSubmitAttempted && _nisyePhoneController.text.trim().isEmpty,
+                            onChanged: (_) => setState(() {}),
+                          ),
+                          const SizedBox(height: 8),
+                          // Nisye amount and paid amount in a row
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildNisyeTextField(
+                                  controller: _nisyeAmountController,
+                                  label: l10n.posNisyeAmount,
+                                  hint: '0.00',
+                                  icon: Icons.attach_money,
+                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: _buildNisyeTextField(
+                                  controller: _nisyePaidAmountController,
+                                  label: l10n.posNisyePaidAmount,
+                                  hint: '0.00',
+                                  icon: Icons.payments_outlined,
+                                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Container(height: 1, color: const Color(0xFFE2E8F0)),
             // Buttons
             Padding(
               padding: const EdgeInsets.all(16),
@@ -1890,6 +2036,62 @@ class _PosPageState extends State<PosPage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNisyeTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+    bool isRequired = false,
+    bool hasError = false,
+    ValueChanged<String>? onChanged,
+  }) {
+    final borderColor = hasError ? const Color(0xFFE53E3E) : const Color(0xFFFC8181);
+    final focusedBorderColor = hasError ? const Color(0xFFE53E3E) : const Color(0xFFE53E3E);
+    final fillColor = hasError ? const Color(0xFFFFF5F5) : Colors.white;
+
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      style: const TextStyle(fontSize: 13, color: Color(0xFF2D3748)),
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        labelText: isRequired ? '$label *' : label,
+        labelStyle: TextStyle(
+          fontSize: 12,
+          color: hasError ? const Color(0xFFE53E3E) : const Color(0xFFE53E3E),
+          fontWeight: isRequired ? FontWeight.w600 : FontWeight.normal,
+        ),
+        hintText: hint,
+        hintStyle: const TextStyle(fontSize: 12, color: Color(0xFFA0AEC0)),
+        prefixIcon: Icon(icon, size: 16, color: hasError ? const Color(0xFFE53E3E) : const Color(0xFFE53E3E)),
+        suffixIcon: hasError ? const Icon(Icons.error_outline, size: 16, color: Color(0xFFE53E3E)) : null,
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        filled: true,
+        fillColor: fillColor,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: borderColor, width: hasError ? 1.5 : 1.0),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: focusedBorderColor, width: 1.5),
+        ),
+        errorText: hasError ? '' : null,
+        errorStyle: const TextStyle(fontSize: 0, height: 0),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFFE53E3E), width: 1.5),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFFE53E3E), width: 1.5),
         ),
       ),
     );

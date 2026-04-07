@@ -3446,6 +3446,90 @@ abstract class AppLocalizations {
   /// **'Wholesale'**
   String get posPriceWholesale;
 
+  /// No description provided for @posNisye.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit (Nisye)'**
+  String get posNisye;
+
+  /// No description provided for @posNisyeToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit Sale'**
+  String get posNisyeToggle;
+
+  /// No description provided for @posNisyeSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit Details'**
+  String get posNisyeSection;
+
+  /// No description provided for @posNisyeCustomerFullname.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Full Name'**
+  String get posNisyeCustomerFullname;
+
+  /// No description provided for @posNisyeCustomerFullnameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter full name...'**
+  String get posNisyeCustomerFullnameHint;
+
+  /// No description provided for @posNisyeCustomerPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer Phone'**
+  String get posNisyeCustomerPhone;
+
+  /// No description provided for @posNisyeCustomerPhoneHint.
+  ///
+  /// In en, this message translates to:
+  /// **'+994XXXXXXXXX'**
+  String get posNisyeCustomerPhoneHint;
+
+  /// No description provided for @posNisyeAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit Amount (AZN)'**
+  String get posNisyeAmount;
+
+  /// No description provided for @posNisyePaidAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid Amount (AZN)'**
+  String get posNisyePaidAmount;
+
+  /// No description provided for @posNisyeDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Due Date'**
+  String get posNisyeDate;
+
+  /// No description provided for @posNisyeDateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select due date'**
+  String get posNisyeDateHint;
+
+  /// No description provided for @posNisyeFullnameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Full name is required for credit sale'**
+  String get posNisyeFullnameRequired;
+
+  /// No description provided for @posNisyePhoneRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number is required for credit sale'**
+  String get posNisyePhoneRequired;
+
+  /// No description provided for @posNisyeDateRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Due date is required for credit sale'**
+  String get posNisyeDateRequired;
+
   /// Login page heading
   ///
   /// In en, this message translates to:
