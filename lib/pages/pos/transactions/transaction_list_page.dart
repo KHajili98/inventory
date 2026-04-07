@@ -690,8 +690,13 @@ class _TransactionTableRowState extends State<_TransactionTableRow> {
                         children: [
                           _Badge(label: AppLocalizations.of(context)!.nisye, color: const Color(0xFFE87C0A)),
                           const SizedBox(height: 3),
-                          if (tx.nisyeAmount != null)
-                            SelectableText('₼ ${_fmt.format(tx.nisyeAmount!)}', style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+                          // if (tx.nisyeAmount != null)
+                          //   SelectableText('₼ ${_fmt.format(tx.nisyeAmount!)}', style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+                          // const SizedBox(height: 2),
+                          SelectableText(
+                            '₼ ${_fmt.format(tx.totalSellingPrice - (tx.paidAmount ?? 0))}',
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFE87C0A)),
+                          ),
                         ],
                       )
                     : const SizedBox.shrink(),
