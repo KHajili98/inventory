@@ -105,4 +105,19 @@ class SellingTransactionsRepository {
     }
     return e.message ?? e.toString();
   }
+
+  /// POST /api/selling-transactions/pay-nisye/
+  Future<ApiResult<void>> payNisye(PayNisyeRequest request) async {
+    try {
+      final response = await _dio.post<dynamic>(ApiConstants.payNisye, data: request.toJson());
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return const Success(null);
+      }
+      return Failure('Unexpected status: ${response.statusCode}', statusCode: response.statusCode);
+    } on DioException catch (e) {
+      return Failure(_parseDioError(e), statusCode: e.response?.statusCode);
+    } catch (e) {
+      return Failure(e.toString());
+    }
+  }
 }

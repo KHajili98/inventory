@@ -1064,5 +1064,25 @@
 
   "stockTypeBadge": "ANBAR",
   "inventoryTypeBadge": "İNVENTAR",
-  "invTypeBadge": "İNV"
+  "invTypeBadge": "İNV",
+
+  "nisye": "Nisyə",
+  "nisyeDetails": "Nisyə Məlumatları",
+  "nisyeCustomer": "Nisyə Müştərisi",
+  "nisyePhone": "Nisyə Müştəri Telefonu",
+  "nisyeAmount": "Nisyə Məbləği",
+  "nisyePaidAmount": "Ödənilən Məbləğ",
+  "nisyeRemainingAmount": "Qalıq",
+
+  "payNisye": "Nisyə Ödə",
+  "payNisyeTitle": "Nisyə Ödənişi",
+  "payNisyeAmount": "Ödəniş Məbləği (AZN)",
+  "payNisyeAmountHint": "0.00",
+  "payNisyeNote": "Qeyd (isteğe bağlı)",
+  "payNisyeNoteHint": "məs. Birinci hissə...",
+  "payNisyeAmountRequired": "Zəhmət olmasa məbləği daxil edin",
+  "payNisyeAmountInvalid": "Düzgün məbləğ daxil edin",
+  "payNisyeAmountExceeds": "Məbləğ qalıq borcu aşır",
+  "payNisyeSuccess": "Ödəniş uğurla qeydə alındı",
+  "paying": "Emal edilir..."
 }

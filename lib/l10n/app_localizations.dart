@@ -4021,6 +4021,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'INV'**
   String get invTypeBadge;
+
+  /// Credit/nisye label
+  ///
+  /// In en, this message translates to:
+  /// **'Credit (Nisye)'**
+  String get nisye;
+
+  /// Nisye section header in transaction detail
+  ///
+  /// In en, this message translates to:
+  /// **'Credit Details'**
+  String get nisyeDetails;
+
+  /// Nisye customer label
+  ///
+  /// In en, this message translates to:
+  /// **'Credit Customer'**
+  String get nisyeCustomer;
+
+  /// Nisye customer phone label
+  ///
+  /// In en, this message translates to:
+  /// **'Credit Customer Phone'**
+  String get nisyePhone;
+
+  /// Nisye amount label
+  ///
+  /// In en, this message translates to:
+  /// **'Credit Amount'**
+  String get nisyeAmount;
+
+  /// Nisye paid amount label
+  ///
+  /// In en, this message translates to:
+  /// **'Paid Amount'**
+  String get nisyePaidAmount;
+
+  /// Nisye remaining amount label
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining'**
+  String get nisyeRemainingAmount;
+
+  /// Button label to pay a nisye (credit) transaction
+  ///
+  /// In en, this message translates to:
+  /// **'Pay Credit'**
+  String get payNisye;
+
+  /// Title of the pay nisye dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Make Credit Payment'**
+  String get payNisyeTitle;
+
+  /// Label for payment amount field in pay nisye dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Amount (AZN)'**
+  String get payNisyeAmount;
+
+  /// Hint for payment amount field
+  ///
+  /// In en, this message translates to:
+  /// **'0.00'**
+  String get payNisyeAmountHint;
+
+  /// Label for note field in pay nisye dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get payNisyeNote;
+
+  /// Hint for note field in pay nisye dialog
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. First installment...'**
+  String get payNisyeNoteHint;
+
+  /// Validation error when amount is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a payment amount'**
+  String get payNisyeAmountRequired;
+
+  /// Validation error when amount is not a number
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid amount'**
+  String get payNisyeAmountInvalid;
+
+  /// Validation error when amount exceeds remaining
+  ///
+  /// In en, this message translates to:
+  /// **'Amount exceeds remaining balance'**
+  String get payNisyeAmountExceeds;
+
+  /// Success message after nisye payment
+  ///
+  /// In en, this message translates to:
+  /// **'Payment recorded successfully'**
+  String get payNisyeSuccess;
+
+  /// Loading label while paying
+  ///
+  /// In en, this message translates to:
+  /// **'Processing...'**
+  String get paying;
 }
 
 class _AppLocalizationsDelegate

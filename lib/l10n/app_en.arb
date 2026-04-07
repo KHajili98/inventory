@@ -2383,5 +2383,59 @@
   "@inventoryTypeBadge": { "description": "Short badge label for inventory type (full)" },
 
   "invTypeBadge": "INV",
-  "@invTypeBadge": { "description": "Short abbreviated badge label for inventory type" }
+  "@invTypeBadge": { "description": "Short abbreviated badge label for inventory type" },
+
+  "nisye": "Credit (Nisye)",
+  "@nisye": { "description": "Credit/nisye label" },
+
+  "nisyeDetails": "Credit Details",
+  "@nisyeDetails": { "description": "Nisye section header in transaction detail" },
+
+  "nisyeCustomer": "Credit Customer",
+  "@nisyeCustomer": { "description": "Nisye customer label" },
+
+  "nisyePhone": "Credit Customer Phone",
+  "@nisyePhone": { "description": "Nisye customer phone label" },
+
+  "nisyeAmount": "Credit Amount",
+  "@nisyeAmount": { "description": "Nisye amount label" },
+
+  "nisyePaidAmount": "Paid Amount",
+  "@nisyePaidAmount": { "description": "Nisye paid amount label" },
+
+  "nisyeRemainingAmount": "Remaining",
+  "@nisyeRemainingAmount": { "description": "Nisye remaining amount label" },
+
+  "payNisye": "Pay Credit",
+  "@payNisye": { "description": "Button label to pay a nisye (credit) transaction" },
+
+  "payNisyeTitle": "Make Credit Payment",
+  "@payNisyeTitle": { "description": "Title of the pay nisye dialog" },
+
+  "payNisyeAmount": "Payment Amount (AZN)",
+  "@payNisyeAmount": { "description": "Label for payment amount field in pay nisye dialog" },
+
+  "payNisyeAmountHint": "0.00",
+  "@payNisyeAmountHint": { "description": "Hint for payment amount field" },
+
+  "payNisyeNote": "Note (optional)",
+  "@payNisyeNote": { "description": "Label for note field in pay nisye dialog" },
+
+  "payNisyeNoteHint": "e.g. First installment...",
+  "@payNisyeNoteHint": { "description": "Hint for note field in pay nisye dialog" },
+
+  "payNisyeAmountRequired": "Please enter a payment amount",
+  "@payNisyeAmountRequired": { "description": "Validation error when amount is empty" },
+
+  "payNisyeAmountInvalid": "Please enter a valid amount",
+  "@payNisyeAmountInvalid": { "description": "Validation error when amount is not a number" },
+
+  "payNisyeAmountExceeds": "Amount exceeds remaining balance",
+  "@payNisyeAmountExceeds": { "description": "Validation error when amount exceeds remaining" },
+
+  "payNisyeSuccess": "Payment recorded successfully",
+  "@payNisyeSuccess": { "description": "Success message after nisye payment" },
+
+  "paying": "Processing...",
+  "@paying": { "description": "Loading label while paying" }
 }

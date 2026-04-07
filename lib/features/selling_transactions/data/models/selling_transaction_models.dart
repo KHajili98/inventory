@@ -228,6 +228,13 @@ class SellingTransactionResponse {
   final DateTime? updatedAt;
   final List<SellingTransactionItemResponse> items;
 
+  // Nisye (credit) fields
+  final bool paymentNisye;
+  final double? nisyeAmount;
+  final double? paidAmount;
+  final String? nisyeCustomerPhoneNumber;
+  final String? nisyeCustomerFullname;
+
   const SellingTransactionResponse({
     required this.id,
     required this.receiptNumber,
@@ -243,6 +250,11 @@ class SellingTransactionResponse {
     this.createdAt,
     this.updatedAt,
     required this.items,
+    this.paymentNisye = false,
+    this.nisyeAmount,
+    this.paidAmount,
+    this.nisyeCustomerPhoneNumber,
+    this.nisyeCustomerFullname,
   });
 
   factory SellingTransactionResponse.fromJson(Map<String, dynamic> json) => SellingTransactionResponse(
@@ -264,7 +276,28 @@ class SellingTransactionResponse {
     createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'] as String) : null,
     updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at'] as String) : null,
     items: (json['items'] as List<dynamic>? ?? []).map((e) => SellingTransactionItemResponse.fromJson(e as Map<String, dynamic>)).toList(),
+    paymentNisye: json['payment_nisye'] as bool? ?? false,
+    nisyeAmount: (json['nisye_amount'] as num?)?.toDouble(),
+    paidAmount: (json['paid_amount'] as num?)?.toDouble(),
+    nisyeCustomerPhoneNumber: json['nisye_customer_phone_number'] as String?,
+    nisyeCustomerFullname: json['nisye_customer_fullname'] as String?,
   );
+}
+
+// ── Pay Nisye request ─────────────────────────────────────────────────────────
+
+class PayNisyeRequest {
+  final String receiptNumber;
+  final double paymentAmount;
+  final String? note;
+
+  const PayNisyeRequest({required this.receiptNumber, required this.paymentAmount, this.note});
+
+  Map<String, dynamic> toJson() => {
+    'receipt_number': receiptNumber,
+    'payment_amount': paymentAmount.toStringAsFixed(2),
+    if (note != null && note!.isNotEmpty) 'note': note,
+  };
 }
 
 // ── Paginated list response ────────────────────────────────────────────────────

@@ -2125,4 +2125,58 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get invTypeBadge => 'İNV';
+
+  @override
+  String get nisye => 'Nisyə';
+
+  @override
+  String get nisyeDetails => 'Nisyə Məlumatları';
+
+  @override
+  String get nisyeCustomer => 'Nisyə Müştərisi';
+
+  @override
+  String get nisyePhone => 'Nisyə Müştəri Telefonu';
+
+  @override
+  String get nisyeAmount => 'Nisyə Məbləği';
+
+  @override
+  String get nisyePaidAmount => 'Ödənilən Məbləğ';
+
+  @override
+  String get nisyeRemainingAmount => 'Qalıq';
+
+  @override
+  String get payNisye => 'Nisyə Ödə';
+
+  @override
+  String get payNisyeTitle => 'Nisyə Ödənişi';
+
+  @override
+  String get payNisyeAmount => 'Ödəniş Məbləği (AZN)';
+
+  @override
+  String get payNisyeAmountHint => '0.00';
+
+  @override
+  String get payNisyeNote => 'Qeyd (isteğe bağlı)';
+
+  @override
+  String get payNisyeNoteHint => 'məs. Birinci hissə...';
+
+  @override
+  String get payNisyeAmountRequired => 'Zəhmət olmasa məbləği daxil edin';
+
+  @override
+  String get payNisyeAmountInvalid => 'Düzgün məbləğ daxil edin';
+
+  @override
+  String get payNisyeAmountExceeds => 'Məbləğ qalıq borcu aşır';
+
+  @override
+  String get payNisyeSuccess => 'Ödəniş uğurla qeydə alındı';
+
+  @override
+  String get paying => 'Emal edilir...';
 }

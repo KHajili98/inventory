@@ -2119,4 +2119,58 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get invTypeBadge => 'INV';
+
+  @override
+  String get nisye => 'Credit (Nisye)';
+
+  @override
+  String get nisyeDetails => 'Credit Details';
+
+  @override
+  String get nisyeCustomer => 'Credit Customer';
+
+  @override
+  String get nisyePhone => 'Credit Customer Phone';
+
+  @override
+  String get nisyeAmount => 'Credit Amount';
+
+  @override
+  String get nisyePaidAmount => 'Paid Amount';
+
+  @override
+  String get nisyeRemainingAmount => 'Remaining';
+
+  @override
+  String get payNisye => 'Pay Credit';
+
+  @override
+  String get payNisyeTitle => 'Make Credit Payment';
+
+  @override
+  String get payNisyeAmount => 'Payment Amount (AZN)';
+
+  @override
+  String get payNisyeAmountHint => '0.00';
+
+  @override
+  String get payNisyeNote => 'Note (optional)';
+
+  @override
+  String get payNisyeNoteHint => 'e.g. First installment...';
+
+  @override
+  String get payNisyeAmountRequired => 'Please enter a payment amount';
+
+  @override
+  String get payNisyeAmountInvalid => 'Please enter a valid amount';
+
+  @override
+  String get payNisyeAmountExceeds => 'Amount exceeds remaining balance';
+
+  @override
+  String get payNisyeSuccess => 'Payment recorded successfully';
+
+  @override
+  String get paying => 'Processing...';
 }

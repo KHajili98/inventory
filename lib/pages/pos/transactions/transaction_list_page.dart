@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:inventory/core/network/api_result.dart';
 import 'package:inventory/core/utils/responsive.dart';
 import 'package:inventory/features/auth/auth_service.dart';
 import 'package:inventory/features/selling_transactions/cubit/transaction_list_cubit.dart';
 import 'package:inventory/features/selling_transactions/cubit/transaction_list_state.dart';
 import 'package:inventory/features/selling_transactions/data/models/selling_transaction_models.dart';
+import 'package:inventory/features/selling_transactions/data/repositories/selling_transactions_repository.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 import 'package:inventory/models/auth_models.dart';
 
@@ -412,6 +414,7 @@ class _TransactionListViewState extends State<_TransactionListView> {
                   _TableHeader(label: l10n.priceType, flex: 2),
                   _TableHeader(label: l10n.totalAmount, flex: 2),
                   _TableHeader(label: l10n.discountAmount, flex: 2),
+                  _TableHeader(label: l10n.nisye, flex: 2),
                   _TableHeader(label: l10n.createdAt, flex: 2),
                 ],
               ),
@@ -447,7 +450,14 @@ class _TransactionListViewState extends State<_TransactionListView> {
   void _showTransactionDetail(BuildContext context, SellingTransactionResponse tx, AppLocalizations l10n) {
     showDialog(
       context: context,
-      builder: (_) => _TransactionDetailDialog(transaction: tx, l10n: l10n),
+      builder: (_) => _TransactionDetailDialog(
+        transaction: tx,
+        l10n: l10n,
+        onNisyePaid: () {
+          Navigator.of(context).pop();
+          _fetch();
+        },
+      ),
     );
   }
 }
@@ -678,6 +688,21 @@ class _TransactionTableRowState extends State<_TransactionTableRow> {
                   ],
                 ),
               ),
+              // Nisye
+              Expanded(
+                flex: 2,
+                child: tx.paymentNisye
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _Badge(label: AppLocalizations.of(context)!.nisye, color: const Color(0xFFE87C0A)),
+                          const SizedBox(height: 3),
+                          if (tx.nisyeAmount != null)
+                            SelectableText('₼ ${_fmt.format(tx.nisyeAmount!)}', style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+                        ],
+                      )
+                    : const SizedBox.shrink(),
+              ),
               // Date
               Expanded(
                 flex: 2,
@@ -783,6 +808,75 @@ class _TransactionCard extends StatelessWidget {
                 style: const TextStyle(fontSize: 11, color: Color(0xFFEF4444)),
               ),
             ],
+            if (tx.paymentNisye) ...[
+              const SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF7ED),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFFDBA74)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.credit_card_rounded, size: 12, color: Color(0xFFE87C0A)),
+                        const SizedBox(width: 4),
+                        Text(
+                          AppLocalizations.of(context)!.nisye,
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFE87C0A)),
+                        ),
+                        const Spacer(),
+                        if (tx.nisyeAmount != null)
+                          SelectableText(
+                            '₼ ${fmt.format(tx.nisyeAmount!)}',
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFE87C0A)),
+                          ),
+                      ],
+                    ),
+                    if (tx.nisyeCustomerFullname != null && tx.nisyeCustomerFullname!.isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          const Icon(Icons.person_outline_rounded, size: 11, color: Color(0xFF94A3B8)),
+                          const SizedBox(width: 4),
+                          SelectableText(tx.nisyeCustomerFullname!, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                        ],
+                      ),
+                    ],
+                    if (tx.nisyeCustomerPhoneNumber != null && tx.nisyeCustomerPhoneNumber!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          const Icon(Icons.phone_outlined, size: 11, color: Color(0xFF94A3B8)),
+                          const SizedBox(width: 4),
+                          SelectableText(tx.nisyeCustomerPhoneNumber!, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                        ],
+                      ),
+                    ],
+                    if (tx.paidAmount != null && tx.nisyeAmount != null) ...[
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: SelectableText(
+                              '${AppLocalizations.of(context)!.nisyePaidAmount}: ₼ ${fmt.format(tx.paidAmount!)}',
+                              style: const TextStyle(fontSize: 10, color: Color(0xFF64748B)),
+                            ),
+                          ),
+                          SelectableText(
+                            '${AppLocalizations.of(context)!.nisyeRemainingAmount}: ₼ ${fmt.format(tx.totalSellingPrice - tx.paidAmount!)}',
+                            style: const TextStyle(fontSize: 10, color: Color(0xFFE87C0A), fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -884,8 +978,9 @@ class _ErrorView extends StatelessWidget {
 class _TransactionDetailDialog extends StatelessWidget {
   final SellingTransactionResponse transaction;
   final AppLocalizations l10n;
+  final VoidCallback? onNisyePaid;
 
-  const _TransactionDetailDialog({required this.transaction, required this.l10n});
+  const _TransactionDetailDialog({required this.transaction, required this.l10n, this.onNisyePaid});
 
   @override
   Widget build(BuildContext context) {
@@ -952,11 +1047,26 @@ class _TransactionDetailDialog extends StatelessWidget {
                             valueBold: true,
                           ),
                           const SizedBox(width: 10),
-                          _DetailCard(
-                            label: l10n.discountAmount,
-                            value: '₼ ${fmt.format(tx.discountAmount)} (${tx.discountPercentage.toStringAsFixed(1)}%)',
-                            valueColor: const Color(0xFFEF4444),
-                          ),
+                          if (tx.paymentNisye) ...[
+                            _DetailCard(
+                              label: l10n.nisyePaidAmount,
+                              value: '₼ ${fmt.format(tx.paidAmount ?? 0)}',
+                              valueColor: const Color(0xFF10B981),
+                              valueBold: true,
+                            ),
+                            const SizedBox(width: 10),
+                            _DetailCard(
+                              label: l10n.nisyeRemainingAmount,
+                              value: '₼ ${fmt.format(tx.totalSellingPrice - (tx.paidAmount ?? 0))}',
+                              valueColor: const Color(0xFFE87C0A),
+                              valueBold: true,
+                            ),
+                          ] else
+                            _DetailCard(
+                              label: l10n.discountAmount,
+                              value: '₼ ${fmt.format(tx.discountAmount)} (${tx.discountPercentage.toStringAsFixed(1)}%)',
+                              valueColor: const Color(0xFFEF4444),
+                            ),
                         ],
                       ),
                       const SizedBox(height: 16),
@@ -991,6 +1101,68 @@ class _TransactionDetailDialog extends StatelessWidget {
                           ),
                         ],
                       ),
+                      // Nisye section
+                      if (tx.paymentNisye) ...[
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            const Icon(Icons.credit_card_rounded, size: 15, color: Color(0xFFE87C0A)),
+                            const SizedBox(width: 6),
+                            Text(
+                              l10n.nisyeDetails,
+                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF7ED),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFFDBA74)),
+                          ),
+                          child: Column(
+                            children: [
+                              if (tx.nisyeCustomerFullname != null && tx.nisyeCustomerFullname!.isNotEmpty)
+                                _InfoRow(
+                                  icon: Icons.person_outline_rounded,
+                                  label: l10n.nisyeCustomer,
+                                  value: tx.nisyeCustomerFullname!,
+                                  valueColor: const Color(0xFF1E293B),
+                                ),
+                              if (tx.nisyeCustomerPhoneNumber != null && tx.nisyeCustomerPhoneNumber!.isNotEmpty)
+                                _InfoRow(
+                                  icon: Icons.phone_outlined,
+                                  label: l10n.nisyePhone,
+                                  value: tx.nisyeCustomerPhoneNumber!,
+                                  valueColor: const Color(0xFF1E293B),
+                                ),
+                              if (tx.nisyeAmount != null)
+                                _InfoRow(
+                                  icon: Icons.account_balance_wallet_outlined,
+                                  label: l10n.nisyeAmount,
+                                  value: '₼ ${fmt.format(tx.nisyeAmount!)}',
+                                  valueColor: const Color(0xFFE87C0A),
+                                ),
+                              if (tx.paidAmount != null)
+                                _InfoRow(
+                                  icon: Icons.check_circle_outline_rounded,
+                                  label: l10n.nisyePaidAmount,
+                                  value: '₼ ${fmt.format(tx.paidAmount!)}',
+                                  valueColor: const Color(0xFF10B981),
+                                ),
+                              if (tx.nisyeAmount != null && tx.paidAmount != null)
+                                _InfoRow(
+                                  icon: Icons.hourglass_bottom_rounded,
+                                  label: l10n.nisyeRemainingAmount,
+                                  value: '₼ ${fmt.format(tx.totalSellingPrice - tx.paidAmount!)}',
+                                  valueColor: const Color(0xFFE87C0A),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 20),
                       // Items section
                       Row(
@@ -1021,25 +1193,64 @@ class _TransactionDetailDialog extends StatelessWidget {
                   ),
                 ),
               ),
-              // Footer close button
+              // Footer
               Container(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
                 decoration: const BoxDecoration(
                   border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
                 ),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6366F1),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    child: Text(AppLocalizations.of(context)!.close, style: const TextStyle(fontWeight: FontWeight.w600)),
-                  ),
-                ),
+                child: tx.paymentNisye && (tx.totalSellingPrice - (tx.paidAmount ?? 0)) > 0
+                    ? Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                side: const BorderSide(color: Color(0xFFE2E8F0)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                              child: Text(
+                                AppLocalizations.of(context)!.close,
+                                style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => _PayNisyeDialog(transaction: tx, l10n: l10n, onSuccess: onNisyePaid),
+                                );
+                              },
+                              icon: const Icon(Icons.payments_rounded, size: 16),
+                              label: Text(l10n.payNisye, style: const TextStyle(fontWeight: FontWeight.w600)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFE87C0A),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    : SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF6366F1),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          child: Text(AppLocalizations.of(context)!.close, style: const TextStyle(fontWeight: FontWeight.w600)),
+                        ),
+                      ),
               ),
             ],
           ),
@@ -1253,6 +1464,324 @@ class _TransactionItemRow extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+// ── Pay Nisye dialog ──────────────────────────────────────────────────────────
+
+class _PayNisyeDialog extends StatefulWidget {
+  final SellingTransactionResponse transaction;
+  final AppLocalizations l10n;
+  final VoidCallback? onSuccess;
+
+  const _PayNisyeDialog({required this.transaction, required this.l10n, this.onSuccess});
+
+  @override
+  State<_PayNisyeDialog> createState() => _PayNisyeDialogState();
+}
+
+class _PayNisyeDialogState extends State<_PayNisyeDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _amountController = TextEditingController();
+  final _noteController = TextEditingController();
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  double get _remaining => widget.transaction.totalSellingPrice - (widget.transaction.paidAmount ?? 0);
+  final _fmt = NumberFormat('#,##0.00');
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final amount = double.tryParse(_amountController.text.replaceAll(',', '.')) ?? 0;
+    final result = await SellingTransactionsRepository.instance.payNisye(
+      PayNisyeRequest(
+        receiptNumber: widget.transaction.receiptNumber,
+        paymentAmount: amount,
+        note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+      ),
+    );
+
+    if (!mounted) return;
+
+    switch (result) {
+      case Success():
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+                const SizedBox(width: 8),
+                Text(widget.l10n.payNisyeSuccess),
+              ],
+            ),
+            backgroundColor: const Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+        widget.onSuccess?.call();
+      case Failure(:final message):
+        setState(() {
+          _isLoading = false;
+          _errorMessage = message;
+        });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = widget.l10n;
+    final tx = widget.transaction;
+    final isMobile = context.isMobile;
+
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: isMobile ? double.infinity : 460),
+        child: Padding(
+          padding: const EdgeInsets.all(0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.fromLTRB(20, 18, 16, 16),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFE87C0A),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.payments_rounded, color: Colors.white, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.payNisyeTitle,
+                            style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700),
+                          ),
+                          Text(tx.receiptNumber, style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: Colors.white, size: 20),
+                      onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+              ),
+              // Body
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Summary row
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF7ED),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFFDBA74)),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(l10n.nisyeCustomer, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    tx.nisyeCustomerFullname ?? '—',
+                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (tx.nisyeCustomerPhoneNumber != null && tx.nisyeCustomerPhoneNumber!.isNotEmpty) ...[
+                                    const SizedBox(height: 2),
+                                    Text(tx.nisyeCustomerPhoneNumber!, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(l10n.nisyeRemainingAmount, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '₼ ${_fmt.format(_remaining)}',
+                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFFE87C0A)),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Amount field
+                      Text(
+                        l10n.payNisyeAmount,
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                      ),
+                      const SizedBox(height: 6),
+                      TextFormField(
+                        controller: _amountController,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        autofocus: true,
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                        decoration: InputDecoration(
+                          hintText: l10n.payNisyeAmountHint,
+                          prefixText: '₼ ',
+                          prefixStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                          filled: true,
+                          fillColor: const Color(0xFFF8FAFC),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Color(0xFFE87C0A), width: 1.5),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Color(0xFFEF4444)),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+                          ),
+                        ),
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) return l10n.payNisyeAmountRequired;
+                          final parsed = double.tryParse(v.trim().replaceAll(',', '.'));
+                          if (parsed == null || parsed <= 0) return l10n.payNisyeAmountInvalid;
+                          if (parsed > _remaining + 0.001) return l10n.payNisyeAmountExceeds;
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 14),
+                      // Note field
+                      Text(
+                        l10n.payNisyeNote,
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                      ),
+                      const SizedBox(height: 6),
+                      TextFormField(
+                        controller: _noteController,
+                        maxLines: 2,
+                        style: const TextStyle(fontSize: 13),
+                        decoration: InputDecoration(
+                          hintText: l10n.payNisyeNoteHint,
+                          hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
+                          filled: true,
+                          fillColor: const Color(0xFFF8FAFC),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(color: Color(0xFFE87C0A), width: 1.5),
+                          ),
+                        ),
+                      ),
+                      // Error
+                      if (_errorMessage != null) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEF2F2),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFFCA5A5)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.error_outline_rounded, size: 16, color: Color(0xFFEF4444)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(_errorMessage!, style: const TextStyle(fontSize: 12, color: Color(0xFFEF4444))),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 20),
+                      // Buttons
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                side: const BorderSide(color: Color(0xFFE2E8F0)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                              child: Text(
+                                l10n.close,
+                                style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _submit,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFE87C0A),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                  : Text(l10n.payNisye, style: const TextStyle(fontWeight: FontWeight.w700)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
