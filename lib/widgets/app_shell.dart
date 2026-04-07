@@ -218,6 +218,8 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 14),
                             child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 MouseRegion(
                                   cursor: SystemMouseCursors.click,
@@ -226,12 +228,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                                     child: Tooltip(
                                       message: _collapsed ? l10n.expandSidebar : l10n.collapseSidebar,
                                       preferBelow: false,
-                                      child: Container(
-                                        width: 36,
-                                        height: 36,
-                                        decoration: BoxDecoration(color: const Color(0xFF6366F1), borderRadius: BorderRadius.circular(8)),
-                                        child: const Icon(Icons.widgets_rounded, color: Colors.white, size: 20),
-                                      ),
+                                      child: Image.asset('simple-logo.png', width: 36),
                                     ),
                                   ),
                                 ),
@@ -244,7 +241,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                                         : Padding(
                                             padding: const EdgeInsets.only(left: 12),
                                             child: Text(
-                                              l10n.appTitle,
+                                              "KAZZA",
                                               style: const TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 18,
@@ -464,12 +461,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
               padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(color: const Color(0xFF6366F1), borderRadius: BorderRadius.circular(10)),
-                    child: const Icon(Icons.widgets_rounded, color: Colors.white, size: 22),
-                  ),
+                  Image.asset('simple-logo.png', width: 40, height: 40),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
