@@ -57,7 +57,7 @@ class MyApp extends StatelessWidget {
     return BlocBuilder<LocaleCubit, Locale>(
       builder: (context, locale) {
         return MaterialApp.router(
-          title: 'Inventory',
+          title: 'KAZZA',
           debugShowCheckedModeBanner: false,
           routerConfig: appRouter,
           scrollBehavior: const _AppScrollBehavior(),
