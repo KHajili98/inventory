@@ -4124,6 +4124,24 @@ abstract class AppLocalizations {
   /// **'Payment recorded successfully'**
   String get payNisyeSuccess;
 
+  /// Label for payment date field in pay nisye dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Date'**
+  String get payNisyeDate;
+
+  /// Hint for payment date field
+  ///
+  /// In en, this message translates to:
+  /// **'Select date'**
+  String get payNisyeDateHint;
+
+  /// Validation error when date is not selected
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a payment date'**
+  String get payNisyeDateRequired;
+
   /// Loading label while paying
   ///
   /// In en, this message translates to:

@@ -2178,5 +2178,14 @@ class AppLocalizationsAz extends AppLocalizations {
   String get payNisyeSuccess => 'Ödəniş uğurla qeydə alındı';
 
   @override
+  String get payNisyeDate => 'Ödəniş tarixi';
+
+  @override
+  String get payNisyeDateHint => 'Tarix seçin';
+
+  @override
+  String get payNisyeDateRequired => 'Zəhmət olmasa ödəniş tarixini seçin';
+
+  @override
   String get paying => 'Emal edilir...';
 }

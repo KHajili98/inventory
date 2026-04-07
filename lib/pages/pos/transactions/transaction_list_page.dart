@@ -1488,9 +1488,38 @@ class _PayNisyeDialogState extends State<_PayNisyeDialog> {
   final _noteController = TextEditingController();
   bool _isLoading = false;
   String? _errorMessage;
+  DateTime? _selectedDate;
 
   double get _remaining => widget.transaction.totalSellingPrice - (widget.transaction.paidAmount ?? 0);
   final _fmt = NumberFormat('#,##0.00');
+  final _dateFmt = DateFormat('dd.MM.yyyy');
+
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? now,
+      firstDate: DateTime(now.year - 5),
+      lastDate: now,
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: Color(0xFFE87C0A),
+            onPrimary: Colors.white,
+            surface: Colors.white,
+            onSurface: Color(0xFF1E293B),
+          ),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedDate = picked;
+        _errorMessage = null;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -1501,6 +1530,10 @@ class _PayNisyeDialogState extends State<_PayNisyeDialog> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_selectedDate == null) {
+      setState(() => _errorMessage = widget.l10n.payNisyeDateRequired);
+      return;
+    }
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -1511,6 +1544,7 @@ class _PayNisyeDialogState extends State<_PayNisyeDialog> {
       PayNisyeRequest(
         receiptNumber: widget.transaction.receiptNumber,
         paymentAmount: amount,
+        paymentDate: _selectedDate!,
         note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
       ),
     );
@@ -1687,6 +1721,45 @@ class _PayNisyeDialogState extends State<_PayNisyeDialog> {
                           if (parsed > _remaining + 0.001) return l10n.payNisyeAmountExceeds;
                           return null;
                         },
+                      ),
+                      const SizedBox(height: 14),
+                      // Date field
+                      Text(
+                        l10n.payNisyeDate,
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                      ),
+                      const SizedBox(height: 6),
+                      GestureDetector(
+                        onTap: _isLoading ? null : _pickDate,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: _selectedDate == null && _errorMessage == l10n.payNisyeDateRequired
+                                  ? const Color(0xFFEF4444)
+                                  : const Color(0xFFE2E8F0),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.calendar_today_rounded, size: 16, color: Color(0xFFE87C0A)),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  _selectedDate != null ? _dateFmt.format(_selectedDate!) : l10n.payNisyeDateHint,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: _selectedDate != null ? FontWeight.w700 : FontWeight.w400,
+                                    color: _selectedDate != null ? const Color(0xFF1E293B) : const Color(0xFF94A3B8),
+                                  ),
+                                ),
+                              ),
+                              const Icon(Icons.arrow_drop_down_rounded, size: 20, color: Color(0xFF64748B)),
+                            ],
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 14),
                       // Note field

@@ -2436,6 +2436,15 @@
   "payNisyeSuccess": "Payment recorded successfully",
   "@payNisyeSuccess": { "description": "Success message after nisye payment" },
 
+  "payNisyeDate": "Payment Date",
+  "@payNisyeDate": { "description": "Label for payment date field in pay nisye dialog" },
+
+  "payNisyeDateHint": "Select date",
+  "@payNisyeDateHint": { "description": "Hint for payment date field" },
+
+  "payNisyeDateRequired": "Please select a payment date",
+  "@payNisyeDateRequired": { "description": "Validation error when date is not selected" },
+
   "paying": "Processing...",
   "@paying": { "description": "Loading label while paying" }
 }

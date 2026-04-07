@@ -1084,5 +1084,10 @@
   "payNisyeAmountInvalid": "Düzgün məbləğ daxil edin",
   "payNisyeAmountExceeds": "Məbləğ qalıq borcu aşır",
   "payNisyeSuccess": "Ödəniş uğurla qeydə alındı",
+
+  "payNisyeDate": "Ödəniş tarixi",
+  "payNisyeDateHint": "Tarix seçin",
+  "payNisyeDateRequired": "Zəhmət olmasa ödəniş tarixini seçin",
+
   "paying": "Emal edilir..."
 }

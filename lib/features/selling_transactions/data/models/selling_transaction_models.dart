@@ -289,13 +289,16 @@ class SellingTransactionResponse {
 class PayNisyeRequest {
   final String receiptNumber;
   final double paymentAmount;
+  final DateTime paymentDate;
   final String? note;
 
-  const PayNisyeRequest({required this.receiptNumber, required this.paymentAmount, this.note});
+  const PayNisyeRequest({required this.receiptNumber, required this.paymentAmount, required this.paymentDate, this.note});
 
   Map<String, dynamic> toJson() => {
     'receipt_number': receiptNumber,
     'payment_amount': paymentAmount.toStringAsFixed(2),
+    'payment_date':
+        '${paymentDate.year.toString().padLeft(4, '0')}-${paymentDate.month.toString().padLeft(2, '0')}-${paymentDate.day.toString().padLeft(2, '0')}',
     if (note != null && note!.isNotEmpty) 'note': note,
   };
 }

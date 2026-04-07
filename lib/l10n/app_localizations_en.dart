@@ -2172,5 +2172,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get payNisyeSuccess => 'Payment recorded successfully';
 
   @override
+  String get payNisyeDate => 'Payment Date';
+
+  @override
+  String get payNisyeDateHint => 'Select date';
+
+  @override
+  String get payNisyeDateRequired => 'Please select a payment date';
+
+  @override
   String get paying => 'Processing...';
 }
