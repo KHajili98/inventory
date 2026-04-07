@@ -239,13 +239,13 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                                     child: _collapsed
                                         ? const SizedBox.shrink()
                                         : Padding(
-                                            padding: const EdgeInsets.only(left: 12),
+                                            padding: const EdgeInsets.only(left: 6, top: 8),
                                             child: Text(
-                                              "KAZZA",
+                                              "kazza",
                                               style: const TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 18,
-                                                fontWeight: FontWeight.w700,
+                                                fontWeight: FontWeight.bold,
                                                 letterSpacing: 0.5,
                                               ),
                                             ),
