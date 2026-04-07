@@ -115,14 +115,8 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     // ── Logo ────────────────────────────────────────────────
                     Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF6366F1),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [BoxShadow(color: const Color(0xFF6366F1).withValues(alpha: 0.35), blurRadius: 20, offset: const Offset(0, 8))],
-                      ),
-                      child: const Icon(Icons.widgets_rounded, color: Colors.white, size: 30),
+                      color: Colors.transparent,
+                      child: Image.asset('kazza.png', width: 300, fit: BoxFit.contain),
                     ),
                     const SizedBox(height: 24),
 
