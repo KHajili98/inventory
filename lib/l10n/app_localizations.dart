@@ -4183,6 +4183,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Processing...'**
   String get paying;
+
+  /// Kassa module navigation label
+  ///
+  /// In en, this message translates to:
+  /// **'Kassa'**
+  String get kassa;
+
+  /// Kassa page title
+  ///
+  /// In en, this message translates to:
+  /// **'Kassa & Shift Management'**
+  String get kassaManagement;
+
+  /// Kassa page subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Open the kassa, track the day, close at end of shift'**
+  String get kassaSubtitle;
+
+  /// Active kassa session badge label
+  ///
+  /// In en, this message translates to:
+  /// **'ACTIVE SHIFT: LIVE MODE'**
+  String get activeSession;
+
+  /// No active session badge label
+  ///
+  /// In en, this message translates to:
+  /// **'SHIFT CLOSED'**
+  String get noActiveSession;
+
+  /// Button to open kassa
+  ///
+  /// In en, this message translates to:
+  /// **'Open Kassa'**
+  String get openKassa;
+
+  /// Button to close kassa
+  ///
+  /// In en, this message translates to:
+  /// **'[Close Shift / Z-Report]'**
+  String get closeKassaBtn;
+
+  /// Kassa history table title
+  ///
+  /// In en, this message translates to:
+  /// **'KASSA HISTORY'**
+  String get kassaHistory;
+
+  /// Opening cash amount field label
+  ///
+  /// In en, this message translates to:
+  /// **'Opening Cash Amount (₼)'**
+  String get openedCashAmount;
+
+  /// Opening card amount field label
+  ///
+  /// In en, this message translates to:
+  /// **'Opening Card Amount (₼)'**
+  String get openedCardAmount;
+
+  /// Closed cash amount field label
+  ///
+  /// In en, this message translates to:
+  /// **'Physical Cash Amount (₼)'**
+  String get closedCashAmount;
+
+  /// Closed card amount field label
+  ///
+  /// In en, this message translates to:
+  /// **'Card Amount (₼)'**
+  String get closedCardAmount;
+
+  /// Cutted cash amount field label
+  ///
+  /// In en, this message translates to:
+  /// **'Deducted Cash (₼)'**
+  String get cuttedCashAmount;
+
+  /// Cutted card amount field label
+  ///
+  /// In en, this message translates to:
+  /// **'Deducted Card (₼)'**
+  String get cuttedCardAmount;
 }
 
 class _AppLocalizationsDelegate

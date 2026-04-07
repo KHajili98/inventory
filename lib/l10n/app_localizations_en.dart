@@ -2200,4 +2200,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get paying => 'Processing...';
+
+  @override
+  String get kassa => 'Kassa';
+
+  @override
+  String get kassaManagement => 'Kassa & Shift Management';
+
+  @override
+  String get kassaSubtitle =>
+      'Open the kassa, track the day, close at end of shift';
+
+  @override
+  String get activeSession => 'ACTIVE SHIFT: LIVE MODE';
+
+  @override
+  String get noActiveSession => 'SHIFT CLOSED';
+
+  @override
+  String get openKassa => 'Open Kassa';
+
+  @override
+  String get closeKassaBtn => '[Close Shift / Z-Report]';
+
+  @override
+  String get kassaHistory => 'KASSA HISTORY';
+
+  @override
+  String get openedCashAmount => 'Opening Cash Amount (₼)';
+
+  @override
+  String get openedCardAmount => 'Opening Card Amount (₼)';
+
+  @override
+  String get closedCashAmount => 'Physical Cash Amount (₼)';
+
+  @override
+  String get closedCardAmount => 'Card Amount (₼)';
+
+  @override
+  String get cuttedCashAmount => 'Deducted Cash (₼)';
+
+  @override
+  String get cuttedCardAmount => 'Deducted Card (₼)';
 }

@@ -1096,5 +1096,20 @@
   "nisyeHistoryPaymentDate": "Ödəniş tarixi",
   "nisyeHistoryPaidBy": "Ödəyən",
 
-  "paying": "Emal edilir..."
+  "paying": "Emal edilir...",
+
+  "kassa": "Kassa",
+  "kassaManagement": "Kassa & Smena İdarəetməsi",
+  "kassaSubtitle": "Kassanı açın, günü izləyin, smenanı bağlayın",
+  "activeSession": "AKTİV SMENA: CANLI REJİM",
+  "noActiveSession": "SMENA BAĞLIDIR",
+  "openKassa": "Kassanı Aç",
+  "closeKassaBtn": "[Smenanı Bağla / Z-Hesabat]",
+  "kassaHistory": "KASSA TARİXÇƏSİ",
+  "openedCashAmount": "Açılış Nağd Məbləği (₼)",
+  "openedCardAmount": "Açılış Kart Məbləği (₼)",
+  "closedCashAmount": "Fiziki Nağd Məbləği (₼)",
+  "closedCardAmount": "Kart Məbləği (₼)",
+  "cuttedCashAmount": "Kəsilmiş Nağd (₼)",
+  "cuttedCardAmount": "Kəsilmiş Kart (₼)"
 }

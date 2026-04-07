@@ -7,6 +7,7 @@ import 'package:inventory/features/auth/auth_service.dart';
 import 'package:inventory/pages/auth/login_page.dart';
 import 'package:inventory/pages/finance/analytics_page.dart';
 import 'package:inventory/pages/finance/expense/expense_tracking_page.dart';
+import 'package:inventory/pages/kassa/kassa_page.dart';
 import 'package:inventory/pages/inventory/inventory_products_page.dart';
 import 'package:inventory/pages/requests/product_requests_page.dart';
 import 'package:inventory/pages/stock/stock_page.dart';
@@ -71,6 +72,7 @@ GoRouter createRouter(AuthCubit authCubit) {
           GoRoute(path: '/finance/price-calculation', builder: (context, state) => const PriceCalculationPage()),
           GoRoute(path: '/finance/expense-tracking', builder: (context, state) => const ExpenseTrackingPage()),
           GoRoute(path: '/finance/analytics', builder: (context, state) => const AnalyticsPage()),
+          GoRoute(path: '/kassa', builder: (context, state) => const KassaPage()),
         ],
       ),
     ],

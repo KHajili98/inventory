@@ -2206,4 +2206,46 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get paying => 'Emal edilir...';
+
+  @override
+  String get kassa => 'Kassa';
+
+  @override
+  String get kassaManagement => 'Kassa & Smena İdarəetməsi';
+
+  @override
+  String get kassaSubtitle => 'Kassanı açın, günü izləyin, smenanı bağlayın';
+
+  @override
+  String get activeSession => 'AKTİV SMENA: CANLI REJİM';
+
+  @override
+  String get noActiveSession => 'SMENA BAĞLIDIR';
+
+  @override
+  String get openKassa => 'Kassanı Aç';
+
+  @override
+  String get closeKassaBtn => '[Smenanı Bağla / Z-Hesabat]';
+
+  @override
+  String get kassaHistory => 'KASSA TARİXÇƏSİ';
+
+  @override
+  String get openedCashAmount => 'Açılış Nağd Məbləği (₼)';
+
+  @override
+  String get openedCardAmount => 'Açılış Kart Məbləği (₼)';
+
+  @override
+  String get closedCashAmount => 'Fiziki Nağd Məbləği (₼)';
+
+  @override
+  String get closedCardAmount => 'Kart Məbləği (₼)';
+
+  @override
+  String get cuttedCashAmount => 'Kəsilmiş Nağd (₼)';
+
+  @override
+  String get cuttedCardAmount => 'Kəsilmiş Kart (₼)';
 }

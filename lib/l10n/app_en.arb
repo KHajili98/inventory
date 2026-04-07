@@ -2464,5 +2464,47 @@
   "@nisyeHistoryPaidBy": { "description": "Label for who made the payment in history row" },
 
   "paying": "Processing...",
-  "@paying": { "description": "Loading label while paying" }
+  "@paying": { "description": "Loading label while paying" },
+
+  "kassa": "Kassa",
+  "@kassa": { "description": "Kassa module navigation label" },
+
+  "kassaManagement": "Kassa & Shift Management",
+  "@kassaManagement": { "description": "Kassa page title" },
+
+  "kassaSubtitle": "Open the kassa, track the day, close at end of shift",
+  "@kassaSubtitle": { "description": "Kassa page subtitle" },
+
+  "activeSession": "ACTIVE SHIFT: LIVE MODE",
+  "@activeSession": { "description": "Active kassa session badge label" },
+
+  "noActiveSession": "SHIFT CLOSED",
+  "@noActiveSession": { "description": "No active session badge label" },
+
+  "openKassa": "Open Kassa",
+  "@openKassa": { "description": "Button to open kassa" },
+
+  "closeKassaBtn": "[Close Shift / Z-Report]",
+  "@closeKassaBtn": { "description": "Button to close kassa" },
+
+  "kassaHistory": "KASSA HISTORY",
+  "@kassaHistory": { "description": "Kassa history table title" },
+
+  "openedCashAmount": "Opening Cash Amount (₼)",
+  "@openedCashAmount": { "description": "Opening cash amount field label" },
+
+  "openedCardAmount": "Opening Card Amount (₼)",
+  "@openedCardAmount": { "description": "Opening card amount field label" },
+
+  "closedCashAmount": "Physical Cash Amount (₼)",
+  "@closedCashAmount": { "description": "Closed cash amount field label" },
+
+  "closedCardAmount": "Card Amount (₼)",
+  "@closedCardAmount": { "description": "Closed card amount field label" },
+
+  "cuttedCashAmount": "Deducted Cash (₼)",
+  "@cuttedCashAmount": { "description": "Cutted cash amount field label" },
+
+  "cuttedCardAmount": "Deducted Card (₼)",
+  "@cuttedCardAmount": { "description": "Cutted card amount field label" }
 }

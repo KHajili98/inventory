@@ -55,6 +55,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
         _SubNavItem(labelKey: 'expenseTracking', path: '/finance/expense-tracking'),
       ],
     ),
+    _NavItem(labelKey: 'kassa', icon: Icons.point_of_sale_rounded, path: '/kassa'),
   ];
 
   int _selectedIndex(BuildContext context) {
@@ -96,6 +97,8 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
         return l10n.expenseTracking;
       case 'analytics':
         return l10n.analytics;
+      case 'kassa':
+        return l10n.kassa;
       default:
         return key;
     }

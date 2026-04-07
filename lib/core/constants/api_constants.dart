@@ -70,6 +70,14 @@ abstract class ApiConstants {
   /// GET /api/selling-transactions/ (paginated list)
   static const String sellingTransactionsList = '/api/selling-transactions/';
 
+  // ── Kassa ─────────────────────────────────────────────────────────────────
+  static const String kassaList = '/api/kassa/';
+  static const String changeKassa = '/api/kassa/change-kassa/';
+  static const String kassaCurrentSession = '/api/kassa/current-session-summary/';
+
+  /// Single kassa record by UUID.
+  static String kassaDetail(String id) => '/api/kassa/$id/';
+
   // ── Timeouts ────────────────────────────────────────────────────────────────
   static const Duration connectTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(minutes: 3); // OCR can take ~75 s
