@@ -450,14 +450,7 @@ class _TransactionListViewState extends State<_TransactionListView> {
   void _showTransactionDetail(BuildContext context, SellingTransactionResponse tx, AppLocalizations l10n) {
     showDialog(
       context: context,
-      builder: (_) => _TransactionDetailDialog(
-        transaction: tx,
-        l10n: l10n,
-        onNisyePaid: () {
-          Navigator.of(context).pop();
-          _fetch();
-        },
-      ),
+      builder: (_) => _TransactionDetailDialog(transaction: tx, l10n: l10n, onNisyePaid: _fetch),
     );
   }
 }
