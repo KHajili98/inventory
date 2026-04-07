@@ -7,10 +7,10 @@ import 'package:inventory/features/price_calculation/cubit/price_calculation_cub
 import 'package:inventory/features/price_calculation/cubit/price_calculation_state.dart';
 import 'package:inventory/features/stocks/data/models/stock_product_response_model.dart';
 import 'package:inventory/l10n/app_localizations.dart';
-import 'package:inventory/pages/finance/calculation_detail_page.dart';
-import 'package:inventory/pages/finance/edit_product_price_by_stock_page.dart';
-import 'package:inventory/pages/finance/price_history_page.dart';
-import 'package:inventory/pages/finance/priced_history_list_page.dart';
+import 'package:inventory/pages/finance/price_calculation/calculation_detail_page.dart';
+import 'package:inventory/pages/finance/price_calculation/edit_product_price_by_stock_page.dart';
+import 'package:inventory/pages/finance/price_calculation/price_history_page.dart';
+import 'package:inventory/pages/finance/price_calculation/priced_history_list_page.dart';
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 

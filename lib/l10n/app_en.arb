@@ -1036,6 +1036,29 @@
   "expenseDeleteTitle": "Delete Expense",
   "expenseDeleteConfirm": "Are you sure you want to delete this expense?",
 
+  "expenseCategories": "Categories",
+  "expenseCategoriesTitle": "Expense Categories",
+  "expenseCategoriesSubtitle": "Manage expense categories",
+  "addCategory": "Add Category",
+  "categoryName": "Category name",
+  "categoryNameHint": "Enter category name",
+  "noCategoriesYet": "No categories yet",
+  "addFirstCategory": "Press the button to add the first category",
+  "categoryDeleteTitle": "Delete Category",
+  "categoryDeleteConfirm": "Are you sure you want to delete this category?",
+  "categoryAdded": "Category added successfully",
+  "categoryDeleted": "Category deleted",
+  "categoryUpdated": "Category updated",
+  "editCategory": "Edit Category",
+  "categoryAddFailed": "Failed to add category: {error}",
+  "@categoryAddFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "categoryDeleteFailed": "Failed to delete category: {error}",
+  "@categoryDeleteFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+
   "analytics": "Analytics",
   "analyticsSubtitle": "Financial indicators for selected period",
   "dateRange": "Date range",

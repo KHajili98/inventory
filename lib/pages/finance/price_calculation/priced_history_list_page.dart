@@ -5,7 +5,7 @@ import 'package:inventory/core/network/api_result.dart';
 import 'package:inventory/features/stocks/data/models/stock_product_response_model.dart';
 import 'package:inventory/features/stocks/data/repositories/stocks_repository.dart';
 import 'package:inventory/l10n/app_localizations.dart';
-import 'package:inventory/pages/finance/price_history_page.dart';
+import 'package:inventory/pages/finance/price_calculation/price_history_page.dart';
 import 'package:intl/intl.dart';
 
 // ── Priced History List Page ──────────────────────────────────────────────────

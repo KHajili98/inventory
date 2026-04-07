@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:inventory/core/utils/responsive.dart';
 import 'package:inventory/l10n/app_localizations.dart';
+import 'package:inventory/pages/finance/expense/expense_categories_page.dart';
 
 // ── Model ────────────────────────────────────────────────────────────────────
 
@@ -220,12 +221,25 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
   // ── Top bar ─────────────────────────────────────────────────────────────────
 
   Widget _buildTopBar(AppLocalizations l10n, bool isMobile) {
-    final button = FilledButton.icon(
+    final addButton = FilledButton.icon(
       onPressed: _openAddDialog,
       icon: const Icon(Icons.add_rounded, size: 18),
       label: Text(l10n.addExpense),
       style: FilledButton.styleFrom(
         backgroundColor: const Color(0xFF6366F1),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+      ),
+    );
+
+    final categoriesButton = OutlinedButton.icon(
+      onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ExpenseCategoriesPage())),
+      icon: const Icon(Icons.category_outlined, size: 18),
+      label: Text(l10n.expenseCategories),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: const Color(0xFF6366F1),
+        side: const BorderSide(color: Color(0xFF6366F1)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
         textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
@@ -241,7 +255,13 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
           ),
           const SizedBox(height: 12),
-          SizedBox(width: double.infinity, child: button),
+          Row(
+            children: [
+              Expanded(child: addButton),
+              const SizedBox(width: 10),
+              Expanded(child: categoriesButton),
+            ],
+          ),
         ],
       );
     }
@@ -253,7 +273,9 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
         ),
         const Spacer(),
-        button,
+        categoriesButton,
+        const SizedBox(width: 12),
+        addButton,
       ],
     );
   }

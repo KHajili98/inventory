@@ -1424,6 +1424,102 @@ abstract class AppLocalizations {
   /// **'Are you sure you want to delete this expense?'**
   String get expenseDeleteConfirm;
 
+  /// No description provided for @expenseCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get expenseCategories;
+
+  /// No description provided for @expenseCategoriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense Categories'**
+  String get expenseCategoriesTitle;
+
+  /// No description provided for @expenseCategoriesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage expense categories'**
+  String get expenseCategoriesSubtitle;
+
+  /// No description provided for @addCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Category'**
+  String get addCategory;
+
+  /// No description provided for @categoryName.
+  ///
+  /// In en, this message translates to:
+  /// **'Category name'**
+  String get categoryName;
+
+  /// No description provided for @categoryNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter category name'**
+  String get categoryNameHint;
+
+  /// No description provided for @noCategoriesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories yet'**
+  String get noCategoriesYet;
+
+  /// No description provided for @addFirstCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Press the button to add the first category'**
+  String get addFirstCategory;
+
+  /// No description provided for @categoryDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Category'**
+  String get categoryDeleteTitle;
+
+  /// No description provided for @categoryDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this category?'**
+  String get categoryDeleteConfirm;
+
+  /// No description provided for @categoryAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Category added successfully'**
+  String get categoryAdded;
+
+  /// No description provided for @categoryDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Category deleted'**
+  String get categoryDeleted;
+
+  /// No description provided for @categoryUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Category updated'**
+  String get categoryUpdated;
+
+  /// No description provided for @editCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Category'**
+  String get editCategory;
+
+  /// No description provided for @categoryAddFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to add category: {error}'**
+  String categoryAddFailed(String error);
+
+  /// No description provided for @categoryDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete category: {error}'**
+  String categoryDeleteFailed(String error);
+
   /// No description provided for @analytics.
   ///
   /// In en, this message translates to:

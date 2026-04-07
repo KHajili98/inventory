@@ -719,6 +719,59 @@ class AppLocalizationsEn extends AppLocalizations {
       'Are you sure you want to delete this expense?';
 
   @override
+  String get expenseCategories => 'Categories';
+
+  @override
+  String get expenseCategoriesTitle => 'Expense Categories';
+
+  @override
+  String get expenseCategoriesSubtitle => 'Manage expense categories';
+
+  @override
+  String get addCategory => 'Add Category';
+
+  @override
+  String get categoryName => 'Category name';
+
+  @override
+  String get categoryNameHint => 'Enter category name';
+
+  @override
+  String get noCategoriesYet => 'No categories yet';
+
+  @override
+  String get addFirstCategory => 'Press the button to add the first category';
+
+  @override
+  String get categoryDeleteTitle => 'Delete Category';
+
+  @override
+  String get categoryDeleteConfirm =>
+      'Are you sure you want to delete this category?';
+
+  @override
+  String get categoryAdded => 'Category added successfully';
+
+  @override
+  String get categoryDeleted => 'Category deleted';
+
+  @override
+  String get categoryUpdated => 'Category updated';
+
+  @override
+  String get editCategory => 'Edit Category';
+
+  @override
+  String categoryAddFailed(String error) {
+    return 'Failed to add category: $error';
+  }
+
+  @override
+  String categoryDeleteFailed(String error) {
+    return 'Failed to delete category: $error';
+  }
+
+  @override
   String get analytics => 'Analytics';
 
   @override

@@ -723,6 +723,60 @@ class AppLocalizationsAz extends AppLocalizations {
   String get expenseDeleteConfirm => 'Bu xərci silmək istədiyinizə əminsiniz?';
 
   @override
+  String get expenseCategories => 'Kateqoriyalar';
+
+  @override
+  String get expenseCategoriesTitle => 'Xərc Kateqoriyaları';
+
+  @override
+  String get expenseCategoriesSubtitle => 'Xərc kateqoriyalarını idarə edin';
+
+  @override
+  String get addCategory => 'Kateqoriya Əlavə Et';
+
+  @override
+  String get categoryName => 'Kateqoriya adı';
+
+  @override
+  String get categoryNameHint => 'Kateqoriya adını daxil edin';
+
+  @override
+  String get noCategoriesYet => 'Hələ kateqoriya yoxdur';
+
+  @override
+  String get addFirstCategory =>
+      'İlk kateqoriyanı əlavə etmək üçün düyməni basın';
+
+  @override
+  String get categoryDeleteTitle => 'Kateqoriyanı Sil';
+
+  @override
+  String get categoryDeleteConfirm =>
+      'Bu kateqoriyanı silmək istədiyinizə əminsiniz?';
+
+  @override
+  String get categoryAdded => 'Kateqoriya uğurla əlavə edildi';
+
+  @override
+  String get categoryDeleted => 'Kateqoriya silindi';
+
+  @override
+  String get categoryUpdated => 'Kateqoriya yeniləndi';
+
+  @override
+  String get editCategory => 'Kateqoriyanı Redaktə Et';
+
+  @override
+  String categoryAddFailed(String error) {
+    return 'Kateqoriya əlavə edilə bilmədi: $error';
+  }
+
+  @override
+  String categoryDeleteFailed(String error) {
+    return 'Kateqoriya silinə bilmədi: $error';
+  }
+
+  @override
   String get analytics => 'Analitika';
 
   @override

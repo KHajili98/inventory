@@ -444,6 +444,29 @@
   "expenseDeleteTitle": "Xərci Sil",
   "expenseDeleteConfirm": "Bu xərci silmək istədiyinizə əminsiniz?",
 
+  "expenseCategories": "Kateqoriyalar",
+  "expenseCategoriesTitle": "Xərc Kateqoriyaları",
+  "expenseCategoriesSubtitle": "Xərc kateqoriyalarını idarə edin",
+  "addCategory": "Kateqoriya Əlavə Et",
+  "categoryName": "Kateqoriya adı",
+  "categoryNameHint": "Kateqoriya adını daxil edin",
+  "noCategoriesYet": "Hələ kateqoriya yoxdur",
+  "addFirstCategory": "İlk kateqoriyanı əlavə etmək üçün düyməni basın",
+  "categoryDeleteTitle": "Kateqoriyanı Sil",
+  "categoryDeleteConfirm": "Bu kateqoriyanı silmək istədiyinizə əminsiniz?",
+  "categoryAdded": "Kateqoriya uğurla əlavə edildi",
+  "categoryDeleted": "Kateqoriya silindi",
+  "categoryUpdated": "Kateqoriya yeniləndi",
+  "editCategory": "Kateqoriyanı Redaktə Et",
+  "categoryAddFailed": "Kateqoriya əlavə edilə bilmədi: {error}",
+  "@categoryAddFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "categoryDeleteFailed": "Kateqoriya silinə bilmədi: {error}",
+  "@categoryDeleteFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+
   "analytics": "Analitika",
   "analyticsSubtitle": "Seçilmiş dövr üzrə maliyyə göstəriciləri",
   "dateRange": "Tarix aralığı",
