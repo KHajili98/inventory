@@ -655,12 +655,18 @@ class _TransactionTableRowState extends State<_TransactionTableRow> {
               // Payment method
               Expanded(
                 flex: 2,
-                child: _Badge(label: widget.paymentMethodLabel, color: widget.paymentColor),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: _Badge(label: widget.paymentMethodLabel, color: widget.paymentColor),
+                ),
               ),
               // Price type
               Expanded(
                 flex: 2,
-                child: _Badge(label: widget.priceTypeLabel, color: widget.priceTypeColor),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: _Badge(label: widget.priceTypeLabel, color: widget.priceTypeColor),
+                ),
               ),
               // Total
               Expanded(
@@ -688,11 +694,11 @@ class _TransactionTableRowState extends State<_TransactionTableRow> {
                     ? Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _Badge(label: AppLocalizations.of(context)!.nisye, color: const Color(0xFFE87C0A)),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: _Badge(label: AppLocalizations.of(context)!.nisye, color: const Color(0xFFE87C0A)),
+                          ),
                           const SizedBox(height: 3),
-                          // if (tx.nisyeAmount != null)
-                          //   SelectableText('₼ ${_fmt.format(tx.nisyeAmount!)}', style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
-                          // const SizedBox(height: 2),
                           SelectableText(
                             '₼ ${_fmt.format(tx.totalSellingPrice - (tx.paidAmount ?? 0))}',
                             style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFE87C0A)),
@@ -898,6 +904,7 @@ class _Badge extends StatelessWidget {
       child: Text(
         label,
         style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
+        softWrap: false,
       ),
     );
   }
