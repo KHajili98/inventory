@@ -723,6 +723,47 @@ class AppLocalizationsAz extends AppLocalizations {
   String get expenseDeleteConfirm => 'Bu xərci silmək istədiyinizə əminsiniz?';
 
   @override
+  String get expenseAdded => 'Xərc uğurla əlavə edildi';
+
+  @override
+  String get expenseUpdated => 'Xərc yeniləndi';
+
+  @override
+  String get expenseDeleted => 'Xərc silindi';
+
+  @override
+  String expenseAddFailed(String error) {
+    return 'Xərc əlavə edilə bilmədi: $error';
+  }
+
+  @override
+  String expenseUpdateFailed(String error) {
+    return 'Xərc yenilənə bilmədi: $error';
+  }
+
+  @override
+  String expenseDeleteFailed(String error) {
+    return 'Xərc silinə bilmədi: $error';
+  }
+
+  @override
+  String expenseLoadFailed(String error) {
+    return 'Xərclər yüklənə bilmədi: $error';
+  }
+
+  @override
+  String get loadingCategories => 'Kateqoriyalar yüklənir…';
+
+  @override
+  String get searchExpenses => 'Xərcləri axtar…';
+
+  @override
+  String get expenseFilterPaymentType => 'Ödəniş növü';
+
+  @override
+  String get expenseFilterAll => 'Hamısı';
+
+  @override
   String get expenseCategories => 'Kateqoriyalar';
 
   @override

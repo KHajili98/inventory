@@ -1424,6 +1424,72 @@ abstract class AppLocalizations {
   /// **'Are you sure you want to delete this expense?'**
   String get expenseDeleteConfirm;
 
+  /// No description provided for @expenseAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense added successfully'**
+  String get expenseAdded;
+
+  /// No description provided for @expenseUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense updated'**
+  String get expenseUpdated;
+
+  /// No description provided for @expenseDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense deleted'**
+  String get expenseDeleted;
+
+  /// No description provided for @expenseAddFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to add expense: {error}'**
+  String expenseAddFailed(String error);
+
+  /// No description provided for @expenseUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update expense: {error}'**
+  String expenseUpdateFailed(String error);
+
+  /// No description provided for @expenseDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete expense: {error}'**
+  String expenseDeleteFailed(String error);
+
+  /// No description provided for @expenseLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load expenses: {error}'**
+  String expenseLoadFailed(String error);
+
+  /// No description provided for @loadingCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading categories…'**
+  String get loadingCategories;
+
+  /// No description provided for @searchExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Search expenses…'**
+  String get searchExpenses;
+
+  /// No description provided for @expenseFilterPaymentType.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment type'**
+  String get expenseFilterPaymentType;
+
+  /// No description provided for @expenseFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get expenseFilterAll;
+
   /// No description provided for @expenseCategories.
   ///
   /// In en, this message translates to:

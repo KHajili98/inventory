@@ -719,6 +719,47 @@ class AppLocalizationsEn extends AppLocalizations {
       'Are you sure you want to delete this expense?';
 
   @override
+  String get expenseAdded => 'Expense added successfully';
+
+  @override
+  String get expenseUpdated => 'Expense updated';
+
+  @override
+  String get expenseDeleted => 'Expense deleted';
+
+  @override
+  String expenseAddFailed(String error) {
+    return 'Failed to add expense: $error';
+  }
+
+  @override
+  String expenseUpdateFailed(String error) {
+    return 'Failed to update expense: $error';
+  }
+
+  @override
+  String expenseDeleteFailed(String error) {
+    return 'Failed to delete expense: $error';
+  }
+
+  @override
+  String expenseLoadFailed(String error) {
+    return 'Failed to load expenses: $error';
+  }
+
+  @override
+  String get loadingCategories => 'Loading categories…';
+
+  @override
+  String get searchExpenses => 'Search expenses…';
+
+  @override
+  String get expenseFilterPaymentType => 'Payment type';
+
+  @override
+  String get expenseFilterAll => 'All';
+
+  @override
   String get expenseCategories => 'Categories';
 
   @override

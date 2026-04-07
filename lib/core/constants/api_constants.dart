@@ -52,6 +52,12 @@ abstract class ApiConstants {
   /// Single fee-category by UUID.
   static String feeCategoryDetail(String id) => '/api/fee-categories/$id/';
 
+  // ── Fees (Expenses) ───────────────────────────────────────────────────────
+  static const String fees = '/api/fees/';
+
+  /// Single fee by UUID.
+  static String feeDetail(String id) => '/api/fees/$id/';
+
   // ── Selling Transactions ──────────────────────────────────────────────────
   static const String completePayment = '/api/selling-transactions/complete-payment/';
 

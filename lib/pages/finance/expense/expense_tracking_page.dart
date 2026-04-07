@@ -4,58 +4,32 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:inventory/core/network/api_result.dart';
 import 'package:inventory/core/utils/responsive.dart';
+import 'package:inventory/features/expense/data/models/fee_category_model.dart';
+import 'package:inventory/features/expense/data/models/fee_model.dart';
+import 'package:inventory/features/expense/data/repositories/fee_category_repository.dart';
+import 'package:inventory/features/expense/data/repositories/fee_repository.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 import 'package:inventory/pages/finance/expense/expense_categories_page.dart';
 
-// ── Model ────────────────────────────────────────────────────────────────────
-
-enum ExpenseCategory { rent, communal, salary, transport, customs, other }
+// ── Payment type enum (for UI labels) ─────────────────────────────────────────
 
 enum ExpensePaymentType { cash, card, transfer }
 
-class ExpenseEntry {
-  final String id;
-  final ExpenseCategory category;
-  final ExpensePaymentType paymentType;
-  final double amount;
-  final DateTime date;
-  final String? documentName;
-  final Uint8List? documentBytes;
-  final String note;
+extension ExpensePaymentTypeX on ExpensePaymentType {
+  String get apiValue => switch (this) {
+    ExpensePaymentType.cash => 'cash',
+    ExpensePaymentType.card => 'card',
+    ExpensePaymentType.transfer => 'transfer',
+  };
 
-  ExpenseEntry({
-    required this.id,
-    required this.category,
-    required this.paymentType,
-    required this.amount,
-    required this.date,
-    this.documentName,
-    this.documentBytes,
-    required this.note,
-  });
-
-  ExpenseEntry copyWith({
-    ExpenseCategory? category,
-    ExpensePaymentType? paymentType,
-    double? amount,
-    DateTime? date,
-    String? documentName,
-    Uint8List? documentBytes,
-    bool clearDocument = false,
-    String? note,
-  }) {
-    return ExpenseEntry(
-      id: id,
-      category: category ?? this.category,
-      paymentType: paymentType ?? this.paymentType,
-      amount: amount ?? this.amount,
-      date: date ?? this.date,
-      documentName: clearDocument ? null : (documentName ?? this.documentName),
-      documentBytes: clearDocument ? null : (documentBytes ?? this.documentBytes),
-      note: note ?? this.note,
-    );
-  }
+  static ExpensePaymentType fromApi(String value) => switch (value) {
+    'cash' => ExpensePaymentType.cash,
+    'card' => ExpensePaymentType.card,
+    'transfer' => ExpensePaymentType.transfer,
+    _ => ExpensePaymentType.cash,
+  };
 }
 
 // ── Page ─────────────────────────────────────────────────────────────────────
@@ -68,21 +42,102 @@ class ExpenseTrackingPage extends StatefulWidget {
 }
 
 class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
-  final List<ExpenseEntry> _expenses = [];
+  final _feeRepo = FeeRepository.instance;
 
-  // ── Date range filter ─────────────────────────────────────────────────────
+  // ── State ─────────────────────────────────────────────────────────────────
+  List<Fee> _fees = [];
+  int _totalCount = 0;
+  bool _loading = false;
+  bool _loadingMore = false;
+  String? _error;
+
+  // ── Pagination ────────────────────────────────────────────────────────────
+  int _page = 1;
+  static const int _pageSize = 20;
+  bool get _hasMore => _fees.length < _totalCount;
+
+  // ── Filters ───────────────────────────────────────────────────────────────
   DateTime? _filterFrom;
   DateTime? _filterTo;
+  ExpensePaymentType? _filterPaymentType;
+  final _searchCtrl = TextEditingController();
+  String _searchQuery = '';
 
-  List<ExpenseEntry> get _filtered {
-    return _expenses.where((e) {
-      if (_filterFrom != null && e.date.isBefore(_filterFrom!)) return false;
-      if (_filterTo != null && e.date.isAfter(_filterTo!.add(const Duration(days: 1)))) {
-        return false;
-      }
-      return true;
-    }).toList();
+  // ── Scroll ────────────────────────────────────────────────────────────────
+  final _scrollCtrl = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFees(reset: true);
+    _scrollCtrl.addListener(_onScroll);
   }
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    _scrollCtrl.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollCtrl.position.pixels >= _scrollCtrl.position.maxScrollExtent - 200 && !_loadingMore && _hasMore) {
+      _loadMore();
+    }
+  }
+
+  // ── Data ──────────────────────────────────────────────────────────────────
+
+  Future<void> _loadFees({bool reset = false}) async {
+    if (reset) {
+      setState(() {
+        _loading = true;
+        _error = null;
+        _page = 1;
+        _fees = [];
+      });
+    }
+
+    final dateFmt = DateFormat('yyyy-MM-dd');
+    final result = await _feeRepo.fetchFees(
+      page: _page,
+      pageSize: _pageSize,
+      search: _searchQuery,
+      paymentType: _filterPaymentType?.apiValue ?? '',
+      paymentDateGte: _filterFrom != null ? dateFmt.format(_filterFrom!) : '',
+      paymentDateLte: _filterTo != null ? dateFmt.format(_filterTo!) : '',
+    );
+
+    if (!mounted) return;
+    switch (result) {
+      case Success(:final data):
+        setState(() {
+          _fees = reset ? data.results : [..._fees, ...data.results];
+          _totalCount = data.count;
+          _loading = false;
+          _loadingMore = false;
+        });
+      case Failure(:final message):
+        setState(() {
+          _error = message;
+          _loading = false;
+          _loadingMore = false;
+        });
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (_loadingMore || !_hasMore) return;
+    setState(() {
+      _loadingMore = true;
+      _page++;
+    });
+    await _loadFees();
+  }
+
+  void _applyFilters() => _loadFees(reset: true);
+
+  // ── Date range picker ──────────────────────────────────────────────────────
 
   Future<void> _pickDateRange() async {
     final picked = await showDialog<DateTimeRange>(
@@ -108,97 +163,73 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
       ),
     );
     if (picked != null) {
-      setState(() {
-        _filterFrom = picked.start;
-        _filterTo = picked.end;
-      });
+      _filterFrom = picked.start;
+      _filterTo = picked.end;
+      _applyFilters();
     }
   }
 
-  void _clearFilter() => setState(() {
+  void _clearFilter() {
     _filterFrom = null;
     _filterTo = null;
-  });
-
-  // ── Dialogs ────────────────────────────────────────────────────────────────
-  void _openAddDialog() async {
-    final entry = await showDialog<ExpenseEntry>(context: context, barrierDismissible: false, builder: (ctx) => const _ExpenseFormDialog());
-    if (entry != null) setState(() => _expenses.insert(0, entry));
+    _filterPaymentType = null;
+    _searchCtrl.clear();
+    _searchQuery = '';
+    _applyFilters();
   }
 
-  void _openEditDialog(ExpenseEntry existing) async {
-    final result = await showDialog<_EditResult>(
+  // ── Dialogs ────────────────────────────────────────────────────────────────
+
+  void _openAddDialog() async {
+    final created = await showDialog<Fee>(context: context, barrierDismissible: false, builder: (ctx) => const _ExpenseFormDialog());
+    if (created != null && mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.expenseAdded), backgroundColor: const Color(0xFF22C55E)));
+      _loadFees(reset: true);
+    }
+  }
+
+  void _openEditDialog(Fee existing) async {
+    final result = await showDialog<_EditDialogResult>(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => _ExpenseFormDialog(existing: existing),
     );
-    if (result == null) return;
-    setState(() {
-      final idx = _expenses.indexWhere((e) => e.id == existing.id);
-      if (idx == -1) return;
-      if (result.deleted) {
-        _expenses.removeAt(idx);
-      } else if (result.updated != null) {
-        _expenses[idx] = result.updated!;
-      }
-    });
+    if (result == null || !mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(result.deleted ? l10n.expenseDeleted : l10n.expenseUpdated),
+        backgroundColor: result.deleted ? const Color(0xFFEF4444) : const Color(0xFF22C55E),
+      ),
+    );
+    _loadFees(reset: true);
   }
 
-  String _categoryLabel(ExpenseCategory cat, AppLocalizations l10n) {
-    return switch (cat) {
-      ExpenseCategory.rent => l10n.expenseCategoryRent,
-      ExpenseCategory.communal => l10n.expenseCategoryCommunal,
-      ExpenseCategory.salary => l10n.expenseCategorySalary,
-      ExpenseCategory.transport => l10n.expenseCategoryTransport,
-      ExpenseCategory.customs => l10n.expenseCategoryCustoms,
-      ExpenseCategory.other => l10n.expenseCategoryOther,
-    };
-  }
+  // ── Helpers ────────────────────────────────────────────────────────────────
 
-  String _paymentLabel(ExpensePaymentType pt, AppLocalizations l10n) {
-    return switch (pt) {
-      ExpensePaymentType.cash => l10n.expensePaymentCash,
-      ExpensePaymentType.card => l10n.expensePaymentCard,
-      ExpensePaymentType.transfer => l10n.expensePaymentTransfer,
-    };
-  }
+  String _paymentLabel(String pt, AppLocalizations l10n) => switch (pt) {
+    'cash' => l10n.expensePaymentCash,
+    'card' => l10n.expensePaymentCard,
+    'transfer' => l10n.expensePaymentTransfer,
+    _ => pt,
+  };
 
-  Color _categoryColor(ExpenseCategory cat) {
-    return switch (cat) {
-      ExpenseCategory.rent => const Color(0xFF6366F1),
-      ExpenseCategory.communal => const Color(0xFF0EA5E9),
-      ExpenseCategory.salary => const Color(0xFF22C55E),
-      ExpenseCategory.transport => const Color(0xFFF59E0B),
-      ExpenseCategory.customs => const Color(0xFFEF4444),
-      ExpenseCategory.other => const Color(0xFF94A3B8),
-    };
-  }
+  Color _paymentColor(String pt) => switch (pt) {
+    'cash' => const Color(0xFF22C55E),
+    'card' => const Color(0xFF6366F1),
+    'transfer' => const Color(0xFF0EA5E9),
+    _ => const Color(0xFF94A3B8),
+  };
 
-  IconData _categoryIcon(ExpenseCategory cat) {
-    return switch (cat) {
-      ExpenseCategory.rent => Icons.home_work_outlined,
-      ExpenseCategory.communal => Icons.bolt_outlined,
-      ExpenseCategory.salary => Icons.people_outline_rounded,
-      ExpenseCategory.transport => Icons.local_shipping_outlined,
-      ExpenseCategory.customs => Icons.gavel_rounded,
-      ExpenseCategory.other => Icons.category_outlined,
-    };
-  }
-
-  Color _paymentColor(ExpensePaymentType pt) {
-    return switch (pt) {
-      ExpensePaymentType.cash => const Color(0xFF22C55E),
-      ExpensePaymentType.card => const Color(0xFF6366F1),
-      ExpensePaymentType.transfer => const Color(0xFF0EA5E9),
-    };
-  }
+  // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isMobile = context.isMobile;
-    final filtered = _filtered;
-    final totalAmount = filtered.fold(0.0, (s, e) => s + e.amount);
+    final totalAmount = _fees.fold(0.0, (s, e) => s + e.paymentAmount);
     final fmt = NumberFormat('#,##0.00');
 
     return Padding(
@@ -210,15 +241,15 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
           SizedBox(height: isMobile ? 16 : 20),
           _buildStats(l10n, isMobile, totalAmount, fmt),
           SizedBox(height: isMobile ? 12 : 16),
-          _buildFilterBar(l10n),
+          _buildFilterBar(l10n, isMobile),
           SizedBox(height: isMobile ? 12 : 16),
-          Expanded(child: _buildTable(l10n, isMobile, fmt, filtered)),
+          Expanded(child: _buildBody(l10n, isMobile, fmt)),
         ],
       ),
     );
   }
 
-  // ── Top bar ─────────────────────────────────────────────────────────────────
+  // ── Top bar ───────────────────────────────────────────────────────────────
 
   Widget _buildTopBar(AppLocalizations l10n, bool isMobile) {
     final addButton = FilledButton.icon(
@@ -280,7 +311,7 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
     );
   }
 
-  // ── Stats ────────────────────────────────────────────────────────────────────
+  // ── Stats ─────────────────────────────────────────────────────────────────
 
   Widget _buildStats(AppLocalizations l10n, bool isMobile, double totalAmount, NumberFormat fmt) {
     final stats = [
@@ -290,7 +321,7 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
         icon: Icons.account_balance_wallet_outlined,
         color: const Color(0xFF6366F1),
       ),
-      _StatCard(label: l10n.expenseCount, value: '${_filtered.length}', icon: Icons.receipt_long_rounded, color: const Color(0xFF0EA5E9)),
+      _StatCard(label: l10n.expenseCount, value: '$_totalCount', icon: Icons.receipt_long_rounded, color: const Color(0xFF0EA5E9)),
     ];
 
     if (isMobile) {
@@ -311,92 +342,201 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
     );
   }
 
-  // ── Filter bar ─────────────────────────────────────────────────────────────
+  // ── Filter bar ────────────────────────────────────────────────────────────
 
-  Widget _buildFilterBar(AppLocalizations l10n) {
-    final hasFilter = _filterFrom != null || _filterTo != null;
+  Widget _buildFilterBar(AppLocalizations l10n, bool isMobile) {
+    final hasDateFilter = _filterFrom != null || _filterTo != null;
+    final hasTypeFilter = _filterPaymentType != null;
+    final hasFilter = hasDateFilter || hasTypeFilter || _searchQuery.isNotEmpty;
     final dateFmt = DateFormat('dd.MM.yyyy');
-    final String label;
+
+    final String dateLabel;
     if (_filterFrom != null && _filterTo != null) {
-      label = '${dateFmt.format(_filterFrom!)}  –  ${dateFmt.format(_filterTo!)}';
+      dateLabel = '${dateFmt.format(_filterFrom!)}  –  ${dateFmt.format(_filterTo!)}';
     } else if (_filterFrom != null) {
-      label = '${dateFmt.format(_filterFrom!)} –';
+      dateLabel = '${dateFmt.format(_filterFrom!)} –';
     } else if (_filterTo != null) {
-      label = '– ${dateFmt.format(_filterTo!)}';
+      dateLabel = '– ${dateFmt.format(_filterTo!)}';
     } else {
-      label = l10n.expenseFilterByDate;
+      dateLabel = l10n.expenseFilterByDate;
     }
 
-    return Row(
-      children: [
-        InkWell(
-          onTap: _pickDateRange,
-          borderRadius: BorderRadius.circular(10),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-            decoration: BoxDecoration(
-              color: hasFilter ? const Color(0xFFEEF2FF) : Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: hasFilter ? const Color(0xFF6366F1) : const Color(0xFFE2E8F0)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.date_range_rounded, size: 16, color: hasFilter ? const Color(0xFF6366F1) : const Color(0xFF94A3B8)),
-                const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: hasFilter ? FontWeight.w600 : FontWeight.w400,
-                    color: hasFilter ? const Color(0xFF6366F1) : const Color(0xFF64748B),
-                  ),
-                ),
-              ],
-            ),
+    final paymentTypeOptions = <(ExpensePaymentType?, String)>[
+      (null, l10n.expenseFilterAll),
+      (ExpensePaymentType.cash, l10n.expensePaymentCash),
+      (ExpensePaymentType.card, l10n.expensePaymentCard),
+      (ExpensePaymentType.transfer, l10n.expensePaymentTransfer),
+    ];
+
+    final searchField = SizedBox(
+      width: isMobile ? double.infinity : 220,
+      height: 40,
+      child: TextField(
+        controller: _searchCtrl,
+        decoration: InputDecoration(
+          hintText: l10n.searchExpenses,
+          hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
+          prefixIcon: const Icon(Icons.search_rounded, size: 18, color: Color(0xFF94A3B8)),
+          suffixIcon: _searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.close_rounded, size: 16),
+                  onPressed: () {
+                    _searchCtrl.clear();
+                    _searchQuery = '';
+                    _applyFilters();
+                  },
+                )
+              : null,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
           ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
+          ),
+          filled: true,
+          fillColor: Colors.white,
         ),
-        if (hasFilter) ...[
-          const SizedBox(width: 8),
-          InkWell(
+        onChanged: (v) => setState(() => _searchQuery = v),
+        onSubmitted: (_) => _applyFilters(),
+        textInputAction: TextInputAction.search,
+      ),
+    );
+
+    final dateChip = InkWell(
+      onTap: _pickDateRange,
+      borderRadius: BorderRadius.circular(10),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        height: 40,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: hasDateFilter ? const Color(0xFFEEF2FF) : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: hasDateFilter ? const Color(0xFF6366F1) : const Color(0xFFE2E8F0)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.date_range_rounded, size: 16, color: hasDateFilter ? const Color(0xFF6366F1) : const Color(0xFF94A3B8)),
+            const SizedBox(width: 8),
+            Text(
+              dateLabel,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: hasDateFilter ? FontWeight.w600 : FontWeight.w400,
+                color: hasDateFilter ? const Color(0xFF6366F1) : const Color(0xFF64748B),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    final typeDropdown = Container(
+      height: 40,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: hasTypeFilter ? const Color(0xFFEEF2FF) : Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: hasTypeFilter ? const Color(0xFF6366F1) : const Color(0xFFE2E8F0)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<ExpensePaymentType?>(
+          value: _filterPaymentType,
+          isDense: true,
+          icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: Color(0xFF94A3B8)),
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: hasTypeFilter ? FontWeight.w600 : FontWeight.w400,
+            color: hasTypeFilter ? const Color(0xFF6366F1) : const Color(0xFF64748B),
+          ),
+          items: paymentTypeOptions.map((pt) => DropdownMenuItem<ExpensePaymentType?>(value: pt.$1, child: Text(pt.$2))).toList(),
+          onChanged: (v) {
+            setState(() => _filterPaymentType = v);
+            _applyFilters();
+          },
+        ),
+      ),
+    );
+
+    final clearBtn = hasFilter
+        ? InkWell(
             onTap: _clearFilter,
             borderRadius: BorderRadius.circular(8),
             child: Container(
-              padding: const EdgeInsets.all(6),
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(color: const Color(0xFFFEE2E2), borderRadius: BorderRadius.circular(8)),
-              child: const Icon(Icons.close_rounded, size: 14, color: Color(0xFFDC2626)),
+              child: const Icon(Icons.close_rounded, size: 16, color: Color(0xFFDC2626)),
             ),
+          )
+        : const SizedBox.shrink();
+
+    if (isMobile) {
+      return Column(
+        children: [
+          searchField,
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(child: dateChip),
+              const SizedBox(width: 8),
+              typeDropdown,
+              const SizedBox(width: 8),
+              clearBtn,
+            ],
           ),
         ],
-      ],
+      );
+    }
+
+    return Row(
+      children: [searchField, const SizedBox(width: 12), dateChip, const SizedBox(width: 8), typeDropdown, const SizedBox(width: 8), clearBtn],
     );
   }
 
-  // ── Table ─────────────────────────────────────────────────────────────────────
+  // ── Body ──────────────────────────────────────────────────────────────────
 
-  Widget _buildTable(AppLocalizations l10n, bool isMobile, NumberFormat fmt, List<ExpenseEntry> filtered) {
-    if (_expenses.isEmpty) return _buildEmptyState(l10n);
+  Widget _buildBody(AppLocalizations l10n, bool isMobile, NumberFormat fmt) {
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1)));
+    }
 
-    if (filtered.isEmpty) {
+    if (_error != null) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.search_off_rounded, size: 48, color: Color(0xFFCBD5E1)),
+            const Icon(Icons.error_outline_rounded, size: 48, color: Color(0xFFEF4444)),
             const SizedBox(height: 12),
-            Text(l10n.expenseNoResults, style: const TextStyle(fontSize: 14, color: Color(0xFF64748B))),
-            const SizedBox(height: 12),
-            TextButton.icon(
-              onPressed: _clearFilter,
-              icon: const Icon(Icons.close_rounded, size: 16),
-              label: Text(l10n.expenseClearFilter),
-              style: TextButton.styleFrom(foregroundColor: const Color(0xFF6366F1)),
+            Text(
+              l10n.expenseLoadFailed(_error!),
+              style: const TextStyle(fontSize: 14, color: Color(0xFF64748B)),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: () => _loadFees(reset: true),
+              icon: const Icon(Icons.refresh_rounded, size: 16),
+              label: Text(l10n.retry),
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF6366F1),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
             ),
           ],
         ),
       );
     }
+
+    if (_fees.isEmpty) return _buildEmptyState(l10n);
 
     return Container(
       decoration: BoxDecoration(
@@ -410,10 +550,17 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
           if (!isMobile) _buildTableHeader(l10n),
           Expanded(
             child: ListView.separated(
-              itemCount: filtered.length,
+              controller: _scrollCtrl,
+              itemCount: _fees.length + (_loadingMore ? 1 : 0),
               separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
               itemBuilder: (ctx, i) {
-                final e = filtered[i];
+                if (i == _fees.length) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: CircularProgressIndicator(color: Color(0xFF6366F1), strokeWidth: 2)),
+                  );
+                }
+                final e = _fees[i];
                 return InkWell(
                   onTap: () => _openEditDialog(e),
                   hoverColor: const Color(0xFFF8FAFF),
@@ -482,18 +629,15 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
     );
   }
 
-  Widget _buildDesktopRow(ExpenseEntry e, AppLocalizations l10n, NumberFormat fmt) {
-    final catColor = _categoryColor(e.category);
-    final catLabel = _categoryLabel(e.category, l10n);
+  Widget _buildDesktopRow(Fee e, AppLocalizations l10n, NumberFormat fmt) {
     final payLabel = _paymentLabel(e.paymentType, l10n);
     final payColor = _paymentColor(e.paymentType);
-    final dateStr = DateFormat('dd.MM.yyyy').format(e.date);
+    final dateStr = DateFormat('dd.MM.yyyy').format(e.paymentDate);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          // Category
           Expanded(
             flex: 2,
             child: Row(
@@ -501,20 +645,19 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
                 Container(
                   width: 32,
                   height: 32,
-                  decoration: BoxDecoration(color: catColor.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
-                  child: Icon(_categoryIcon(e.category), size: 16, color: catColor),
+                  decoration: BoxDecoration(color: const Color(0xFF6366F1).withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
+                  child: const Icon(Icons.category_outlined, size: 16, color: Color(0xFF6366F1)),
                 ),
                 const SizedBox(width: 8),
                 Flexible(
                   child: Text(
-                    catLabel,
+                    e.feeCategoryDetails.name,
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF1E293B)),
                   ),
                 ),
               ],
             ),
           ),
-          // Payment type — badge sized to text only
           Expanded(
             flex: 2,
             child: Align(
@@ -529,39 +672,35 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
               ),
             ),
           ),
-          // Amount
           Expanded(
             flex: 2,
             child: Text(
-              '${fmt.format(e.amount)} ₼',
+              '${fmt.format(e.paymentAmount)} ₼',
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
             ),
           ),
-          // Date
           Expanded(
             flex: 2,
             child: Text(dateStr, style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
           ),
-          // Document
           Expanded(
             flex: 2,
-            child: e.documentName != null
+            child: e.fileUrl != null
                 ? Row(
                     children: [
                       const Icon(Icons.attach_file_rounded, size: 14, color: Color(0xFF6366F1)),
                       const SizedBox(width: 4),
-                      Flexible(
+                      const Flexible(
                         child: Text(
-                          e.documentName!,
-                          style: const TextStyle(fontSize: 12, color: Color(0xFF6366F1)),
+                          'Document',
+                          style: TextStyle(fontSize: 12, color: Color(0xFF6366F1)),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   )
-                : Text('—', style: const TextStyle(fontSize: 13, color: Color(0xFFCBD5E1))),
+                : const Text('—', style: TextStyle(fontSize: 13, color: Color(0xFFCBD5E1))),
           ),
-          // Note
           Expanded(
             flex: 3,
             child: Text(
@@ -576,12 +715,10 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
     );
   }
 
-  Widget _buildMobileRow(ExpenseEntry e, AppLocalizations l10n, NumberFormat fmt) {
-    final catColor = _categoryColor(e.category);
-    final catLabel = _categoryLabel(e.category, l10n);
+  Widget _buildMobileRow(Fee e, AppLocalizations l10n, NumberFormat fmt) {
     final payLabel = _paymentLabel(e.paymentType, l10n);
     final payColor = _paymentColor(e.paymentType);
-    final dateStr = DateFormat('dd.MM.yyyy').format(e.date);
+    final dateStr = DateFormat('dd.MM.yyyy').format(e.paymentDate);
 
     return Padding(
       padding: const EdgeInsets.all(14),
@@ -591,8 +728,8 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
           Container(
             width: 40,
             height: 40,
-            decoration: BoxDecoration(color: catColor.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
-            child: Icon(_categoryIcon(e.category), size: 20, color: catColor),
+            decoration: BoxDecoration(color: const Color(0xFF6366F1).withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
+            child: const Icon(Icons.category_outlined, size: 20, color: Color(0xFF6366F1)),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -601,9 +738,11 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
               children: [
                 Row(
                   children: [
-                    Text(
-                      catLabel,
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                    Flexible(
+                      child: Text(
+                        e.feeCategoryDetails.name,
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Container(
@@ -622,17 +761,11 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
                     const Icon(Icons.calendar_today_outlined, size: 12, color: Color(0xFF94A3B8)),
                     const SizedBox(width: 4),
                     Text(dateStr, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
-                    if (e.documentName != null) ...[
+                    if (e.fileUrl != null) ...[
                       const SizedBox(width: 10),
                       const Icon(Icons.attach_file_rounded, size: 12, color: Color(0xFF6366F1)),
                       const SizedBox(width: 2),
-                      Flexible(
-                        child: Text(
-                          e.documentName!,
-                          style: const TextStyle(fontSize: 12, color: Color(0xFF6366F1)),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
+                      const Text('Doc', style: TextStyle(fontSize: 12, color: Color(0xFF6366F1))),
                     ],
                   ],
                 ),
@@ -650,7 +783,7 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
           ),
           const SizedBox(width: 8),
           Text(
-            '${fmt.format(e.amount)} ₼',
+            '${fmt.format(e.paymentAmount)} ₼',
             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
           ),
         ],
@@ -705,18 +838,17 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-// ── Edit result ───────────────────────────────────────────────────────────────
+// ── Edit dialog result ────────────────────────────────────────────────────────
 
-class _EditResult {
-  final ExpenseEntry? updated;
+class _EditDialogResult {
   final bool deleted;
-  const _EditResult({this.updated, this.deleted = false});
+  const _EditDialogResult({this.deleted = false});
 }
 
-// ── Unified Expense Form Dialog (Add + Edit) ──────────────────────────────────
+// ── Expense Form Dialog (Add + Edit) ─────────────────────────────────────────
 
 class _ExpenseFormDialog extends StatefulWidget {
-  final ExpenseEntry? existing;
+  final Fee? existing;
   const _ExpenseFormDialog({this.existing});
 
   @override
@@ -724,14 +856,24 @@ class _ExpenseFormDialog extends StatefulWidget {
 }
 
 class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
-  late ExpenseCategory? _category;
-  late ExpensePaymentType? _paymentType;
+  final _feeRepo = FeeRepository.instance;
+  final _catRepo = FeeCategoryRepository.instance;
+
+  // Categories
+  List<FeeCategory> _categories = [];
+  bool _loadingCategories = true;
+  String? _categoryError;
+
+  // Form fields
+  FeeCategory? _selectedCategory;
+  ExpensePaymentType? _paymentType;
   late final TextEditingController _amountCtrl;
   late DateTime _date;
   String? _documentName;
   Uint8List? _documentBytes;
   late final TextEditingController _noteCtrl;
   final _formKey = GlobalKey<FormState>();
+  bool _submitting = false;
 
   bool get _isEdit => widget.existing != null;
 
@@ -739,13 +881,11 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
   void initState() {
     super.initState();
     final e = widget.existing;
-    _category = e?.category;
-    _paymentType = e?.paymentType;
-    _amountCtrl = TextEditingController(text: e != null ? e.amount.toStringAsFixed(2) : '');
-    _date = e?.date ?? DateTime.now();
-    _documentName = e?.documentName;
-    _documentBytes = e?.documentBytes;
+    _paymentType = e != null ? ExpensePaymentTypeX.fromApi(e.paymentType) : null;
+    _amountCtrl = TextEditingController(text: e != null ? e.paymentAmount.toStringAsFixed(2) : '');
+    _date = e?.paymentDate ?? DateTime.now();
     _noteCtrl = TextEditingController(text: e?.note ?? '');
+    _loadCategories();
   }
 
   @override
@@ -753,6 +893,34 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
     _amountCtrl.dispose();
     _noteCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadCategories() async {
+    setState(() {
+      _loadingCategories = true;
+      _categoryError = null;
+    });
+    final result = await _catRepo.fetchCategories(pageSize: 200);
+    if (!mounted) return;
+    switch (result) {
+      case Success(:final data):
+        setState(() {
+          _categories = data.results;
+          _loadingCategories = false;
+          if (widget.existing != null) {
+            try {
+              _selectedCategory = _categories.firstWhere((c) => c.id == widget.existing!.feeCategoryId);
+            } catch (_) {
+              _selectedCategory = null;
+            }
+          }
+        });
+      case Failure(:final message):
+        setState(() {
+          _categoryError = message;
+          _loadingCategories = false;
+        });
+    }
   }
 
   Future<void> _pickFile() async {
@@ -779,31 +947,61 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
     if (picked != null) setState(() => _date = picked);
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_category == null || _paymentType == null) return;
+    if (_selectedCategory == null || _paymentType == null) return;
 
-    final entry = ExpenseEntry(
-      id: widget.existing?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-      category: _category!,
-      paymentType: _paymentType!,
-      amount: double.parse(_amountCtrl.text.replaceAll(',', '.')),
-      date: _date,
-      documentName: _documentName,
-      documentBytes: _documentBytes,
-      note: _noteCtrl.text.trim(),
-    );
+    setState(() => _submitting = true);
+    final amount = double.parse(_amountCtrl.text.replaceAll(',', '.'));
+    final l10n = AppLocalizations.of(context)!;
 
     if (_isEdit) {
-      Navigator.of(context).pop(_EditResult(updated: entry));
+      final result = await _feeRepo.updateFee(
+        id: widget.existing!.id,
+        feeCategoryId: _selectedCategory!.id,
+        paymentType: _paymentType!.apiValue,
+        paymentAmount: amount,
+        paymentDate: _date,
+        note: _noteCtrl.text.trim(),
+        fileBytes: _documentBytes,
+        fileName: _documentName,
+      );
+      if (!mounted) return;
+      switch (result) {
+        case Success():
+          Navigator.of(context).pop(const _EditDialogResult());
+        case Failure(:final message):
+          setState(() => _submitting = false);
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.expenseUpdateFailed(message)), backgroundColor: const Color(0xFFEF4444)));
+      }
     } else {
-      Navigator.of(context).pop(entry);
+      final result = await _feeRepo.createFee(
+        feeCategoryId: _selectedCategory!.id,
+        paymentType: _paymentType!.apiValue,
+        paymentAmount: amount,
+        paymentDate: _date,
+        note: _noteCtrl.text.trim(),
+        fileBytes: _documentBytes,
+        fileName: _documentName,
+      );
+      if (!mounted) return;
+      switch (result) {
+        case Success(:final data):
+          Navigator.of(context).pop(data);
+        case Failure(:final message):
+          setState(() => _submitting = false);
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.expenseAddFailed(message)), backgroundColor: const Color(0xFFEF4444)));
+      }
     }
   }
 
-  void _confirmDelete() {
+  Future<void> _confirmDelete() async {
     final l10n = AppLocalizations.of(context)!;
-    showDialog(
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -812,7 +1010,7 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
         actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         actions: [
           OutlinedButton(
-            onPressed: () => Navigator.of(ctx).pop(),
+            onPressed: () => Navigator.of(ctx).pop(false),
             style: OutlinedButton.styleFrom(
               side: const BorderSide(color: Color(0xFFE2E8F0)),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -821,10 +1019,7 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
             child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF475569))),
           ),
           FilledButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              Navigator.of(context).pop(const _EditResult(deleted: true));
-            },
+            onPressed: () => Navigator.of(ctx).pop(true),
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -835,21 +1030,27 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
         ],
       ),
     );
+
+    if (confirmed != true || !mounted) return;
+    setState(() => _submitting = true);
+
+    final result = await _feeRepo.deleteFee(widget.existing!.id);
+    if (!mounted) return;
+    switch (result) {
+      case Success():
+        Navigator.of(context).pop(const _EditDialogResult(deleted: true));
+      case Failure(:final message):
+        setState(() => _submitting = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.expenseDeleteFailed(message)), backgroundColor: const Color(0xFFEF4444)));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final dateStr = DateFormat('dd.MM.yyyy').format(_date);
-
-    final categories = [
-      (ExpenseCategory.rent, l10n.expenseCategoryRent),
-      (ExpenseCategory.communal, l10n.expenseCategoryCommunal),
-      (ExpenseCategory.salary, l10n.expenseCategorySalary),
-      (ExpenseCategory.transport, l10n.expenseCategoryTransport),
-      (ExpenseCategory.customs, l10n.expenseCategoryCustoms),
-      (ExpenseCategory.other, l10n.expenseCategoryOther),
-    ];
 
     final paymentTypes = [
       (ExpensePaymentType.cash, l10n.expensePaymentCash),
@@ -894,7 +1095,7 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Title row ────────────────────────────────────────────
+                  // ── Title row ──────────────────────────────────────────
                   Row(
                     children: [
                       Container(
@@ -918,13 +1119,13 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
                       const Spacer(),
                       if (_isEdit)
                         IconButton(
-                          onPressed: _confirmDelete,
+                          onPressed: _submitting ? null : _confirmDelete,
                           icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444)),
                           tooltip: l10n.delete,
                           style: IconButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                         ),
                       IconButton(
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: _submitting ? null : () => Navigator.of(context).pop(),
                         icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
                         style: IconButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                       ),
@@ -932,20 +1133,50 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
                   ),
                   const SizedBox(height: 24),
 
-                  // 1. Category
+                  // 1. Category ──────────────────────────────────────────
                   _FieldLabel(l10n.expenseCategory),
                   const SizedBox(height: 6),
-                  DropdownButtonFormField<ExpenseCategory>(
-                    initialValue: _category,
-                    decoration: inputDecoration.copyWith(hintText: l10n.expenseSelectCategory),
-                    borderRadius: BorderRadius.circular(10),
-                    items: categories.map((c) => DropdownMenuItem(value: c.$1, child: Text(c.$2))).toList(),
-                    onChanged: (v) => setState(() => _category = v),
-                    validator: (v) => v == null ? l10n.required : null,
-                  ),
+                  if (_loadingCategories)
+                    Container(
+                      height: 48,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.white,
+                      ),
+                      child: const Center(
+                        child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF6366F1))),
+                      ),
+                    )
+                  else if (_categoryError != null)
+                    Container(
+                      height: 48,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: const Color(0xFFEF4444)),
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.white,
+                      ),
+                      child: Center(
+                        child: TextButton.icon(
+                          onPressed: _loadCategories,
+                          icon: const Icon(Icons.refresh_rounded, size: 16),
+                          label: Text(l10n.retry),
+                          style: TextButton.styleFrom(foregroundColor: const Color(0xFFEF4444)),
+                        ),
+                      ),
+                    )
+                  else
+                    DropdownButtonFormField<FeeCategory>(
+                      initialValue: _selectedCategory,
+                      decoration: inputDecoration.copyWith(hintText: l10n.expenseSelectCategory),
+                      borderRadius: BorderRadius.circular(10),
+                      items: _categories.map((c) => DropdownMenuItem<FeeCategory>(value: c, child: Text(c.name))).toList(),
+                      onChanged: (v) => setState(() => _selectedCategory = v),
+                      validator: (v) => v == null ? l10n.required : null,
+                    ),
                   const SizedBox(height: 16),
 
-                  // 2. Payment type
+                  // 2. Payment type ──────────────────────────────────────
                   _FieldLabel(l10n.expensePaymentType),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<ExpensePaymentType>(
@@ -958,7 +1189,7 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
                   ),
                   const SizedBox(height: 16),
 
-                  // 3. Amount
+                  // 3. Amount ────────────────────────────────────────────
                   _FieldLabel(l10n.expenseAmount),
                   const SizedBox(height: 6),
                   TextFormField(
@@ -975,7 +1206,7 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
                   ),
                   const SizedBox(height: 16),
 
-                  // 4. Date
+                  // 4. Date ──────────────────────────────────────────────
                   _FieldLabel(l10n.expenseDate),
                   const SizedBox(height: 6),
                   InkWell(
@@ -1001,53 +1232,13 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
                   ),
                   const SizedBox(height: 16),
 
-                  // 5. Document
+                  // 5. Document ──────────────────────────────────────────
                   _FieldLabel(l10n.expenseDocument),
                   const SizedBox(height: 6),
-                  InkWell(
-                    onTap: _pickFile,
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: _documentName != null ? const Color(0xFF6366F1) : const Color(0xFFE2E8F0)),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            _documentName != null ? Icons.attach_file_rounded : Icons.upload_file_outlined,
-                            size: 18,
-                            color: _documentName != null ? const Color(0xFF6366F1) : const Color(0xFF94A3B8),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              _documentName != null ? l10n.expenseDocumentSelected(_documentName!) : l10n.expenseDocumentHint,
-                              style: TextStyle(fontSize: 14, color: _documentName != null ? const Color(0xFF1E293B) : const Color(0xFF94A3B8)),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          OutlinedButton(
-                            onPressed: _pickFile,
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Color(0xFFE2E8F0)),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            child: Text(l10n.expenseDocumentChoose, style: const TextStyle(fontSize: 12, color: Color(0xFF475569))),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  _buildDocumentPicker(l10n),
                   const SizedBox(height: 16),
 
-                  // 6. Note
+                  // 6. Note ──────────────────────────────────────────────
                   _FieldLabel(l10n.expenseNote),
                   const SizedBox(height: 6),
                   TextFormField(
@@ -1057,12 +1248,12 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Actions
+                  // Actions ──────────────────────────────────────────────
                   Row(
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: () => Navigator.of(context).pop(),
+                          onPressed: _submitting ? null : () => Navigator.of(context).pop(),
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(color: Color(0xFFE2E8F0)),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -1077,13 +1268,15 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: FilledButton(
-                          onPressed: _submit,
+                          onPressed: _submitting ? null : _submit,
                           style: FilledButton.styleFrom(
                             backgroundColor: const Color(0xFF6366F1),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
-                          child: Text(l10n.save, style: const TextStyle(fontWeight: FontWeight.w600)),
+                          child: _submitting
+                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                              : Text(l10n.save, style: const TextStyle(fontWeight: FontWeight.w600)),
                         ),
                       ),
                     ],
@@ -1092,6 +1285,58 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDocumentPicker(AppLocalizations l10n) {
+    final hasExistingFile = widget.existing?.fileUrl != null;
+    final hasNewFile = _documentName != null;
+    final hasFile = hasNewFile || hasExistingFile;
+
+    return InkWell(
+      onTap: _pickFile,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: hasFile ? const Color(0xFF6366F1) : const Color(0xFFE2E8F0)),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              hasFile ? Icons.attach_file_rounded : Icons.upload_file_outlined,
+              size: 18,
+              color: hasFile ? const Color(0xFF6366F1) : const Color(0xFF94A3B8),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                hasNewFile
+                    ? l10n.expenseDocumentSelected(_documentName!)
+                    : hasExistingFile
+                    ? l10n.expenseDocumentSelected('document')
+                    : l10n.expenseDocumentHint,
+                style: TextStyle(fontSize: 14, color: hasFile ? const Color(0xFF1E293B) : const Color(0xFF94A3B8)),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            OutlinedButton(
+              onPressed: _pickFile,
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFFE2E8F0)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(l10n.expenseDocumentChoose, style: const TextStyle(fontSize: 12, color: Color(0xFF475569))),
+            ),
+          ],
         ),
       ),
     );
@@ -1114,7 +1359,6 @@ class _DateRangePickerDialog extends StatefulWidget {
 class _DateRangePickerDialogState extends State<_DateRangePickerDialog> {
   DateTime? _start;
   DateTime? _end;
-  // 0 = picking start, 1 = picking end
   int _step = 0;
   late DateTime _focusedMonth;
 
@@ -1279,19 +1523,15 @@ class _DateRangePickerDialogState extends State<_DateRangePickerDialog> {
 
   Widget _buildGrid() {
     final firstDay = DateTime(_focusedMonth.year, _focusedMonth.month, 1);
-    // Monday=0 offset
-    int startOffset = firstDay.weekday - 1;
+    final startOffset = firstDay.weekday - 1;
     final daysInMonth = DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0).day;
-
-    final totalCells = startOffset + daysInMonth;
-    final rows = (totalCells / 7).ceil();
+    final rows = ((startOffset + daysInMonth) / 7).ceil();
 
     return Column(
       children: List.generate(rows, (row) {
         return Row(
           children: List.generate(7, (col) {
-            final index = row * 7 + col;
-            final dayNum = index - startOffset + 1;
+            final dayNum = row * 7 + col - startOffset + 1;
             if (dayNum < 1 || dayNum > daysInMonth) {
               return const Expanded(child: SizedBox(height: 36));
             }

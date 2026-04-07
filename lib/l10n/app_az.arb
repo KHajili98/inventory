@@ -443,6 +443,29 @@
   "expenseEditTitle": "Xərci Redaktə Et",
   "expenseDeleteTitle": "Xərci Sil",
   "expenseDeleteConfirm": "Bu xərci silmək istədiyinizə əminsiniz?",
+  "expenseAdded": "Xərc uğurla əlavə edildi",
+  "expenseUpdated": "Xərc yeniləndi",
+  "expenseDeleted": "Xərc silindi",
+  "expenseAddFailed": "Xərc əlavə edilə bilmədi: {error}",
+  "@expenseAddFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "expenseUpdateFailed": "Xərc yenilənə bilmədi: {error}",
+  "@expenseUpdateFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "expenseDeleteFailed": "Xərc silinə bilmədi: {error}",
+  "@expenseDeleteFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "expenseLoadFailed": "Xərclər yüklənə bilmədi: {error}",
+  "@expenseLoadFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "loadingCategories": "Kateqoriyalar yüklənir…",
+  "searchExpenses": "Xərcləri axtar…",
+  "expenseFilterPaymentType": "Ödəniş növü",
+  "expenseFilterAll": "Hamısı",
 
   "expenseCategories": "Kateqoriyalar",
   "expenseCategoriesTitle": "Xərc Kateqoriyaları",

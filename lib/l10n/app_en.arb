@@ -1035,6 +1035,29 @@
   "expenseEditTitle": "Edit Expense",
   "expenseDeleteTitle": "Delete Expense",
   "expenseDeleteConfirm": "Are you sure you want to delete this expense?",
+  "expenseAdded": "Expense added successfully",
+  "expenseUpdated": "Expense updated",
+  "expenseDeleted": "Expense deleted",
+  "expenseAddFailed": "Failed to add expense: {error}",
+  "@expenseAddFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "expenseUpdateFailed": "Failed to update expense: {error}",
+  "@expenseUpdateFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "expenseDeleteFailed": "Failed to delete expense: {error}",
+  "@expenseDeleteFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "expenseLoadFailed": "Failed to load expenses: {error}",
+  "@expenseLoadFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "loadingCategories": "Loading categories…",
+  "searchExpenses": "Search expenses…",
+  "expenseFilterPaymentType": "Payment type",
+  "expenseFilterAll": "All",
 
   "expenseCategories": "Categories",
   "expenseCategoriesTitle": "Expense Categories",
