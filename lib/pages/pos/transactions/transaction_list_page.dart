@@ -1155,6 +1155,8 @@ class _TransactionDetailDialog extends StatelessWidget {
                             ],
                           ),
                         ),
+                        const SizedBox(height: 12),
+                        _NisyeHistorySection(transactionId: tx.id, l10n: l10n),
                       ],
                       const SizedBox(height: 20),
                       // Items section
@@ -1848,6 +1850,254 @@ class _PayNisyeDialogState extends State<_PayNisyeDialog> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ── Nisye History Section ─────────────────────────────────────────────────────
+
+class _NisyeHistorySection extends StatefulWidget {
+  final String transactionId;
+  final AppLocalizations l10n;
+
+  const _NisyeHistorySection({required this.transactionId, required this.l10n});
+
+  @override
+  State<_NisyeHistorySection> createState() => _NisyeHistorySectionState();
+}
+
+class _NisyeHistorySectionState extends State<_NisyeHistorySection> {
+  List<NisyePaymentHistoryItem>? _items;
+  bool _loading = true;
+  String? _error;
+
+  final _fmt = NumberFormat('#,##0.00');
+  final _dateFmt = DateFormat('dd.MM.yyyy');
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    final result = await SellingTransactionsRepository.instance.fetchNisyeHistory(sellingTransactionId: widget.transactionId);
+    if (!mounted) return;
+    switch (result) {
+      case Success(:final data):
+        setState(() {
+          _items = data.results;
+          _loading = false;
+        });
+      case Failure(:final message):
+        setState(() {
+          _error = message;
+          _loading = false;
+        });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = widget.l10n;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section header
+        Row(
+          children: [
+            const Icon(Icons.history_rounded, size: 15, color: Color(0xFF6366F1)),
+            const SizedBox(width: 6),
+            Text(
+              l10n.nisyeHistory,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+            ),
+            if (_items != null && _items!.isNotEmpty) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(color: const Color(0xFF6366F1).withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
+                child: Text(
+                  '${_items!.length}',
+                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF6366F1)),
+                ),
+              ),
+            ],
+            const Spacer(),
+            if (!_loading)
+              InkWell(
+                onTap: _load,
+                borderRadius: BorderRadius.circular(6),
+                child: const Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Icon(Icons.refresh_rounded, size: 15, color: Color(0xFF64748B)),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // Content
+        if (_loading)
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 18),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Color(0xFF6366F1), strokeWidth: 2)),
+                const SizedBox(width: 10),
+                Text(l10n.nisyeHistoryLoading, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+              ],
+            ),
+          )
+        else if (_error != null)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFEF2F2),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFFCA5A5)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.error_outline_rounded, size: 15, color: Color(0xFFEF4444)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(l10n.nisyeHistoryError, style: const TextStyle(fontSize: 12, color: Color(0xFFEF4444))),
+                ),
+                InkWell(
+                  onTap: _load,
+                  child: const Text(
+                    'Retry',
+                    style: TextStyle(fontSize: 12, color: Color(0xFFEF4444), fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else if (_items == null || _items!.isEmpty)
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 18),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Column(
+              children: [
+                const Icon(Icons.inbox_rounded, size: 28, color: Color(0xFFCBD5E1)),
+                const SizedBox(height: 6),
+                Text(l10n.nisyeHistoryEmpty, style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+              ],
+            ),
+          )
+        else
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Column(
+              children: [
+                for (int i = 0; i < _items!.length; i++) ...[
+                  if (i > 0) const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                  _NisyeHistoryRow(item: _items![i], fmt: _fmt, dateFmt: _dateFmt, l10n: l10n),
+                ],
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _NisyeHistoryRow extends StatelessWidget {
+  final NisyePaymentHistoryItem item;
+  final NumberFormat fmt;
+  final DateFormat dateFmt;
+  final AppLocalizations l10n;
+
+  const _NisyeHistoryRow({required this.item, required this.fmt, required this.dateFmt, required this.l10n});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Row(
+        children: [
+          // Icon bubble
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(color: const Color(0xFF10B981).withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
+            child: const Icon(Icons.payments_rounded, size: 16, color: Color(0xFF10B981)),
+          ),
+          const SizedBox(width: 12),
+          // Middle — date + paid by
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (item.paymentDate != null)
+                  Text(
+                    dateFmt.format(item.paymentDate!),
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+                  ),
+                if (item.creatorDetails != null) ...[
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      const Icon(Icons.person_outline_rounded, size: 11, color: Color(0xFF94A3B8)),
+                      const SizedBox(width: 3),
+                      Flexible(
+                        child: Text(
+                          item.creatorDetails!.displayName,
+                          style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                if (item.note != null && item.note!.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      const Icon(Icons.notes_rounded, size: 11, color: Color(0xFF94A3B8)),
+                      const SizedBox(width: 3),
+                      Flexible(
+                        child: Text(
+                          item.note!,
+                          style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8), fontStyle: FontStyle.italic),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          // Amount
+          Text(
+            '₼ ${fmt.format(item.paymentAmount)}',
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Color(0xFF10B981)),
+          ),
+        ],
       ),
     );
   }

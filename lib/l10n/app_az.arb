@@ -1089,5 +1089,12 @@
   "payNisyeDateHint": "Tarix seçin",
   "payNisyeDateRequired": "Zəhmət olmasa ödəniş tarixini seçin",
 
+  "nisyeHistory": "Ödəniş Tarixi",
+  "nisyeHistoryEmpty": "Hələ heç bir ödəniş qeydə alınmayıb",
+  "nisyeHistoryLoading": "Tarix yüklənir...",
+  "nisyeHistoryError": "Tarix yüklənmədi",
+  "nisyeHistoryPaymentDate": "Ödəniş tarixi",
+  "nisyeHistoryPaidBy": "Ödəyən",
+
   "paying": "Emal edilir..."
 }

@@ -4142,6 +4142,42 @@ abstract class AppLocalizations {
   /// **'Please select a payment date'**
   String get payNisyeDateRequired;
 
+  /// Section title for nisye payment history
+  ///
+  /// In en, this message translates to:
+  /// **'Payment History'**
+  String get nisyeHistory;
+
+  /// Shown when nisye payment history is empty
+  ///
+  /// In en, this message translates to:
+  /// **'No payments recorded yet'**
+  String get nisyeHistoryEmpty;
+
+  /// Loading state for nisye history
+  ///
+  /// In en, this message translates to:
+  /// **'Loading history...'**
+  String get nisyeHistoryLoading;
+
+  /// Error state for nisye history
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load history'**
+  String get nisyeHistoryError;
+
+  /// Label for payment date in history row
+  ///
+  /// In en, this message translates to:
+  /// **'Payment date'**
+  String get nisyeHistoryPaymentDate;
+
+  /// Label for who made the payment in history row
+  ///
+  /// In en, this message translates to:
+  /// **'Paid by'**
+  String get nisyeHistoryPaidBy;
+
   /// Loading label while paying
   ///
   /// In en, this message translates to:

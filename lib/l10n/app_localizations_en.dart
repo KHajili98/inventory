@@ -2181,5 +2181,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get payNisyeDateRequired => 'Please select a payment date';
 
   @override
+  String get nisyeHistory => 'Payment History';
+
+  @override
+  String get nisyeHistoryEmpty => 'No payments recorded yet';
+
+  @override
+  String get nisyeHistoryLoading => 'Loading history...';
+
+  @override
+  String get nisyeHistoryError => 'Failed to load history';
+
+  @override
+  String get nisyeHistoryPaymentDate => 'Payment date';
+
+  @override
+  String get nisyeHistoryPaidBy => 'Paid by';
+
+  @override
   String get paying => 'Processing...';
 }

@@ -2187,5 +2187,23 @@ class AppLocalizationsAz extends AppLocalizations {
   String get payNisyeDateRequired => 'Zəhmət olmasa ödəniş tarixini seçin';
 
   @override
+  String get nisyeHistory => 'Ödəniş Tarixi';
+
+  @override
+  String get nisyeHistoryEmpty => 'Hələ heç bir ödəniş qeydə alınmayıb';
+
+  @override
+  String get nisyeHistoryLoading => 'Tarix yüklənir...';
+
+  @override
+  String get nisyeHistoryError => 'Tarix yüklənmədi';
+
+  @override
+  String get nisyeHistoryPaymentDate => 'Ödəniş tarixi';
+
+  @override
+  String get nisyeHistoryPaidBy => 'Ödəyən';
+
+  @override
   String get paying => 'Emal edilir...';
 }

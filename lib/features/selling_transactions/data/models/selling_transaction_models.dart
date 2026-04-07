@@ -303,6 +303,94 @@ class PayNisyeRequest {
   };
 }
 
+// ── Nisye payment history ─────────────────────────────────────────────────────
+
+class NisyePaymentCreatorInfo {
+  final String id;
+  final String username;
+  final String? firstName;
+  final String? lastName;
+  final String? email;
+  final String? phone;
+  final String? role;
+
+  const NisyePaymentCreatorInfo({
+    required this.id,
+    required this.username,
+    this.firstName,
+    this.lastName,
+    this.email,
+    this.phone,
+    this.role,
+  });
+
+  factory NisyePaymentCreatorInfo.fromJson(Map<String, dynamic> json) => NisyePaymentCreatorInfo(
+    id: json['id'] as String? ?? '',
+    username: json['username'] as String? ?? '',
+    firstName: json['first_name'] as String?,
+    lastName: json['last_name'] as String?,
+    email: json['email'] as String?,
+    phone: json['phone'] as String?,
+    role: json['role'] as String?,
+  );
+
+  String get displayName {
+    final full = '${firstName ?? ''} ${lastName ?? ''}'.trim();
+    return full.isNotEmpty ? full : username;
+  }
+}
+
+class NisyePaymentHistoryItem {
+  final String id;
+  final String sellingTransaction;
+  final double paymentAmount;
+  final DateTime? paymentDate;
+  final String? note;
+  final NisyePaymentCreatorInfo? creatorDetails;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  const NisyePaymentHistoryItem({
+    required this.id,
+    required this.sellingTransaction,
+    required this.paymentAmount,
+    this.paymentDate,
+    this.note,
+    this.creatorDetails,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory NisyePaymentHistoryItem.fromJson(Map<String, dynamic> json) => NisyePaymentHistoryItem(
+    id: json['id'] as String? ?? '',
+    sellingTransaction: json['selling_transaction'] as String? ?? '',
+    paymentAmount: (json['payment_amount'] as num?)?.toDouble() ?? 0.0,
+    paymentDate: json['payment_date'] != null ? DateTime.tryParse(json['payment_date'] as String) : null,
+    note: json['note'] as String?,
+    creatorDetails: json['creator_details'] is Map
+        ? NisyePaymentCreatorInfo.fromJson(Map<String, dynamic>.from(json['creator_details'] as Map))
+        : null,
+    createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'] as String) : null,
+    updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at'] as String) : null,
+  );
+}
+
+class NisyePaymentHistoryResponse {
+  final int count;
+  final String? next;
+  final String? previous;
+  final List<NisyePaymentHistoryItem> results;
+
+  const NisyePaymentHistoryResponse({required this.count, this.next, this.previous, required this.results});
+
+  factory NisyePaymentHistoryResponse.fromJson(Map<String, dynamic> json) => NisyePaymentHistoryResponse(
+    count: (json['count'] as num).toInt(),
+    next: json['next'] as String?,
+    previous: json['previous'] as String?,
+    results: (json['results'] as List<dynamic>? ?? []).map((e) => NisyePaymentHistoryItem.fromJson(e as Map<String, dynamic>)).toList(),
+  );
+}
+
 // ── Paginated list response ────────────────────────────────────────────────────
 
 class SellingTransactionListResponse {

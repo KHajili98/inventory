@@ -64,6 +64,9 @@ abstract class ApiConstants {
   /// POST /api/selling-transactions/pay-nisye/
   static const String payNisye = '/api/selling-transactions/pay-nisye/';
 
+  /// GET /api/nisye-payment-history/
+  static const String nisyePaymentHistory = '/api/nisye-payment-history/';
+
   /// GET /api/selling-transactions/ (paginated list)
   static const String sellingTransactionsList = '/api/selling-transactions/';
 

@@ -120,4 +120,27 @@ class SellingTransactionsRepository {
       return Failure(e.toString());
     }
   }
+
+  /// GET /api/nisye-payment-history/?selling_transaction={id}
+  Future<ApiResult<NisyePaymentHistoryResponse>> fetchNisyeHistory({
+    required String sellingTransactionId,
+    int page = 1,
+    int pageSize = 50,
+    String ordering = '-created_at',
+  }) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiConstants.nisyePaymentHistory,
+        queryParameters: {'selling_transaction': sellingTransactionId, 'page': page, 'page_size': pageSize, 'ordering': ordering},
+      );
+      if (response.statusCode == 200) {
+        return Success(NisyePaymentHistoryResponse.fromJson(response.data as Map<String, dynamic>));
+      }
+      return Failure('Unexpected status: ${response.statusCode}', statusCode: response.statusCode);
+    } on DioException catch (e) {
+      return Failure(_parseDioError(e), statusCode: e.response?.statusCode);
+    } catch (e) {
+      return Failure(e.toString());
+    }
+  }
 }

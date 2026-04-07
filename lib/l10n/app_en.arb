@@ -2445,6 +2445,24 @@
   "payNisyeDateRequired": "Please select a payment date",
   "@payNisyeDateRequired": { "description": "Validation error when date is not selected" },
 
+  "nisyeHistory": "Payment History",
+  "@nisyeHistory": { "description": "Section title for nisye payment history" },
+
+  "nisyeHistoryEmpty": "No payments recorded yet",
+  "@nisyeHistoryEmpty": { "description": "Shown when nisye payment history is empty" },
+
+  "nisyeHistoryLoading": "Loading history...",
+  "@nisyeHistoryLoading": { "description": "Loading state for nisye history" },
+
+  "nisyeHistoryError": "Failed to load history",
+  "@nisyeHistoryError": { "description": "Error state for nisye history" },
+
+  "nisyeHistoryPaymentDate": "Payment date",
+  "@nisyeHistoryPaymentDate": { "description": "Label for payment date in history row" },
+
+  "nisyeHistoryPaidBy": "Paid by",
+  "@nisyeHistoryPaidBy": { "description": "Label for who made the payment in history row" },
+
   "paying": "Processing...",
   "@paying": { "description": "Loading label while paying" }
 }
