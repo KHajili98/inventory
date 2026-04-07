@@ -760,6 +760,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get expenseFilterAll => 'All';
 
   @override
+  String get expenseFilterByCategory => 'Filter by category';
+
+  @override
+  String get expenseFilterAllCategories => 'All categories';
+
+  @override
   String get expenseCategories => 'Categories';
 
   @override

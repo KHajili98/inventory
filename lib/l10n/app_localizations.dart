@@ -1490,6 +1490,18 @@ abstract class AppLocalizations {
   /// **'All'**
   String get expenseFilterAll;
 
+  /// No description provided for @expenseFilterByCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by category'**
+  String get expenseFilterByCategory;
+
+  /// No description provided for @expenseFilterAllCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'All categories'**
+  String get expenseFilterAllCategories;
+
   /// No description provided for @expenseCategories.
   ///
   /// In en, this message translates to:

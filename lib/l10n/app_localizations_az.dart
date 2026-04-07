@@ -764,6 +764,12 @@ class AppLocalizationsAz extends AppLocalizations {
   String get expenseFilterAll => 'Hamısı';
 
   @override
+  String get expenseFilterByCategory => 'Kateqoriyaya görə filter';
+
+  @override
+  String get expenseFilterAllCategories => 'Bütün kateqoriyalar';
+
+  @override
   String get expenseCategories => 'Kateqoriyalar';
 
   @override

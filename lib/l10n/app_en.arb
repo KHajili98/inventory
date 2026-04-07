@@ -1058,6 +1058,8 @@
   "searchExpenses": "Search expenses…",
   "expenseFilterPaymentType": "Payment type",
   "expenseFilterAll": "All",
+  "expenseFilterByCategory": "Filter by category",
+  "expenseFilterAllCategories": "All categories",
 
   "expenseCategories": "Categories",
   "expenseCategoriesTitle": "Expense Categories",

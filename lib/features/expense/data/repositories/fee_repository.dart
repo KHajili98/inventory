@@ -24,6 +24,7 @@ class FeeRepository {
     String paymentDateGte = '',
     String paymentDateLte = '',
     String paymentDate = '',
+    String feeCategory = '',
   }) async {
     try {
       final response = await _dio.get<Map<String, dynamic>>(
@@ -37,6 +38,7 @@ class FeeRepository {
           'payment_date__gte': paymentDateGte,
           'payment_date__lte': paymentDateLte,
           'payment_date': paymentDate,
+          if (feeCategory.isNotEmpty) 'fee_category': feeCategory,
         },
       );
 

@@ -43,6 +43,7 @@ class ExpenseTrackingPage extends StatefulWidget {
 
 class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
   final _feeRepo = FeeRepository.instance;
+  final _catRepo = FeeCategoryRepository.instance;
 
   // ── State ─────────────────────────────────────────────────────────────────
   List<Fee> _fees = [];
@@ -60,8 +61,12 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
   DateTime? _filterFrom;
   DateTime? _filterTo;
   ExpensePaymentType? _filterPaymentType;
+  FeeCategory? _filterCategory;
   final _searchCtrl = TextEditingController();
   String _searchQuery = '';
+
+  // ── Categories for filter dropdown ────────────────────────────────────────
+  List<FeeCategory> _filterCategories = [];
 
   // ── Scroll ────────────────────────────────────────────────────────────────
   final _scrollCtrl = ScrollController();
@@ -69,6 +74,7 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
   @override
   void initState() {
     super.initState();
+    _loadFilterCategories();
     _loadFees(reset: true);
     _scrollCtrl.addListener(_onScroll);
   }
@@ -78,6 +84,16 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
     _searchCtrl.dispose();
     _scrollCtrl.dispose();
     super.dispose();
+  }
+
+  // ── Load categories for the filter dropdown ────────────────────────────────
+
+  Future<void> _loadFilterCategories() async {
+    final result = await _catRepo.fetchCategories(pageSize: 200);
+    if (!mounted) return;
+    if (result case Success(:final data)) {
+      setState(() => _filterCategories = data.results);
+    }
   }
 
   void _onScroll() {
@@ -106,6 +122,7 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
       paymentType: _filterPaymentType?.apiValue ?? '',
       paymentDateGte: _filterFrom != null ? dateFmt.format(_filterFrom!) : '',
       paymentDateLte: _filterTo != null ? dateFmt.format(_filterTo!) : '',
+      feeCategory: _filterCategory?.id ?? '',
     );
 
     if (!mounted) return;
@@ -173,6 +190,7 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
     _filterFrom = null;
     _filterTo = null;
     _filterPaymentType = null;
+    _filterCategory = null;
     _searchCtrl.clear();
     _searchQuery = '';
     _applyFilters();
@@ -347,7 +365,8 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
   Widget _buildFilterBar(AppLocalizations l10n, bool isMobile) {
     final hasDateFilter = _filterFrom != null || _filterTo != null;
     final hasTypeFilter = _filterPaymentType != null;
-    final hasFilter = hasDateFilter || hasTypeFilter || _searchQuery.isNotEmpty;
+    final hasCategoryFilter = _filterCategory != null;
+    final hasFilter = hasDateFilter || hasTypeFilter || hasCategoryFilter || _searchQuery.isNotEmpty;
     final dateFmt = DateFormat('dd.MM.yyyy');
 
     final String dateLabel;
@@ -466,6 +485,45 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
       ),
     );
 
+    // Category filter — only shown when categories are loaded
+    final categoryDropdown = _filterCategories.isEmpty
+        ? const SizedBox.shrink()
+        : Container(
+            height: 40,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: hasCategoryFilter ? const Color(0xFFEEF2FF) : Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: hasCategoryFilter ? const Color(0xFF6366F1) : const Color(0xFFE2E8F0)),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<FeeCategory?>(
+                value: _filterCategory,
+                isDense: true,
+                hint: Text(l10n.expenseFilterAllCategories, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+                icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: Color(0xFF94A3B8)),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: hasCategoryFilter ? FontWeight.w600 : FontWeight.w400,
+                  color: hasCategoryFilter ? const Color(0xFF6366F1) : const Color(0xFF64748B),
+                ),
+                items: [
+                  DropdownMenuItem<FeeCategory?>(value: null, child: Text(l10n.expenseFilterAllCategories)),
+                  ..._filterCategories.map(
+                    (c) => DropdownMenuItem<FeeCategory?>(
+                      value: c,
+                      child: Text(c.name, overflow: TextOverflow.ellipsis),
+                    ),
+                  ),
+                ],
+                onChanged: (v) {
+                  setState(() => _filterCategory = v);
+                  _applyFilters();
+                },
+              ),
+            ),
+          );
+
     final clearBtn = hasFilter
         ? InkWell(
             onTap: _clearFilter,
@@ -493,12 +551,22 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
               clearBtn,
             ],
           ),
+          if (_filterCategories.isNotEmpty) ...[const SizedBox(height: 8), SizedBox(width: double.infinity, child: categoryDropdown)],
         ],
       );
     }
 
     return Row(
-      children: [searchField, const SizedBox(width: 12), dateChip, const SizedBox(width: 8), typeDropdown, const SizedBox(width: 8), clearBtn],
+      children: [
+        searchField,
+        const SizedBox(width: 12),
+        dateChip,
+        const SizedBox(width: 8),
+        typeDropdown,
+        if (_filterCategories.isNotEmpty) ...[const SizedBox(width: 8), categoryDropdown],
+        const SizedBox(width: 8),
+        clearBtn,
+      ],
     );
   }
 

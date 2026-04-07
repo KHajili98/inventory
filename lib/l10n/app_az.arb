@@ -466,6 +466,8 @@
   "searchExpenses": "Xərcləri axtar…",
   "expenseFilterPaymentType": "Ödəniş növü",
   "expenseFilterAll": "Hamısı",
+  "expenseFilterByCategory": "Kateqoriyaya görə filter",
+  "expenseFilterAllCategories": "Bütün kateqoriyalar",
 
   "expenseCategories": "Kateqoriyalar",
   "expenseCategoriesTitle": "Xərc Kateqoriyaları",
