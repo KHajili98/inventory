@@ -1388,10 +1388,11 @@ class _TransactionItemRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SelectableText(
-                      item.productUuid.substring(0, 8).toUpperCase(),
+                      item.barcode != null && item.barcode!.isNotEmpty ? item.barcode! : item.productUuid.substring(0, 8).toUpperCase(),
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF1E293B), fontFamily: 'monospace'),
                     ),
-                    SelectableText('ID: ${item.productUuid}', style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8))),
+                    if (item.barcode != null && item.barcode!.isNotEmpty)
+                      SelectableText('ID: ${item.productUuid}', style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8))),
                   ],
                 ),
               ),
