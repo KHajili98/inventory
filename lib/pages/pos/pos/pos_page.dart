@@ -1931,11 +1931,21 @@ class _PosPageState extends State<PosPage> {
                             children: [
                               Expanded(
                                 child: _buildNisyeTextField(
+                                  readOnly: true,
                                   controller: _nisyeAmountController,
                                   label: l10n.posNisyeAmount,
                                   hint: '0.00',
                                   icon: Icons.attach_money,
                                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
+                                  onChanged: (val) {
+                                    final total = _calculateTotal();
+                                    final nisyeAmount = double.tryParse(val) ?? total;
+                                    final paid = total - nisyeAmount;
+                                    final paidClamped = paid < 0 ? 0.0 : paid;
+                                    _nisyePaidAmountController.text = paidClamped.toStringAsFixed(2);
+                                    setState(() {});
+                                  },
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -1946,6 +1956,15 @@ class _PosPageState extends State<PosPage> {
                                   hint: '0.00',
                                   icon: Icons.payments_outlined,
                                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
+                                  onChanged: (val) {
+                                    final total = _calculateTotal();
+                                    final paidAmount = double.tryParse(val) ?? 0.0;
+                                    final nisye = total - paidAmount;
+                                    final nisyeClamped = nisye < 0 ? 0.0 : nisye;
+                                    _nisyeAmountController.text = nisyeClamped.toStringAsFixed(2);
+                                    setState(() {});
+                                  },
                                 ),
                               ),
                             ],
@@ -2046,9 +2065,11 @@ class _PosPageState extends State<PosPage> {
     required String label,
     required String hint,
     required IconData icon,
+    bool readOnly = false,
     TextInputType keyboardType = TextInputType.text,
     bool isRequired = false,
     bool hasError = false,
+    List<TextInputFormatter>? inputFormatters,
     ValueChanged<String>? onChanged,
   }) {
     final borderColor = hasError ? const Color(0xFFE53E3E) : const Color(0xFFFC8181);
@@ -2056,8 +2077,10 @@ class _PosPageState extends State<PosPage> {
     final fillColor = hasError ? const Color(0xFFFFF5F5) : Colors.white;
 
     return TextField(
+      readOnly: readOnly,
       controller: controller,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       style: const TextStyle(fontSize: 13, color: Color(0xFF2D3748)),
       onChanged: onChanged,
       decoration: InputDecoration(
