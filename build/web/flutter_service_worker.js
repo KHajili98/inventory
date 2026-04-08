@@ -3,11 +3,11 @@ const MANIFEST = 'flutter-app-manifest';
 const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
 
-const RESOURCES = {"flutter_bootstrap.js": "96f538dc5404747a4817bb824406c56e",
+const RESOURCES = {"flutter_bootstrap.js": "21b39b5b08125e0f0b637552a8a62996",
 "version.json": "6ff04479ae5bf44c167e1a7fdbf94ec2",
 "index.html": "04e271258451b39e641da5ae226a42d5",
 "/": "04e271258451b39e641da5ae226a42d5",
-"main.dart.js": "76b2991f44ffb692678442101cb8c982",
+"main.dart.js": "27063cbf9554f256f90aed1985f9306e",
 "flutter.js": "888483df48293866f9f41d3d9274a779",
 "favicon.png": "290a824d657d62609de9a740a13a2eda",
 "icons/Icon-192.png": "ac9a721a12bbc803b44f645561ecb1e1",
@@ -25,7 +25,7 @@ const RESOURCES = {"flutter_bootstrap.js": "96f538dc5404747a4817bb824406c56e",
 "assets/shaders/ink_sparkle.frag": "ecc85a2e95f5e9f53123dcaf8cb9b6ce",
 "assets/logo_aydinoglu.png": "223078b2cac83d4d17f383339324a29b",
 "assets/AssetManifest.bin": "4740f2f6a010bce6e2270531f78131f9",
-"assets/fonts/MaterialIcons-Regular.otf": "a6eeb1fe67298b7c4c74aa2f05a6e05f",
+"assets/fonts/MaterialIcons-Regular.otf": "f82fd90b7e19101d26d3713f1f3e1afb",
 "assets/assets/fonts/Arial-Regular.ttf": "07d53b5b4d43b671764d7075be494019",
 "assets/assets/fonts/Arial-Bold.ttf": "142301adf4e0699237f9e11a77761d0d",
 "canvaskit/skwasm.js": "1ef3ea3a0fec4569e5d531da25f34095",
