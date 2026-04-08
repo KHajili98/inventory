@@ -1062,7 +1062,7 @@ class _TransactionDetailDialog extends StatelessWidget {
                             const SizedBox(width: 10),
                             _DetailCard(
                               label: l10n.nisyeRemainingAmount,
-                              value: '₼ ${fmt.format(tx.totalSellingPrice - (tx.paidAmount ?? 0))}',
+                              value: '₼ ${fmt.format(tx.nisyeAmount ?? (tx.totalSellingPrice - (tx.paidAmount ?? 0)))}',
                               valueColor: const Color(0xFFE87C0A),
                               valueBold: true,
                             ),
@@ -1120,55 +1120,7 @@ class _TransactionDetailDialog extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFF7ED),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFFFDBA74)),
-                          ),
-                          child: Column(
-                            children: [
-                              if (tx.nisyeCustomerFullname != null && tx.nisyeCustomerFullname!.isNotEmpty)
-                                _InfoRow(
-                                  icon: Icons.person_outline_rounded,
-                                  label: l10n.nisyeCustomer,
-                                  value: tx.nisyeCustomerFullname!,
-                                  valueColor: const Color(0xFF1E293B),
-                                ),
-                              if (tx.nisyeCustomerPhoneNumber != null && tx.nisyeCustomerPhoneNumber!.isNotEmpty)
-                                _InfoRow(
-                                  icon: Icons.phone_outlined,
-                                  label: l10n.nisyePhone,
-                                  value: tx.nisyeCustomerPhoneNumber!,
-                                  valueColor: const Color(0xFF1E293B),
-                                ),
-                              if (tx.nisyeAmount != null)
-                                _InfoRow(
-                                  icon: Icons.account_balance_wallet_outlined,
-                                  label: l10n.nisyeAmount,
-                                  value: '₼ ${fmt.format(tx.nisyeAmount!)}',
-                                  valueColor: const Color(0xFFE87C0A),
-                                ),
-                              if (tx.paidAmount != null)
-                                _InfoRow(
-                                  icon: Icons.check_circle_outline_rounded,
-                                  label: l10n.nisyePaidAmount,
-                                  value: '₼ ${fmt.format(tx.paidAmount!)}',
-                                  valueColor: const Color(0xFF10B981),
-                                ),
-                              if (tx.nisyeAmount != null && tx.paidAmount != null)
-                                _InfoRow(
-                                  icon: Icons.hourglass_bottom_rounded,
-                                  label: l10n.nisyeRemainingAmount,
-                                  value: '₼ ${fmt.format(tx.totalSellingPrice - tx.paidAmount!)}',
-                                  valueColor: const Color(0xFFE87C0A),
-                                ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _NisyeHistorySection(transactionId: tx.id, l10n: l10n),
+                        _NisyeInfoAndHistorySection(transaction: tx, l10n: l10n),
                       ],
                       const SizedBox(height: 20),
                       // Items section
@@ -1863,6 +1815,229 @@ class _PayNisyeDialogState extends State<_PayNisyeDialog> {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ── Nisye Info + History combined section ──────────────────────────────────────
+
+class _NisyeInfoAndHistorySection extends StatefulWidget {
+  final SellingTransactionResponse transaction;
+  final AppLocalizations l10n;
+
+  const _NisyeInfoAndHistorySection({required this.transaction, required this.l10n});
+
+  @override
+  State<_NisyeInfoAndHistorySection> createState() => _NisyeInfoAndHistorySectionState();
+}
+
+class _NisyeInfoAndHistorySectionState extends State<_NisyeInfoAndHistorySection> {
+  List<NisyePaymentHistoryItem>? _items;
+  bool _loading = true;
+  String? _error;
+
+  final _fmt = NumberFormat('#,##0.00');
+  final _dateFmt = DateFormat('dd.MM.yyyy');
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    final result = await SellingTransactionsRepository.instance.fetchNisyeHistory(sellingTransactionId: widget.transaction.id);
+    if (!mounted) return;
+    switch (result) {
+      case Success(:final data):
+        setState(() {
+          _items = data.results;
+          _loading = false;
+        });
+      case Failure(:final message):
+        setState(() {
+          _error = message;
+          _loading = false;
+        });
+    }
+  }
+
+  double get _historyPaidTotal => _items?.fold(0.0, (s, i) => (s ?? 0.0) + i.paymentAmount) ?? 0.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final tx = widget.transaction;
+    final l10n = widget.l10n;
+    final remaining = tx.nisyeAmount ?? 0;
+    final historyPaid = _loading ? null : _historyPaidTotal;
+    final totalNisye = remaining + (historyPaid ?? 0);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Info box
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF7ED),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFFFDBA74)),
+          ),
+          child: Column(
+            children: [
+              if (tx.nisyeCustomerFullname != null && tx.nisyeCustomerFullname!.isNotEmpty)
+                _InfoRow(
+                  icon: Icons.person_outline_rounded,
+                  label: l10n.nisyeCustomer,
+                  value: tx.nisyeCustomerFullname!,
+                  valueColor: const Color(0xFF1E293B),
+                ),
+              if (tx.nisyeCustomerPhoneNumber != null && tx.nisyeCustomerPhoneNumber!.isNotEmpty)
+                _InfoRow(
+                  icon: Icons.phone_outlined,
+                  label: l10n.nisyePhone,
+                  value: tx.nisyeCustomerPhoneNumber!,
+                  valueColor: const Color(0xFF1E293B),
+                ),
+              // Nisyə Məbləği = remaining + historyPaid
+              _InfoRow(
+                icon: Icons.account_balance_wallet_outlined,
+                label: l10n.nisyeAmount,
+                value: _loading ? '₼ ${_fmt.format(remaining)} + ...' : '₼ ${_fmt.format(totalNisye)}',
+                valueColor: const Color(0xFFE87C0A),
+              ),
+              // Ödənilən = sum of history payments
+              _InfoRow(
+                icon: Icons.check_circle_outline_rounded,
+                label: l10n.nisyePaidAmount,
+                value: _loading ? '...' : '₼ ${_fmt.format(historyPaid!)}',
+                valueColor: const Color(0xFF10B981),
+              ),
+              // Qalıq = nisyeAmount (remaining from API)
+              _InfoRow(
+                icon: Icons.hourglass_bottom_rounded,
+                label: l10n.nisyeRemainingAmount,
+                value: '₼ ${_fmt.format(remaining)}',
+                valueColor: const Color(0xFFE87C0A),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        // History list
+        Row(
+          children: [
+            const Icon(Icons.history_rounded, size: 15, color: Color(0xFF6366F1)),
+            const SizedBox(width: 6),
+            Text(
+              l10n.nisyeHistory,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+            ),
+            if (_items != null && _items!.isNotEmpty) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(color: const Color(0xFF6366F1).withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
+                child: Text(
+                  '${_items!.length}',
+                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF6366F1)),
+                ),
+              ),
+            ],
+            const Spacer(),
+            if (!_loading)
+              InkWell(
+                onTap: _load,
+                borderRadius: BorderRadius.circular(6),
+                child: const Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Icon(Icons.refresh_rounded, size: 15, color: Color(0xFF64748B)),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (_loading)
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 18),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Color(0xFF6366F1), strokeWidth: 2)),
+                const SizedBox(width: 10),
+                Text(l10n.nisyeHistoryLoading, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+              ],
+            ),
+          )
+        else if (_error != null)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFEF2F2),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFFCA5A5)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.error_outline_rounded, size: 15, color: Color(0xFFEF4444)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(l10n.nisyeHistoryError, style: const TextStyle(fontSize: 12, color: Color(0xFFEF4444))),
+                ),
+                InkWell(
+                  onTap: _load,
+                  child: const Text(
+                    'Retry',
+                    style: TextStyle(fontSize: 12, color: Color(0xFFEF4444), fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else if (_items == null || _items!.isEmpty)
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 18),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Column(
+              children: [
+                const Icon(Icons.inbox_rounded, size: 28, color: Color(0xFFCBD5E1)),
+                const SizedBox(height: 6),
+                Text(l10n.nisyeHistoryEmpty, style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+              ],
+            ),
+          )
+        else
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Column(
+              children: [
+                for (int i = 0; i < _items!.length; i++) ...[
+                  if (i > 0) const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                  _NisyeHistoryRow(item: _items![i], fmt: _fmt, dateFmt: _dateFmt, l10n: l10n),
+                ],
+              ],
+            ),
+          ),
+      ],
     );
   }
 }
