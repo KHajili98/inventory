@@ -235,7 +235,8 @@ class _ActiveSessionBody extends StatelessWidget {
     final dateFmt = DateFormat('dd.MM.yyyy, HH:mm');
     final openedStr = session.openedDate != null ? dateFmt.format(session.openedDate!.toLocal()) : '—';
     final openedByName = _getOpenedByName(context);
-    final openedAmount = session.openedCashAmount + session.openedCardAmount;
+    final openedCash = session.openedCashAmount;
+    final openedCard = session.openedCardAmount;
 
     final salesCash = session.totalSalesCash;
     final salesCard = session.totalSalesCard;
@@ -257,7 +258,7 @@ class _ActiveSessionBody extends StatelessWidget {
           if (isMobile)
             Column(
               children: [
-                _SessionInfoColumn(openedBy: openedByName, openedAt: openedStr, openedAmount: openedAmount, fmt: fmt),
+                _SessionInfoColumn(openedBy: openedByName, openedAt: openedStr, openedCash: openedCash, openedCard: openedCard, fmt: fmt),
                 const SizedBox(height: 16),
                 _SalesColumn(cashSales: salesCash, cardSales: salesCard, transferSales: salesTransfer, totalSales: totalSales, fmt: fmt),
                 const SizedBox(height: 16),
@@ -272,7 +273,7 @@ class _ActiveSessionBody extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: _SessionInfoColumn(openedBy: openedByName, openedAt: openedStr, openedAmount: openedAmount, fmt: fmt),
+                    child: _SessionInfoColumn(openedBy: openedByName, openedAt: openedStr, openedCash: openedCash, openedCard: openedCard, fmt: fmt),
                   ),
                   _vDivider(),
                   Expanded(
@@ -339,10 +340,11 @@ class _NoSessionBody extends StatelessWidget {
 class _SessionInfoColumn extends StatelessWidget {
   final String openedBy;
   final String openedAt;
-  final double openedAmount;
+  final double openedCash;
+  final double openedCard;
   final NumberFormat fmt;
 
-  const _SessionInfoColumn({required this.openedBy, required this.openedAt, required this.openedAmount, required this.fmt});
+  const _SessionInfoColumn({required this.openedBy, required this.openedAt, required this.openedCash, required this.openedCard, required this.fmt});
 
   @override
   Widget build(BuildContext context) {
@@ -360,10 +362,9 @@ class _SessionInfoColumn extends StatelessWidget {
         const SizedBox(height: 12),
         const Divider(height: 1, color: Color(0xFFF1F5F9)),
         const SizedBox(height: 12),
-        Text(
-          'Açılış Məbləği: ${fmt.format(openedAmount)} ₼',
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
-        ),
+        _SalesRow(label: 'Açılış Nağd:', value: openedCash, fmt: fmt, color: _kCash, icon: Icons.payments_outlined),
+        const SizedBox(height: 6),
+        _SalesRow(label: 'Açılış Kart:', value: openedCard, fmt: fmt, color: _kCard, icon: Icons.credit_card_outlined),
       ],
     );
   }
