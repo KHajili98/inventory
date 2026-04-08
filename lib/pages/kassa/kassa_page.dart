@@ -210,7 +210,7 @@ class _ActiveSessionCard extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                if (hasSession) _CloseKassaButton(isLoading: isActionLoading) else _OpenKassaButton(isLoading: isActionLoading),
+                if (hasSession) _CloseKassaButton(isLoading: isActionLoading, session: session!) else _OpenKassaButton(isLoading: isActionLoading),
               ],
             ),
           ),
@@ -531,12 +531,6 @@ class _CashStatusColumn extends StatelessWidget {
         const SizedBox(height: 6),
         _SalesRow(label: 'Kart:', value: expectedCard, fmt: fmt, color: _kCard, icon: Icons.credit_card_outlined),
         const SizedBox(height: 16),
-        const Text(
-          'FİZİKİ SAYILAN NAĞD',
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8)),
-        ),
-        const SizedBox(height: 6),
-        _PhysicalCashInput(expectedCash: expectedCash, fmt: fmt),
       ],
     );
   }
@@ -659,7 +653,8 @@ class _OpenKassaButton extends StatelessWidget {
 
 class _CloseKassaButton extends StatelessWidget {
   final bool isLoading;
-  const _CloseKassaButton({required this.isLoading});
+  final KassaSessionSummary session;
+  const _CloseKassaButton({required this.isLoading, required this.session});
 
   @override
   Widget build(BuildContext context) {
@@ -680,9 +675,14 @@ class _CloseKassaButton extends StatelessWidget {
   }
 
   void _showCloseDialog(BuildContext context) {
+    final expectedCash = session.openedCashAmount + session.totalSalesCash - session.totalExpensesCash;
+    final expectedCard = session.openedCardAmount + session.totalSalesCard - session.totalExpensesCard;
     showDialog<void>(
       context: context,
-      builder: (ctx) => BlocProvider.value(value: context.read<KassaCubit>(), child: const _CloseKassaDialog()),
+      builder: (ctx) => BlocProvider.value(
+        value: context.read<KassaCubit>(),
+        child: _CloseKassaDialog(expectedCash: expectedCash, expectedCard: expectedCard),
+      ),
     );
   }
 }
@@ -805,7 +805,9 @@ class _OpenKassaDialogState extends State<_OpenKassaDialog> {
 // ── Close Kassa Dialog ────────────────────────────────────────────────────────
 
 class _CloseKassaDialog extends StatefulWidget {
-  const _CloseKassaDialog();
+  final double expectedCash;
+  final double expectedCard;
+  const _CloseKassaDialog({required this.expectedCash, required this.expectedCard});
 
   @override
   State<_CloseKassaDialog> createState() => _CloseKassaDialogState();
@@ -821,8 +823,42 @@ class _CloseKassaDialogState extends State<_CloseKassaDialog> {
   bool _loading = false;
   String? _error;
 
+  double? _physicalCash;
+  double? _physicalCard;
+
+  @override
+  void initState() {
+    super.initState();
+    _closedCashCtrl.addListener(_onCashChanged);
+    _closedCardCtrl.addListener(_onCardChanged);
+  }
+
+  void _onCashChanged() {
+    final val = double.tryParse(_closedCashCtrl.text);
+    setState(() {
+      _physicalCash = val;
+      if (val != null) {
+        final cutted = widget.expectedCash - val;
+        _cuttedCashCtrl.text = cutted > 0 ? cutted.toStringAsFixed(2) : '0.00';
+      }
+    });
+  }
+
+  void _onCardChanged() {
+    final val = double.tryParse(_closedCardCtrl.text);
+    setState(() {
+      _physicalCard = val;
+      if (val != null) {
+        final cutted = widget.expectedCard - val;
+        _cuttedCardCtrl.text = cutted > 0 ? cutted.toStringAsFixed(2) : '0.00';
+      }
+    });
+  }
+
   @override
   void dispose() {
+    _closedCashCtrl.removeListener(_onCashChanged);
+    _closedCardCtrl.removeListener(_onCardChanged);
     _closedCashCtrl.dispose();
     _closedCardCtrl.dispose();
     _cuttedCashCtrl.dispose();
@@ -852,6 +888,11 @@ class _CloseKassaDialogState extends State<_CloseKassaDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final fmt = NumberFormat('#,##0.00', 'az');
+
+    final cashDiff = _physicalCash != null ? _physicalCash! - widget.expectedCash : null;
+    final cardDiff = _physicalCard != null ? _physicalCard! - widget.expectedCard : null;
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
@@ -884,15 +925,23 @@ class _CloseKassaDialogState extends State<_CloseKassaDialog> {
                 const SizedBox(height: 20),
                 const _SectionLabel('Bağlanış Məbləğləri'),
                 const SizedBox(height: 10),
-                _AmountField(controller: _closedCashCtrl, label: 'Fiziki Nağd Məbləği (₼)', hint: '0.00'),
+                // ── Physical cash field + expected hint + diff ───────────
+                _AmountField(controller: _closedCashCtrl, label: 'Fiziki Nağd Məbləği (₼)', hint: fmt.format(widget.expectedCash)),
+                const SizedBox(height: 4),
+                _ExpectedHint(label: 'Sistemdə olmalı:', value: widget.expectedCash, fmt: fmt, color: _kCash),
+                if (cashDiff != null) _DiffHint(diff: cashDiff, fmt: fmt),
                 const SizedBox(height: 10),
-                _AmountField(controller: _closedCardCtrl, label: 'Kart Məbləği (₼)', hint: '0.00'),
+                // ── Physical card field + expected hint + diff ───────────
+                _AmountField(controller: _closedCardCtrl, label: 'Fiziki Kart Məbləği (₼)', hint: fmt.format(widget.expectedCard)),
+                const SizedBox(height: 4),
+                _ExpectedHint(label: 'Sistemdə olmalı:', value: widget.expectedCard, fmt: fmt, color: _kCard),
+                if (cardDiff != null) _DiffHint(diff: cardDiff, fmt: fmt),
                 const SizedBox(height: 16),
-                const _SectionLabel('Kəsilmiş Məbləğlər (isteğe bağlı)'),
+                const _SectionLabel('Kəsilmiş Məbləğlər (avtomatik hesablanır)'),
                 const SizedBox(height: 10),
-                _AmountField(controller: _cuttedCashCtrl, label: 'Kəsilmiş Nağd (₼)', hint: '0.00', required: false),
+                _AmountField(controller: _cuttedCashCtrl, label: 'Kəsilmiş Nağd (₼)', hint: '0.00', required: false, readOnly: true),
                 const SizedBox(height: 10),
-                _AmountField(controller: _cuttedCardCtrl, label: 'Kəsilmiş Kart (₼)', hint: '0.00', required: false),
+                _AmountField(controller: _cuttedCardCtrl, label: 'Kəsilmiş Kart (₼)', hint: '0.00', required: false, readOnly: true),
                 const SizedBox(height: 10),
                 TextFormField(controller: _noteCtrl, maxLines: 2, decoration: _inputDecoration('Qeyd (isteğe bağlı)', 'məs. Xərc çıxarma...')),
                 if (_error != null) ...[const SizedBox(height: 12), Text(_error!, style: const TextStyle(color: _kDanger, fontSize: 13))],
@@ -933,6 +982,61 @@ class _CloseKassaDialogState extends State<_CloseKassaDialog> {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ── Expected hint ─────────────────────────────────────────────────────────────
+
+class _ExpectedHint extends StatelessWidget {
+  final String label;
+  final double value;
+  final NumberFormat fmt;
+  final Color color;
+  const _ExpectedHint({required this.label, required this.value, required this.fmt, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+        const SizedBox(width: 4),
+        Text(
+          '${fmt.format(value)} ₼',
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Diff hint ─────────────────────────────────────────────────────────────────
+
+class _DiffHint extends StatelessWidget {
+  final double diff;
+  final NumberFormat fmt;
+  const _DiffHint({required this.diff, required this.fmt});
+
+  @override
+  Widget build(BuildContext context) {
+    final isPositive = diff >= 0;
+    final color = isPositive ? _kSuccess : _kDanger;
+    final prefix = isPositive ? '+' : '';
+    final label = isPositive ? 'Artıq:' : 'Kəsir:';
+    return Row(
+      children: [
+        Icon(isPositive ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded, size: 12, color: color),
+        const SizedBox(width: 3),
+        Text(
+          label,
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '$prefix${fmt.format(diff)} ₼',
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color),
+        ),
+      ],
     );
   }
 }
@@ -1597,12 +1701,14 @@ class _AmountField extends StatelessWidget {
   final String label;
   final String hint;
   final bool required;
+  final bool readOnly;
 
-  const _AmountField({required this.controller, required this.label, required this.hint, this.required = true});
+  const _AmountField({required this.controller, required this.label, required this.hint, this.required = true, this.readOnly = false});
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      readOnly: readOnly,
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
