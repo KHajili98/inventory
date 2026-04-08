@@ -250,6 +250,8 @@ class _ActiveSessionBody extends StatelessWidget {
 
     // Compute expected cash in register: opening cash + cash sales - cash expenses
     final expectedCash = session.openedCashAmount + salesCash - expCash;
+    // Compute expected card in register: opening card + card sales - card expenses
+    final expectedCard = session.openedCardAmount + salesCard - expCard;
 
     return Padding(
       padding: EdgeInsets.all(isMobile ? 16 : 20),
@@ -264,7 +266,7 @@ class _ActiveSessionBody extends StatelessWidget {
                 const SizedBox(height: 16),
                 _ExpensesColumn(cashExp: expCash, cardExp: expCard, transferExp: expTransfer, totalExp: totalExp, fmt: fmt),
                 const SizedBox(height: 16),
-                _CashStatusColumn(expectedCash: expectedCash, fmt: fmt),
+                _CashStatusColumn(expectedCash: expectedCash, expectedCard: expectedCard, fmt: fmt),
               ],
             )
           else
@@ -285,7 +287,7 @@ class _ActiveSessionBody extends StatelessWidget {
                   ),
                   _vDivider(),
                   Expanded(
-                    child: _CashStatusColumn(expectedCash: expectedCash, fmt: fmt),
+                    child: _CashStatusColumn(expectedCash: expectedCash, expectedCard: expectedCard, fmt: fmt),
                   ),
                 ],
               ),
@@ -510,9 +512,10 @@ class _ExpenseRow extends StatelessWidget {
 
 class _CashStatusColumn extends StatelessWidget {
   final double expectedCash;
+  final double expectedCard;
   final NumberFormat fmt;
 
-  const _CashStatusColumn({required this.expectedCash, required this.fmt});
+  const _CashStatusColumn({required this.expectedCash, required this.expectedCard, required this.fmt});
 
   @override
   Widget build(BuildContext context) {
@@ -520,14 +523,13 @@ class _CashStatusColumn extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'SİSTEMDƏ OLMALI OLAN NAĞD',
+          'SİSTEMDƏ OLMALI OLAN',
           style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8), letterSpacing: 0.8),
         ),
         const SizedBox(height: 10),
-        Text(
-          '${fmt.format(expectedCash)} ₼',
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Color(0xFF1E293B)),
-        ),
+        _SalesRow(label: 'Nağd:', value: expectedCash, fmt: fmt, color: _kCash, icon: Icons.payments_outlined),
+        const SizedBox(height: 6),
+        _SalesRow(label: 'Kart:', value: expectedCard, fmt: fmt, color: _kCard, icon: Icons.credit_card_outlined),
         const SizedBox(height: 16),
         const Text(
           'FİZİKİ SAYILAN NAĞD',
