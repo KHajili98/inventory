@@ -893,89 +893,176 @@ class _CloseKassaDialogState extends State<_CloseKassaDialog> {
     final cashDiff = _physicalCash != null ? _physicalCash! - widget.expectedCash : null;
     final cardDiff = _physicalCard != null ? _physicalCard! - widget.expectedCard : null;
 
+    final cuttedCash = double.tryParse(_cuttedCashCtrl.text) ?? 0.0;
+    final cuttedCard = double.tryParse(_cuttedCardCtrl.text) ?? 0.0;
+
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      backgroundColor: const Color(0xFFF8FAFC),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 460),
+        constraints: const BoxConstraints(maxWidth: 480),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
           child: Form(
             key: _formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(color: const Color(0xFFFEE2E2), borderRadius: BorderRadius.circular(10)),
-                      child: const Icon(Icons.receipt_long_rounded, color: _kDanger, size: 20),
-                    ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Kassanı Bağla / Z-Hesabat',
-                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
-                    ),
-                    const Spacer(),
-                    IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded), padding: EdgeInsets.zero),
-                  ],
+                // ── Dialog Header ────────────────────────────────────────
+                Container(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 12, 18),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(color: const Color(0xFFFEE2E2), borderRadius: BorderRadius.circular(10)),
+                        child: const Icon(Icons.receipt_long_rounded, color: _kDanger, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'Kassanı Bağla / Z-Hesabat',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
+                        padding: EdgeInsets.zero,
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 20),
-                const _SectionLabel('Bağlanış Məbləğləri'),
-                const SizedBox(height: 10),
-                // ── Physical cash field + expected hint + diff ───────────
-                _AmountField(controller: _closedCashCtrl, label: 'Fiziki Nağd Məbləği (₼)', hint: fmt.format(widget.expectedCash)),
-                const SizedBox(height: 4),
-                _ExpectedHint(label: 'Sistemdə olmalı:', value: widget.expectedCash, fmt: fmt, color: _kCash),
-                if (cashDiff != null) _DiffHint(diff: cashDiff, fmt: fmt),
-                const SizedBox(height: 10),
-                // ── Physical card field + expected hint + diff ───────────
-                _AmountField(controller: _closedCardCtrl, label: 'Fiziki Kart Məbləği (₼)', hint: fmt.format(widget.expectedCard)),
-                const SizedBox(height: 4),
-                _ExpectedHint(label: 'Sistemdə olmalı:', value: widget.expectedCard, fmt: fmt, color: _kCard),
-                if (cardDiff != null) _DiffHint(diff: cardDiff, fmt: fmt),
-                const SizedBox(height: 16),
-                const _SectionLabel('Kəsilmiş Məbləğlər (avtomatik hesablanır)'),
-                const SizedBox(height: 10),
-                _AmountField(controller: _cuttedCashCtrl, label: 'Kəsilmiş Nağd (₼)', hint: '0.00', required: false, readOnly: true),
-                const SizedBox(height: 10),
-                _AmountField(controller: _cuttedCardCtrl, label: 'Kəsilmiş Kart (₼)', hint: '0.00', required: false, readOnly: true),
-                const SizedBox(height: 10),
-                TextFormField(controller: _noteCtrl, maxLines: 2, decoration: _inputDecoration('Qeyd (isteğe bağlı)', 'məs. Xərc çıxarma...')),
-                if (_error != null) ...[const SizedBox(height: 12), Text(_error!, style: const TextStyle(color: _kDanger, fontSize: 13))],
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _loading ? null : () => Navigator.pop(context),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          side: const BorderSide(color: Color(0xFFE2E8F0)),
+
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── Section: Bağlanış ──────────────────────────────
+                      _DialogCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const _CardSectionTitle('BAĞLANIŞ MƏBLƏĞLƏRİ'),
+                            const SizedBox(height: 12),
+                            // Cash row
+                            _CloseFieldRow(
+                              icon: Icons.payments_outlined,
+                              iconColor: _kCash,
+                              label: 'Fiziki Nağd',
+                              expected: widget.expectedCash,
+                              diff: cashDiff,
+                              fmt: fmt,
+                              child: _BorderlessAmountField(controller: _closedCashCtrl, hint: fmt.format(widget.expectedCash)),
+                            ),
+                            const SizedBox(height: 12),
+                            const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                            const SizedBox(height: 12),
+                            // Card row
+                            _CloseFieldRow(
+                              icon: Icons.credit_card_outlined,
+                              iconColor: _kCard,
+                              label: 'Fiziki Kart',
+                              expected: widget.expectedCard,
+                              diff: cardDiff,
+                              fmt: fmt,
+                              child: _BorderlessAmountField(controller: _closedCardCtrl, hint: fmt.format(widget.expectedCard)),
+                            ),
+                          ],
                         ),
-                        child: const Text('Ləğv et', style: TextStyle(color: Color(0xFF64748B))),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: _loading ? null : _submit,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _kDanger,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          elevation: 0,
+
+                      const SizedBox(height: 12),
+
+                      // ── Section: Fərq ──────────────────────────────────
+                      _DialogCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const _CardSectionTitle('FƏRQ'),
+                            const SizedBox(height: 12),
+                            _CuttedReadOnlyRow(icon: Icons.payments_outlined, iconColor: _kCash, label: 'Fərq (Nağd)', value: cuttedCash, fmt: fmt),
+                            const SizedBox(height: 10),
+                            const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                            const SizedBox(height: 10),
+                            _CuttedReadOnlyRow(
+                              icon: Icons.credit_card_outlined,
+                              iconColor: _kCard,
+                              label: 'Fərq (Kart)',
+                              value: cuttedCard,
+                              fmt: fmt,
+                            ),
+                          ],
                         ),
-                        child: _loading
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                            : const Text('Kassanı Bağla', style: TextStyle(fontWeight: FontWeight.w700)),
                       ),
-                    ),
-                  ],
+
+                      const SizedBox(height: 12),
+
+                      // ── Section: Qeyd ──────────────────────────────────
+                      _DialogCard(
+                        child: TextFormField(
+                          controller: _noteCtrl,
+                          maxLines: 2,
+                          style: const TextStyle(fontSize: 13, color: Color(0xFF1E293B)),
+                          decoration: const InputDecoration(
+                            hintText: 'Qeyd (isteğe bağlı)...',
+                            hintStyle: TextStyle(color: Color(0xFFCBD5E1), fontSize: 13),
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                      ),
+
+                      if (_error != null) ...[const SizedBox(height: 10), Text(_error!, style: const TextStyle(color: _kDanger, fontSize: 13))],
+
+                      const SizedBox(height: 20),
+
+                      // ── Buttons ────────────────────────────────────────
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: _loading ? null : () => Navigator.pop(context),
+                              style: OutlinedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 13),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                side: const BorderSide(color: Color(0xFFE2E8F0)),
+                              ),
+                              child: const Text(
+                                'Ləğv et',
+                                style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: _loading ? null : _submit,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: _kDanger,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 13),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                elevation: 0,
+                              ),
+                              child: _loading
+                                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                  : const Text('Kassanı Bağla', style: TextStyle(fontWeight: FontWeight.w700)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -986,55 +1073,190 @@ class _CloseKassaDialogState extends State<_CloseKassaDialog> {
   }
 }
 
-// ── Expected hint ─────────────────────────────────────────────────────────────
+// ── Close dialog helper widgets ───────────────────────────────────────────────
 
-class _ExpectedHint extends StatelessWidget {
-  final String label;
-  final double value;
-  final NumberFormat fmt;
-  final Color color;
-  const _ExpectedHint({required this.label, required this.value, required this.fmt, required this.color});
+class _DialogCard extends StatelessWidget {
+  final Widget child;
+  const _DialogCard({required this.child});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
-        const SizedBox(width: 4),
-        Text(
-          '${fmt.format(value)} ₼',
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: child,
+    );
+  }
+}
+
+class _CardSectionTitle extends StatelessWidget {
+  final String text;
+  const _CardSectionTitle(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8), letterSpacing: 0.8),
+    );
+  }
+}
+
+class _BorderlessAmountField extends StatelessWidget {
+  final TextEditingController controller;
+  final String hint;
+  const _BorderlessAmountField({required this.controller, required this.hint});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 130,
+      child: TextFormField(
+        controller: controller,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+        textAlign: TextAlign.right,
+        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF0F172A)),
+        validator: (v) {
+          if (v == null || v.isEmpty) return '';
+          if (double.tryParse(v) == null) return '';
+          return null;
+        },
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: const TextStyle(color: Color(0xFFCBD5E1), fontWeight: FontWeight.w400, fontSize: 14),
+          suffixText: '₼',
+          suffixStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          errorBorder: InputBorder.none,
+          focusedErrorBorder: InputBorder.none,
+          isDense: true,
+          contentPadding: EdgeInsets.zero,
+          errorStyle: const TextStyle(height: 0, fontSize: 0),
         ),
+      ),
+    );
+  }
+}
+
+class _CloseFieldRow extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final double expected;
+  final double? diff;
+  final NumberFormat fmt;
+  final Widget child;
+
+  const _CloseFieldRow({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.expected,
+    required this.diff,
+    required this.fmt,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(color: iconColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+              child: Icon(icon, size: 14, color: iconColor),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
+                  ),
+                  Text(
+                    'Sistemdə: ${fmt.format(expected)} ₼',
+                    style: TextStyle(fontSize: 11, color: iconColor, fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+            ),
+            child,
+          ],
+        ),
+        if (diff != null) ...[
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.only(left: 34),
+            child: _InlineDiff(diff: diff!, fmt: fmt),
+          ),
+        ],
       ],
     );
   }
 }
 
-// ── Diff hint ─────────────────────────────────────────────────────────────────
-
-class _DiffHint extends StatelessWidget {
+class _InlineDiff extends StatelessWidget {
   final double diff;
   final NumberFormat fmt;
-  const _DiffHint({required this.diff, required this.fmt});
+  const _InlineDiff({required this.diff, required this.fmt});
 
   @override
   Widget build(BuildContext context) {
-    final isPositive = diff >= 0;
-    final color = isPositive ? _kSuccess : _kDanger;
-    final prefix = isPositive ? '+' : '';
-    final label = isPositive ? 'Artıq:' : 'Kəsir:';
+    final isPos = diff >= 0;
+    final color = isPos ? _kSuccess : _kDanger;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(6)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(isPos ? Icons.north_rounded : Icons.south_rounded, size: 11, color: color),
+          const SizedBox(width: 3),
+          Text(
+            '${isPos ? '+' : ''}${fmt.format(diff)} ₼  ${isPos ? 'Artıq' : 'Kəsir'}',
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CuttedReadOnlyRow extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final double value;
+  final NumberFormat fmt;
+
+  const _CuttedReadOnlyRow({required this.icon, required this.iconColor, required this.label, required this.value, required this.fmt});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasValue = value > 0;
     return Row(
       children: [
-        Icon(isPositive ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded, size: 12, color: color),
-        const SizedBox(width: 3),
-        Text(
-          label,
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color),
+        Icon(icon, size: 14, color: hasValue ? _kDanger : const Color(0xFFCBD5E1)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(label, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
         ),
-        const SizedBox(width: 4),
         Text(
-          '$prefix${fmt.format(diff)} ₼',
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color),
+          hasValue ? '-${fmt.format(value)} ₼' : '—',
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: hasValue ? _kDanger : const Color(0xFFCBD5E1)),
         ),
       ],
     );
@@ -1588,8 +1810,8 @@ class _KassaDetailDialog extends StatelessWidget {
                       const SizedBox(height: 6),
                       _DetailRow('Bağlanış Nağd', '${fmt.format(kassa.closedCashAmount!)} ₼'),
                       _DetailRow('Bağlanış Kart', '${fmt.format(kassa.closedCardAmount ?? 0)} ₼'),
-                      if (kassa.cuttedCashAmount > 0) _DetailRow('Kəsilmiş Nağd', '${fmt.format(kassa.cuttedCashAmount)} ₼'),
-                      if (kassa.cuttedCardAmount > 0) _DetailRow('Kəsilmiş Kart', '${fmt.format(kassa.cuttedCardAmount)} ₼'),
+                      if (kassa.cuttedCashAmount > 0) _DetailRow('Fərq (Nağd)', '${fmt.format(kassa.cuttedCashAmount)} ₼'),
+                      if (kassa.cuttedCardAmount > 0) _DetailRow('Fərq (Kart)', '${fmt.format(kassa.cuttedCardAmount)} ₼'),
                       if (kassa.cuttedAmountDescription != null && kassa.cuttedAmountDescription!.isNotEmpty)
                         _DetailRow('Qeyd', kassa.cuttedAmountDescription!),
                     ],
@@ -1700,25 +1922,20 @@ class _AmountField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final String hint;
-  final bool required;
-  final bool readOnly;
 
-  const _AmountField({required this.controller, required this.label, required this.hint, this.required = true, this.readOnly = false});
+  const _AmountField({required this.controller, required this.label, required this.hint});
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      readOnly: readOnly,
       controller: controller,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
-      validator: required
-          ? (v) {
-              if (v == null || v.isEmpty) return 'Zəhmət olmasa məbləği daxil edin';
-              if (double.tryParse(v) == null) return 'Düzgün məbləğ daxil edin';
-              return null;
-            }
-          : null,
+      validator: (v) {
+        if (v == null || v.isEmpty) return 'Zəhmət olmasa məbləği daxil edin';
+        if (double.tryParse(v) == null) return 'Düzgün məbləğ daxil edin';
+        return null;
+      },
       decoration: _inputDecoration(label, hint),
     );
   }
