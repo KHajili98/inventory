@@ -127,12 +127,19 @@ class LoginResponse {
 
   const LoginResponse({required this.user, required this.access, required this.refresh, this.loggedInInventory});
 
-  factory LoginResponse.fromJson(Map<String, dynamic> json) => LoginResponse(
-    user: AuthUser.fromJson(json['user'] as Map<String, dynamic>),
-    access: json['access'] as String,
-    refresh: json['refresh'] as String,
-    loggedInInventory: json['logged_in_inventory'] != null ? LoginInventory.fromJson(json['logged_in_inventory'] as Map<String, dynamic>) : null,
-  );
+  factory LoginResponse.fromJson(Map<String, dynamic> json) {
+    final userJson = json['user'] as Map<String, dynamic>;
+    // Server nests logged_in_inventory_details inside the user object.
+    // Fall back to root-level logged_in_inventory for backwards compatibility.
+    final inventoryJson =
+        (userJson['logged_in_inventory_details'] as Map<String, dynamic>?) ?? (json['logged_in_inventory'] as Map<String, dynamic>?);
+    return LoginResponse(
+      user: AuthUser.fromJson(userJson),
+      access: json['access'] as String,
+      refresh: json['refresh'] as String,
+      loggedInInventory: inventoryJson != null ? LoginInventory.fromJson(inventoryJson) : null,
+    );
+  }
 
   Map<String, dynamic> toJson() => {'user': user.toJson(), 'access': access, 'refresh': refresh, 'logged_in_inventory': loggedInInventory?.toJson()};
 }

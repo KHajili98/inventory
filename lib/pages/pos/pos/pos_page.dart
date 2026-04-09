@@ -98,6 +98,11 @@ class _PosPageState extends State<PosPage> {
         _authUser = loginResponse.user;
         _loggedInInventory = loginResponse.loggedInInventory;
       });
+      // If the user had already typed something before auth loaded, trigger search now
+      final pendingQuery = _searchController.text.trim();
+      if (pendingQuery.isNotEmpty) {
+        _searchStocks(pendingQuery);
+      }
     }
   }
 
@@ -129,6 +134,7 @@ class _PosPageState extends State<PosPage> {
 
   void _onSearchChanged(String value) {
     _debounce?.cancel();
+    log('[POS Search] onSearchChanged: "$value", inventoryId=${_loggedInInventory?.id}');
     if (value.isEmpty) {
       setState(() {
         _searchResults = [];
@@ -140,12 +146,28 @@ class _PosPageState extends State<PosPage> {
   }
 
   Future<void> _searchStocks(String query) async {
-    if (_loggedInInventory == null) return;
+    log('[POS Search] _searchStocks called: query="$query", mounted=$mounted, inventoryId=${_loggedInInventory?.id}');
+    if (!mounted) return;
+    if (_loggedInInventory == null) {
+      log('[POS Search] _loggedInInventory is null — waiting for auth...');
+      // Auth not loaded yet — show spinner and retry after a short delay
+      setState(() => _isSearching = true);
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (!mounted) return;
+      if (_loggedInInventory == null) {
+        log('[POS Search] _loggedInInventory still null after wait — aborting search');
+        setState(() => _isSearching = false);
+        return;
+      }
+      log('[POS Search] _loggedInInventory loaded after wait: ${_loggedInInventory!.id}');
+    }
+    log('[POS Search] Sending request: query="$query" inventoryId=${_loggedInInventory!.id}');
     setState(() => _isSearching = true);
     final result = await StocksRepository.instance.fetchStocks(search: query, inventoryId: _loggedInInventory!.id, priced: true, pageSize: 30);
     if (!mounted) return;
     switch (result) {
       case Success(:final data):
+        log('[POS Search] Success: ${data.results.length} results');
         // Filter to products with stock and deduplicate by id to prevent
         // DropdownButton assertion errors with duplicate values.
         final seen = <String>{};
@@ -153,7 +175,9 @@ class _PosPageState extends State<PosPage> {
           _searchResults = data.results.where((p) => p.quantity > 0 && seen.add(p.id)).toList();
           _isSearching = false;
         });
-      case Failure():
+        log('[POS Search] After filter: ${_searchResults.length} items');
+      case Failure(:final message):
+        log('[POS Search] FAILURE: $message');
         setState(() => _isSearching = false);
     }
   }
