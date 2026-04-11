@@ -52,6 +52,19 @@ class _StockPageState extends State<StockPage> {
   final ScrollController _vScrollController = ScrollController();
   bool _hSyncing = false;
 
+  // ── Horizontal scroll step buttons ───────────────────────────────────────
+  static const double _hScrollStep = 300.0;
+
+  void _scrollLeft() {
+    final target = (_hScrollController.offset - _hScrollStep).clamp(0.0, _hScrollController.position.maxScrollExtent);
+    _hScrollController.animateTo(target, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+  }
+
+  void _scrollRight() {
+    final target = (_hScrollController.offset + _hScrollStep).clamp(0.0, _hScrollController.position.maxScrollExtent);
+    _hScrollController.animateTo(target, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+  }
+
   // ── table column widths ───────────────────────────────────────────────────
   static const double _colModelCode = 140.0;
   static const double _colProductName = 180.0;
@@ -373,47 +386,69 @@ class _StockPageState extends State<StockPage> {
           ),
           // Body
           Expanded(
-            child: NotificationListener<ScrollNotification>(
-              onNotification: (n) {
-                // Load more when near bottom
-                if (n is ScrollEndNotification && n.metrics.axis == Axis.vertical) {
-                  final pixels = n.metrics.pixels;
-                  final maxExtent = n.metrics.maxScrollExtent;
-                  if (maxExtent > 0 && pixels >= maxExtent - 200) {
-                    _cubit.loadMore();
-                  }
-                }
-                return false;
-              },
-              child: Scrollbar(
-                controller: _vScrollController,
-                thumbVisibility: true,
-                child: SingleChildScrollView(
-                  controller: _vScrollController,
-                  child: SingleChildScrollView(
-                    controller: _hScrollController,
-                    scrollDirection: Axis.horizontal,
-                    child: SizedBox(
-                      width: _tableWidth(showCostPrices: showCostPrices),
-                      child: Column(
-                        children: [
-                          ...state.products.map((item) => _buildTableRow(item, l10n, showCostPrices: showCostPrices)),
-                          if (state.isLoadingMore)
-                            const Padding(
-                              padding: EdgeInsets.all(16),
-                              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                            ),
-                          if (!state.hasMore && state.products.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              child: Text(l10n.itemsTotal(state.totalCount), style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
-                            ),
-                        ],
+            child: Stack(
+              children: [
+                NotificationListener<ScrollNotification>(
+                  onNotification: (n) {
+                    // Load more when near bottom
+                    if (n is ScrollEndNotification && n.metrics.axis == Axis.vertical) {
+                      final pixels = n.metrics.pixels;
+                      final maxExtent = n.metrics.maxScrollExtent;
+                      if (maxExtent > 0 && pixels >= maxExtent - 200) {
+                        _cubit.loadMore();
+                      }
+                    }
+                    return false;
+                  },
+                  child: Scrollbar(
+                    controller: _vScrollController,
+                    thumbVisibility: true,
+                    child: SingleChildScrollView(
+                      controller: _vScrollController,
+                      child: SingleChildScrollView(
+                        controller: _hScrollController,
+                        scrollDirection: Axis.horizontal,
+                        child: SizedBox(
+                          width: _tableWidth(showCostPrices: showCostPrices),
+                          child: Column(
+                            children: [
+                              ...state.products.map((item) => _buildTableRow(item, l10n, showCostPrices: showCostPrices)),
+                              if (state.isLoadingMore)
+                                const Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                                ),
+                              if (!state.hasMore && state.products.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  child: Text(l10n.itemsTotal(state.totalCount), style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+                                ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
+                // ── Left scroll button ──────────────────────────────────
+                Positioned(
+                  left: 8,
+                  top: 0,
+                  bottom: 0,
+                  child: Center(
+                    child: _HScrollButton(icon: Icons.chevron_left_rounded, onTap: _scrollLeft, controller: _hScrollController, isLeft: true),
+                  ),
+                ),
+                // ── Right scroll button ─────────────────────────────────
+                Positioned(
+                  right: 8,
+                  top: 0,
+                  bottom: 0,
+                  child: Center(
+                    child: _HScrollButton(icon: Icons.chevron_right_rounded, onTap: _scrollRight, controller: _hScrollController, isLeft: false),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -731,6 +766,71 @@ class _EmptyView extends StatelessWidget {
           const SizedBox(height: 12),
           Text(l10n.noProducts, style: const TextStyle(fontSize: 15, color: Color(0xFF94A3B8))),
         ],
+      ),
+    );
+  }
+}
+
+// ── Horizontal Scroll Button ──────────────────────────────────────────────────
+
+class _HScrollButton extends StatefulWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  final ScrollController controller;
+  final bool isLeft;
+
+  const _HScrollButton({required this.icon, required this.onTap, required this.controller, required this.isLeft});
+
+  @override
+  State<_HScrollButton> createState() => _HScrollButtonState();
+}
+
+class _HScrollButtonState extends State<_HScrollButton> {
+  bool _visible = true;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_update);
+    // Defer first check until layout is done
+    WidgetsBinding.instance.addPostFrameCallback((_) => _update());
+  }
+
+  void _update() {
+    if (!mounted || !widget.controller.hasClients) return;
+    final pos = widget.controller.position;
+    final shouldShow = widget.isLeft ? pos.pixels > 4 : pos.pixels < pos.maxScrollExtent - 4;
+    if (shouldShow != _visible) setState(() => _visible = shouldShow);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_update);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedOpacity(
+      opacity: _visible ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 180),
+      child: IgnorePointer(
+        ignoring: !_visible,
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 6, offset: const Offset(0, 2))],
+            ),
+            alignment: Alignment.center,
+            child: Icon(widget.icon, size: 18, color: const Color(0xFF475569)),
+          ),
+        ),
       ),
     );
   }
