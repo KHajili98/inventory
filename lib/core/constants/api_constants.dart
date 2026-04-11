@@ -1,7 +1,9 @@
+import 'package:inventory/core/config/app_config.dart';
+
 abstract class ApiConstants {
   ApiConstants._();
 
-  static const String baseUrl = 'http://13.53.43.184:8000';
+  static String get baseUrl => AppConfig.baseUrl;
 
   // ── Auth ────────────────────────────────────────────────────────────────────
   static const String login = '/api/auth/login/';

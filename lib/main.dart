@@ -8,8 +8,14 @@ import 'package:inventory/cubit/locale_cubit.dart';
 import 'package:inventory/features/auth/auth_cubit.dart';
 import 'package:inventory/features/invoice_ocr/cubit/invoice_ocr_cubit.dart';
 import 'package:inventory/features/invoice_list/cubit/invoice_list_cubit.dart';
+import 'package:inventory/core/config/app_config.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Load configuration from config.json
+  await AppConfig.load();
+
   // Create AuthCubit first so we can wire it into the router's refreshListenable
   final authCubit = AuthCubit();
   appRouter = createRouter(authCubit);
