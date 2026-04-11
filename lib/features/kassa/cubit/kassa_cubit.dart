@@ -125,4 +125,7 @@ class KassaCubit extends Cubit<KassaState> {
   Future<void> refresh() => loadPage();
 
   Future<ApiResult<Kassa>> fetchKassaDetail(String id) => _repository.fetchKassaDetail(id);
+
+  /// Download Z report PDF with auth token handled by Dio interceptor
+  Future<ApiResult<List<int>>> downloadZReport(String kassaId) => _repository.downloadZReport(kassaId);
 }

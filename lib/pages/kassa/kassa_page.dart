@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:inventory/core/network/api_result.dart';
 import 'package:inventory/core/utils/responsive.dart';
 import 'package:inventory/features/kassa/cubit/kassa_cubit.dart';
 import 'package:inventory/features/kassa/cubit/kassa_state.dart';
 import 'package:inventory/features/kassa/data/models/kassa_models.dart';
+import 'package:universal_html/html.dart' as html;
 
 // ── Palette ───────────────────────────────────────────────────────────────────
 
@@ -1550,7 +1552,10 @@ class _HistoryTableRow extends StatelessWidget {
   void _showDetailDialog(BuildContext context, Kassa kassa, NumberFormat fmt, DateFormat dateFmt) {
     showDialog<void>(
       context: context,
-      builder: (_) => _KassaDetailDialog(kassa: kassa, fmt: fmt, dateFmt: dateFmt),
+      builder: (_) => BlocProvider.value(
+        value: context.read<KassaCubit>(),
+        child: _KassaDetailDialog(kassa: kassa, fmt: fmt, dateFmt: dateFmt),
+      ),
     );
   }
 }
@@ -1634,7 +1639,10 @@ class _MobileHistoryCard extends StatelessWidget {
               TextButton(
                 onPressed: () => showDialog<void>(
                   context: context,
-                  builder: (_) => _KassaDetailDialog(kassa: kassa, fmt: fmt, dateFmt: dateFmt),
+                  builder: (_) => BlocProvider.value(
+                    value: context.read<KassaCubit>(),
+                    child: _KassaDetailDialog(kassa: kassa, fmt: fmt, dateFmt: dateFmt),
+                  ),
                 ),
                 style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8), minimumSize: Size.zero),
                 child: const Text(
@@ -1836,25 +1844,91 @@ class _KassaDetailDialog extends StatelessWidget {
             const Divider(height: 1),
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _kPrimary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    elevation: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (kassa.kassaState == 'closed') ...[
+                    OutlinedButton.icon(
+                      onPressed: () => _downloadZReport(context, kassa.id),
+                      icon: const Icon(Icons.download_rounded, size: 18),
+                      label: const Text('Z Hesabatı Yüklə', style: TextStyle(fontWeight: FontWeight.w700)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: _kPrimary,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        side: const BorderSide(color: _kPrimary, width: 1.5),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                  ],
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _kPrimary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      elevation: 0,
+                    ),
+                    child: const Text('Bağla', style: TextStyle(fontWeight: FontWeight.w700)),
                   ),
-                  child: const Text('Bağla', style: TextStyle(fontWeight: FontWeight.w700)),
-                ),
+                ],
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  void _downloadZReport(BuildContext context, String kassaId) async {
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Z Hesabatı yüklənir...'),
+          backgroundColor: _kSuccess,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      // Download PDF through Dio (with auth token from interceptor)
+      final result = await context.read<KassaCubit>().downloadZReport(kassaId);
+      
+      switch (result) {
+        case Success(:final data):
+          // Create blob and download
+          final blob = html.Blob([data], 'application/pdf');
+          final url = html.Url.createObjectUrlFromBlob(blob);
+          final anchor = html.AnchorElement(href: url)
+            ..setAttribute('download', 'z-hesabat-$kassaId.pdf')
+            ..click();
+          
+          // Cleanup
+          html.Url.revokeObjectUrl(url);
+          anchor.remove();
+          
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Z Hesabatı yükləndi'),
+                backgroundColor: _kSuccess,
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
+        case Failure(:final message):
+          throw message;
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Rapor yüklenirken xəta baş verdi: $e'),
+            backgroundColor: _kDanger,
+          ),
+        );
+      }
+    }
   }
 }
 

@@ -143,6 +143,31 @@ class KassaRepository {
     }
   }
 
+  /// GET /api/kassa/export-z-check/ — download Z report PDF
+  /// Makes actual HTTP request through Dio (with auth token from interceptor)
+  /// Returns the PDF file bytes
+  Future<ApiResult<List<int>>> downloadZReport(String kassaId) async {
+    try {
+      final response = await _dio.get<List<int>>(
+        ApiConstants.kassaExportZCheck,
+        queryParameters: {'kassa_id': kassaId},
+        options: Options(
+          responseType: ResponseType.bytes,
+        ),
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        return Success(response.data!);
+      }
+
+      return Failure('Unexpected status: ${response.statusCode}', statusCode: response.statusCode);
+    } on DioException catch (e) {
+      return Failure(_parseDioError(e), statusCode: e.response?.statusCode);
+    } catch (e) {
+      return Failure(e.toString());
+    }
+  }
+
   String _parseDioError(DioException e) {
     if (e.response?.data != null) {
       final data = e.response!.data;
