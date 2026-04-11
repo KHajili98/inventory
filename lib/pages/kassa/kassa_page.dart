@@ -1797,10 +1797,36 @@ class _KassaDetailDialog extends StatelessWidget {
                       const SizedBox(height: 6),
                       _DetailRow('Bağlanış Nağd', '${fmt.format(kassa.closedCashAmount!)} ₼'),
                       _DetailRow('Bağlanış Kart', '${fmt.format(kassa.closedCardAmount ?? 0)} ₼'),
-                      if (kassa.cuttedCashAmount > 0) _DetailRow('Fərq (Nağd)', '${fmt.format(kassa.cuttedCashAmount)} ₼'),
-                      if (kassa.cuttedCardAmount > 0) _DetailRow('Fərq (Kart)', '${fmt.format(kassa.cuttedCardAmount)} ₼'),
-                      if (kassa.cuttedAmountDescription != null && kassa.cuttedAmountDescription!.isNotEmpty)
+                      const SizedBox(height: 8),
+                      const Divider(),
+                      const SizedBox(height: 8),
+                      const _SectionLabel('Fərq (Kəsir/Artıq)'),
+                      const SizedBox(height: 6),
+                      if (kassa.diffCash != null)
+                        _DetailRow(
+                          'Fərq (Nağd)',
+                          '${kassa.diffCash! >= 0 ? '+' : ''}${fmt.format(kassa.diffCash!)} ₼',
+                          valueColor: kassa.diffCash! >= 0 ? _kSuccess : _kDanger,
+                        ),
+                      if (kassa.diffCard != null)
+                        _DetailRow(
+                          'Fərq (Kart)',
+                          '${kassa.diffCard! >= 0 ? '+' : ''}${fmt.format(kassa.diffCard!)} ₼',
+                          valueColor: kassa.diffCard! >= 0 ? _kSuccess : _kDanger,
+                        ),
+                      if (kassa.diffTotal != null)
+                        _DetailRow(
+                          'Fərq (Toplam)',
+                          '${kassa.diffTotal! >= 0 ? '+' : ''}${fmt.format(kassa.diffTotal!)} ₼',
+                          bold: true,
+                          valueColor: kassa.diffTotal! >= 0 ? _kSuccess : _kDanger,
+                        ),
+                      if (kassa.cuttedAmountDescription != null && kassa.cuttedAmountDescription!.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        const Divider(),
+                        const SizedBox(height: 8),
                         _DetailRow('Qeyd', kassa.cuttedAmountDescription!),
+                      ],
                     ],
                   ],
                 ),
