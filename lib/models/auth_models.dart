@@ -1,6 +1,10 @@
 // ── User Role ─────────────────────────────────────────────────────────────────
 
 enum UserRole {
+  admin,
+  manager,
+  staff,
+  viewer,
   warehouseStaff,
   supervisor,
   accountant,
@@ -9,6 +13,14 @@ enum UserRole {
 
   static UserRole fromString(String value) {
     switch (value) {
+      case 'admin':
+        return UserRole.admin;
+      case 'manager':
+        return UserRole.manager;
+      case 'staff':
+        return UserRole.staff;
+      case 'viewer':
+        return UserRole.viewer;
       case 'warehouse_staff':
         return UserRole.warehouseStaff;
       case 'supervisor':
@@ -24,6 +36,14 @@ enum UserRole {
 
   String get displayName {
     switch (this) {
+      case UserRole.admin:
+        return 'Admin';
+      case UserRole.manager:
+        return 'Manager';
+      case UserRole.staff:
+        return 'Staff';
+      case UserRole.viewer:
+        return 'Viewer';
       case UserRole.warehouseStaff:
         return 'Warehouse Staff';
       case UserRole.supervisor:
@@ -39,6 +59,14 @@ enum UserRole {
 
   String get value {
     switch (this) {
+      case UserRole.admin:
+        return 'admin';
+      case UserRole.manager:
+        return 'manager';
+      case UserRole.staff:
+        return 'staff';
+      case UserRole.viewer:
+        return 'viewer';
       case UserRole.warehouseStaff:
         return 'warehouse_staff';
       case UserRole.supervisor:
