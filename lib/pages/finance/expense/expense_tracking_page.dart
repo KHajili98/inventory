@@ -12,6 +12,7 @@ import 'package:inventory/features/expense/data/repositories/fee_category_reposi
 import 'package:inventory/features/expense/data/repositories/fee_repository.dart';
 import 'package:inventory/l10n/app_localizations.dart';
 import 'package:inventory/pages/finance/expense/expense_categories_page.dart';
+import 'package:inventory/widgets/kassa_status_guard.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // ── Payment type enum (for UI labels) ─────────────────────────────────────────
@@ -200,7 +201,11 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
   // ── Dialogs ────────────────────────────────────────────────────────────────
 
   void _openAddDialog() async {
-    final created = await showDialog<Fee>(context: context, barrierDismissible: false, builder: (ctx) => const _ExpenseFormDialog());
+    final created = await showDialog<Fee>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const KassaStatusGuard(child: _ExpenseFormDialog()),
+    );
     if (created != null && mounted) {
       ScaffoldMessenger.of(
         context,
@@ -1331,13 +1336,13 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
                         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
                       ),
                       const Spacer(),
-                      // if (_isEdit)
-                      //   IconButton(
-                      //     onPressed: _submitting ? null : _confirmDelete,
-                      //     icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444)),
-                      //     tooltip: l10n.delete,
-                      //     style: IconButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                      //   ),
+                      if (_isEdit)
+                        IconButton(
+                          onPressed: _submitting ? null : _confirmDelete,
+                          icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444)),
+                          tooltip: l10n.delete,
+                          style: IconButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                        ),
                       IconButton(
                         onPressed: _submitting ? null : () => Navigator.of(context).pop(),
                         icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),

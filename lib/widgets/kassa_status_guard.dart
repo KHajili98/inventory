@@ -105,7 +105,12 @@ class _ClosedCard extends StatelessWidget {
             width: double.infinity,
             height: 48,
             child: ElevatedButton.icon(
-              onPressed: () => context.go('/kassa'),
+              onPressed: () {
+                // Close all open dialogs first
+                Navigator.of(context).popUntil((route) => route.isFirst);
+                // Then navigate to kassa page
+                context.go('/kassa');
+              },
               icon: const Icon(Icons.open_in_new_rounded, size: 20),
               label: const Text('Kassanı Aç', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
               style: ElevatedButton.styleFrom(

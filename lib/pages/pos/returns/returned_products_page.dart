@@ -8,6 +8,7 @@ import 'package:inventory/features/returned_products/cubit/returned_products_cub
 import 'package:inventory/features/returned_products/cubit/returned_products_state.dart';
 import 'package:inventory/features/returned_products/data/models/returned_product_models.dart';
 import 'package:inventory/l10n/app_localizations.dart';
+import 'package:inventory/widgets/kassa_status_guard.dart';
 import 'package:inventory/pages/pos/returns/add_returned_product_dialog.dart';
 
 // ── Entry widget ─────────────────────────────────────────────────────────────
@@ -220,7 +221,10 @@ class _ReturnedProductsViewState extends State<_ReturnedProductsView> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          final result = await showDialog<bool>(context: context, builder: (context) => const AddReturnedProductDialog());
+          final result = await showDialog<bool>(
+            context: context,
+            builder: (context) => const KassaStatusGuard(child: AddReturnedProductDialog()),
+          );
           if (result == true && context.mounted) {
             context.read<ReturnedProductsCubit>().refresh();
           }

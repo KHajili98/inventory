@@ -109,10 +109,7 @@ GoRouter createRouter(AuthCubit authCubit) {
           GoRoute(path: '/product-requests', builder: (context, state) => const ProductRequestsPage()),
           GoRoute(path: '/loyal-customers', builder: (context, state) => const LoyalCustomersPage()),
           GoRoute(path: '/finance/price-calculation', builder: (context, state) => const PriceCalculationPage()),
-          GoRoute(
-            path: '/finance/expense-tracking',
-            builder: (context, state) => const KassaStatusGuard(child: ExpenseTrackingPage()),
-          ),
+          GoRoute(path: '/finance/expense-tracking', builder: (context, state) => const ExpenseTrackingPage()),
           GoRoute(path: '/finance/analytics', builder: (context, state) => const AnalyticsPage()),
           GoRoute(path: '/kassa', builder: (context, state) => const KassaPage()),
         ],
