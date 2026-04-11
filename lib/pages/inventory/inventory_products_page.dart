@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:inventory/core/network/api_result.dart';
 import 'package:inventory/core/network/dio_client.dart';
 import 'package:inventory/core/utils/responsive.dart';
+import 'package:inventory/features/auth/auth_cubit.dart';
 import 'package:inventory/features/barcode/data/repositories/barcode_repository.dart';
 import 'package:inventory/features/inventory_products/cubit/inventory_products_cubit.dart';
 import 'package:inventory/features/inventory_products/cubit/inventory_products_state.dart';
@@ -18,6 +19,7 @@ import 'package:inventory/features/invoice_detail/data/repositories/invoice_deta
 import 'package:inventory/features/invoice_list/data/models/invoice_list_response_model.dart';
 import 'package:inventory/features/invoice_list/data/repositories/invoice_list_repository.dart';
 import 'package:inventory/l10n/app_localizations.dart';
+import 'package:inventory/models/auth_models.dart';
 import 'package:inventory/models/product_models.dart';
 
 class InventoryProductsPage extends StatelessWidget {
@@ -76,7 +78,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
   }
 
   // Total table width for horizontal scrolling
-  static double get _tableWidth =>
+  static double _tableWidth({bool showPrices = true}) =>
       _colCheck +
       _colIdx +
       _colProductCode +
@@ -85,10 +87,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
       _colColor +
       _colActQty +
       _colInvQty +
-      _colUnitUsd +
-      _colUnitAzn +
-      _colInvTotal +
-      _colActTotal +
+      (showPrices ? _colUnitUsd + _colUnitAzn + _colInvTotal + _colActTotal : 0) +
       _colBarcode +
       _colCoord +
       _colSource +
@@ -672,6 +671,9 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
 
   Widget _buildTable(InventoryProductsState state) {
     final products = state is InventoryProductsLoaded ? state.products : <InventoryProductItemModel>[];
+    final authState = context.read<AuthCubit>().state;
+    final role = authState is AuthAuthenticated ? authState.response.user.role : UserRole.unknown;
+    final showPrices = role.canSeeInventoryPrices;
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -686,7 +688,10 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
             controller: _hHeaderController,
             scrollDirection: Axis.horizontal,
             physics: const NeverScrollableScrollPhysics(),
-            child: SizedBox(width: _tableWidth, child: _buildHeaderRow(products)),
+            child: SizedBox(
+              width: _tableWidth(showPrices: showPrices),
+              child: _buildHeaderRow(products, showPrices: showPrices),
+            ),
           ),
           // ── Scrollable body ───────────────────────────────────────────────
           Expanded(
@@ -718,7 +723,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                     controller: _hScrollController,
                     scrollDirection: Axis.horizontal,
                     child: SizedBox(
-                      width: _tableWidth,
+                      width: _tableWidth(showPrices: showPrices),
                       child: Scrollbar(
                         controller: _vScrollController,
                         thumbVisibility: true,
@@ -727,7 +732,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
                           controller: _vScrollController,
                           itemCount: products.length,
                           separatorBuilder: (_, __) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                          itemBuilder: (_, i) => _buildProductRow(i, products[i]),
+                          itemBuilder: (_, i) => _buildProductRow(i, products[i], showPrices: showPrices),
                         ),
                       ),
                     ),
@@ -842,7 +847,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
     );
   }
 
-  Widget _buildHeaderRow(List<InventoryProductItemModel> products) {
+  Widget _buildHeaderRow(List<InventoryProductItemModel> products, {bool showPrices = true}) {
     final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: const BoxDecoration(
@@ -861,10 +866,10 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
             _headerCell(l10n.color, _colColor),
             _headerCell(l10n.actualQty, _colActQty),
             _headerCell(l10n.invoiceQty, _colInvQty),
-            _headerCell('${l10n.unitPrice} (USD)', _colUnitUsd),
-            _headerCell('${l10n.unitPrice} (AZN)', _colUnitAzn),
-            _headerCell('${l10n.invoiceTotal} (USD)', _colInvTotal),
-            _headerCell('${l10n.actualTotal} (AZN)', _colActTotal),
+            if (showPrices) _headerCell('${l10n.unitPrice} (USD)', _colUnitUsd),
+            if (showPrices) _headerCell('${l10n.unitPrice} (AZN)', _colUnitAzn),
+            if (showPrices) _headerCell('${l10n.invoiceTotal} (USD)', _colInvTotal),
+            if (showPrices) _headerCell('${l10n.actualTotal} (AZN)', _colActTotal),
             _headerCell(l10n.barcode, _colBarcode),
             _headerCell(l10n.location, _colCoord),
             _headerCell(l10n.source, _colSource),
@@ -893,7 +898,7 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
     );
   }
 
-  Widget _buildProductRow(int index, InventoryProductItemModel product) {
+  Widget _buildProductRow(int index, InventoryProductItemModel product, {bool showPrices = true}) {
     final l10n = AppLocalizations.of(context)!;
     final isSelected = _selectedIds.contains(product.id);
     final isOdd = index.isOdd;
@@ -985,29 +990,33 @@ class _InventoryProductsViewState extends State<_InventoryProductsView> {
               style: TextStyle(fontSize: 13, color: invoiceQty != null ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
             ),
             // Unit price USD
-            _cell(
-              product.invoiceUnitPriceUsd != null ? '\$${product.invoiceUnitPriceUsd!.toStringAsFixed(4)}' : '—',
-              _colUnitUsd,
-              style: const TextStyle(fontSize: 13, color: Color(0xFF475569)),
-            ),
+            if (showPrices)
+              _cell(
+                product.invoiceUnitPriceUsd != null ? '\$${product.invoiceUnitPriceUsd!.toStringAsFixed(4)}' : '—',
+                _colUnitUsd,
+                style: const TextStyle(fontSize: 13, color: Color(0xFF475569)),
+              ),
             // Unit price AZN
-            _cell(
-              product.invoiceUnitPriceAzn != null ? '₼${product.invoiceUnitPriceAzn!.toStringAsFixed(4)}' : '—',
-              _colUnitAzn,
-              style: const TextStyle(fontSize: 13, color: Color(0xFF475569)),
-            ),
+            if (showPrices)
+              _cell(
+                product.invoiceUnitPriceAzn != null ? '₼${product.invoiceUnitPriceAzn!.toStringAsFixed(4)}' : '—',
+                _colUnitAzn,
+                style: const TextStyle(fontSize: 13, color: Color(0xFF475569)),
+              ),
             // Invoice Total (USD)
-            _cell(
-              product.invoiceTotalPrice != null ? '\$${product.invoiceTotalPrice!.toStringAsFixed(2)}' : '—',
-              _colInvTotal,
-              style: TextStyle(fontSize: 13, color: product.invoiceTotalPrice != null ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
-            ),
+            if (showPrices)
+              _cell(
+                product.invoiceTotalPrice != null ? '\$${product.invoiceTotalPrice!.toStringAsFixed(2)}' : '—',
+                _colInvTotal,
+                style: TextStyle(fontSize: 13, color: product.invoiceTotalPrice != null ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
+              ),
             // Actual Total (AZN)
-            _cell(
-              product.actualTotalPrice != null ? '₼${product.actualTotalPrice!.toStringAsFixed(2)}' : '—',
-              _colActTotal,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
-            ),
+            if (showPrices)
+              _cell(
+                product.actualTotalPrice != null ? '₼${product.actualTotalPrice!.toStringAsFixed(2)}' : '—',
+                _colActTotal,
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+              ),
             // Barcode
             SizedBox(
               width: _colBarcode,

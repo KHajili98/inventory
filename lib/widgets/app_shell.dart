@@ -28,7 +28,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
   static const Duration _duration = Duration(milliseconds: 220);
   static const Curve _curve = Curves.easeInOut;
 
-  static const _navItems = [
+  static const _allNavItems = [
     _NavItem(
       labelKey: 'sellModule',
       icon: Icons.point_of_sale_rounded,
@@ -50,7 +50,6 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
       path: '/finance/analytics',
       subItems: [
         _SubNavItem(labelKey: 'analytics', path: '/finance/analytics'),
-
         _SubNavItem(labelKey: 'priceCalculation', path: '/finance/price-calculation'),
         _SubNavItem(labelKey: 'expenseTracking', path: '/finance/expense-tracking'),
       ],
@@ -58,11 +57,37 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
     _NavItem(labelKey: 'kassa', icon: Icons.point_of_sale_rounded, path: '/kassa'),
   ];
 
-  int _selectedIndex(BuildContext context) {
+  /// Returns the nav items visible to the given role.
+  ///
+  /// warehouse_staff  → invoices + inventory only
+  /// sales_rep        → no invoices; finance shows only expense tracking
+  /// everyone else    → all items
+  static List<_NavItem> _navItemsForRole(UserRole role) {
+    if (role == UserRole.warehouseStaff) {
+      return _allNavItems.where((item) => item.path == '/invoices' || item.path == '/inventory-products').toList();
+    }
+    if (role == UserRole.salesRep) {
+      return _allNavItems.where((item) => item.path != '/invoices').map((item) {
+        // Finance: keep only expense tracking sub-item
+        if (item.labelKey == 'finance') {
+          return _NavItem(
+            labelKey: item.labelKey,
+            icon: item.icon,
+            path: '/finance/expense-tracking',
+            subItems: [_SubNavItem(labelKey: 'expenseTracking', path: '/finance/expense-tracking')],
+          );
+        }
+        return item;
+      }).toList();
+    }
+    return _allNavItems;
+  }
+
+  int _selectedIndex(BuildContext context, List<_NavItem> navItems) {
     final location = GoRouterState.of(context).uri.toString();
-    final index = _navItems.indexWhere((item) => location.startsWith(item.path) || item.subItems.any((sub) => location.startsWith(sub.path)));
+    final index = navItems.indexWhere((item) => location.startsWith(item.path) || item.subItems.any((sub) => location.startsWith(sub.path)));
     // Auto-expand the matching group whenever the route changes
-    if (index >= 0 && _navItems[index].subItems.isNotEmpty) {
+    if (index >= 0 && navItems[index].subItems.isNotEmpty) {
       _expandedItems.add(index);
     }
     return index < 0 ? 0 : index;
@@ -170,7 +195,10 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    final selectedIndex = _selectedIndex(context);
+    final authState = context.watch<AuthCubit>().state;
+    final role = authState is AuthAuthenticated ? authState.response.user.role : UserRole.unknown;
+    final navItems = _navItemsForRole(role);
+    final selectedIndex = _selectedIndex(context, navItems);
     final l10n = AppLocalizations.of(context)!;
     final isMobile = context.isMobile;
 
@@ -197,7 +225,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
           behavior: _NoHistoryScrollBehavior(),
           child: Scaffold(
             // Mobile: use drawer, Desktop: inline sidebar
-            drawer: isMobile ? _buildMobileDrawer(context, selectedIndex, l10n) : null,
+            drawer: isMobile ? _buildMobileDrawer(context, selectedIndex, l10n, navItems) : null,
             // Mobile: use bottom navigation
             // bottomNavigationBar: isMobile ? _buildBottomNav(context, selectedIndex, l10n) : null,
             body: Row(
@@ -271,8 +299,8 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                           child: SingleChildScrollView(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: List.generate(_navItems.length, (index) {
-                                final item = _navItems[index];
+                              children: List.generate(navItems.length, (index) {
+                                final item = navItems[index];
                                 final isSelected = index == selectedIndex;
                                 final hasSubItems = item.subItems.isNotEmpty;
                                 final isExpanded = _expandedItems.contains(index);
@@ -424,7 +452,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                             if (isMobile) const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                _getNavLabel(context, _navItems[selectedIndex].labelKey),
+                                _getNavLabel(context, navItems[selectedIndex].labelKey),
                                 style: TextStyle(fontSize: isMobile ? 18 : 20, fontWeight: FontWeight.w600, color: const Color(0xFF1E293B)),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -452,7 +480,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
   }
 
   // Mobile drawer
-  Widget _buildMobileDrawer(BuildContext context, int selectedIndex, AppLocalizations l10n) {
+  Widget _buildMobileDrawer(BuildContext context, int selectedIndex, AppLocalizations l10n, List<_NavItem> navItems) {
     return Drawer(
       backgroundColor: const Color(0xFF1E293B),
       child: SafeArea(
@@ -479,8 +507,8 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
             const SizedBox(height: 10),
 
             // Nav items
-            ...List.generate(_navItems.length, (index) {
-              final item = _navItems[index];
+            ...List.generate(navItems.length, (index) {
+              final item = navItems[index];
               final isSelected = index == selectedIndex;
               final hasSubItems = item.subItems.isNotEmpty;
               final isExpanded = _expandedItems.contains(index);

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:inventory/core/utils/route_logger.dart';
 import 'package:inventory/features/auth/auth_cubit.dart';
 import 'package:inventory/features/auth/auth_service.dart';
+import 'package:inventory/models/auth_models.dart';
 import 'package:inventory/pages/auth/login_page.dart';
 import 'package:inventory/pages/finance/analytics_page.dart';
 import 'package:inventory/pages/finance/expense/expense_tracking_page.dart';
@@ -25,6 +26,18 @@ final rootNavigatorKey = GlobalKey<NavigatorState>();
 
 /// Routes that don't require authentication.
 const _publicRoutes = ['/login'];
+
+/// Routes forbidden for [UserRole.salesRep].
+const _salesRepForbiddenRoutes = ['/invoices', '/finance/analytics', '/finance/price-calculation'];
+
+/// Routes allowed for [UserRole.warehouseStaff] (whitelist).
+const _warehouseStaffAllowedRoutes = ['/invoices', '/inventory-products'];
+
+/// Returns the default landing path for [role].
+String _defaultPathForRole(UserRole role) {
+  if (role == UserRole.warehouseStaff) return '/invoices';
+  return '/invoices';
+}
 
 /// A [ChangeNotifier] that bridges [AuthCubit] state changes into GoRouter's
 /// [refreshListenable], so the router re-runs redirect on every auth change.
@@ -50,8 +63,30 @@ GoRouter createRouter(AuthCubit authCubit) {
       // Not logged in → always redirect to /login
       if (!isLoggedIn && !isPublic) return '/login';
 
-      // Already logged in → redirect away from /login to /invoices
-      if (isLoggedIn && isPublic) return '/invoices';
+      // Already logged in → redirect away from /login
+      if (isLoggedIn && isPublic) {
+        final loginResponse = await AuthService.instance.getLoginResponse();
+        final role = loginResponse?.user.role ?? UserRole.unknown;
+        return _defaultPathForRole(role);
+      }
+
+      // Role-based access control for authenticated users
+      if (isLoggedIn && !isPublic) {
+        final loginResponse = await AuthService.instance.getLoginResponse();
+        final role = loginResponse?.user.role ?? UserRole.unknown;
+
+        // warehouse_staff: only allowed routes whitelist
+        if (role == UserRole.warehouseStaff) {
+          final allowed = _warehouseStaffAllowedRoutes.any((r) => location.startsWith(r));
+          if (!allowed) return '/invoices';
+        }
+
+        // sales_rep: block forbidden routes
+        if (role == UserRole.salesRep) {
+          final forbidden = _salesRepForbiddenRoutes.any((r) => location.startsWith(r));
+          if (forbidden) return '/inventory-products';
+        }
+      }
 
       return null; // no redirect needed
     },

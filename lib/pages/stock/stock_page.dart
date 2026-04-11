@@ -11,6 +11,7 @@ import 'package:inventory/features/stocks/cubit/stocks_cubit.dart';
 import 'package:inventory/features/stocks/cubit/stocks_state.dart';
 import 'package:inventory/features/stocks/data/models/stock_product_response_model.dart';
 import 'package:inventory/l10n/app_localizations.dart';
+import 'package:inventory/models/auth_models.dart';
 import 'package:inventory/pages/stock/add_stock_item_dialog.dart';
 
 // ── Stock status helper ───────────────────────────────────────────────────────
@@ -69,7 +70,7 @@ class _StockPageState extends State<StockPage> {
   static const double _colStatus = 140.0;
   static const double _colActions = 60.0;
 
-  static double get _tableWidth =>
+  static double _tableWidth({bool showCostPrices = true}) =>
       _colModelCode +
       _colProductName +
       _colGeneratedName +
@@ -80,8 +81,7 @@ class _StockPageState extends State<StockPage> {
       _colQuantity +
       _colBarcode +
       _colInventory +
-      _colInvoicePrice +
-      _colCostPrice +
+      (showCostPrices ? _colInvoicePrice + _colCostPrice : 0) +
       _colWholePrice +
       _colRetailPrice +
       _colStatus +
@@ -345,6 +345,9 @@ class _StockPageState extends State<StockPage> {
   }
 
   Widget _buildTable(StocksLoaded state, AppLocalizations l10n) {
+    final authState = context.read<AuthCubit>().state;
+    final role = authState is AuthAuthenticated ? authState.response.user.role : UserRole.unknown;
+    final showCostPrices = role.canSeeStockCostPrices;
     return Container(
       margin: EdgeInsets.symmetric(horizontal: context.responsivePadding),
       decoration: BoxDecoration(
@@ -361,11 +364,11 @@ class _StockPageState extends State<StockPage> {
             scrollDirection: Axis.horizontal,
             physics: const NeverScrollableScrollPhysics(),
             child: Container(
-              width: _tableWidth + 32,
+              width: _tableWidth(showCostPrices: showCostPrices) + 32,
               decoration: const BoxDecoration(
                 border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
               ),
-              child: _buildTableHeader(l10n),
+              child: _buildTableHeader(l10n, showCostPrices: showCostPrices),
             ),
           ),
           // Body
@@ -391,10 +394,10 @@ class _StockPageState extends State<StockPage> {
                     controller: _hScrollController,
                     scrollDirection: Axis.horizontal,
                     child: SizedBox(
-                      width: _tableWidth,
+                      width: _tableWidth(showCostPrices: showCostPrices),
                       child: Column(
                         children: [
-                          ...state.products.map((item) => _buildTableRow(item, l10n)),
+                          ...state.products.map((item) => _buildTableRow(item, l10n, showCostPrices: showCostPrices)),
                           if (state.isLoadingMore)
                             const Padding(
                               padding: EdgeInsets.all(16),
@@ -418,12 +421,12 @@ class _StockPageState extends State<StockPage> {
     );
   }
 
-  Widget _buildTableHeader(AppLocalizations l10n) {
+  Widget _buildTableHeader(AppLocalizations l10n, {bool showCostPrices = true}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       color: const Color(0xFFF8FAFC),
       child: SizedBox(
-        width: _tableWidth,
+        width: _tableWidth(showCostPrices: showCostPrices),
         child: Row(
           children: [
             _headerCell(l10n.modelCode, _colModelCode),
@@ -436,8 +439,8 @@ class _StockPageState extends State<StockPage> {
             _headerCell(l10n.quantity, _colQuantity),
             _headerCell(l10n.barcode, _colBarcode),
             _headerCell(l10n.sourceInventory, _colInventory),
-            _headerCell(l10n.invoicePriceAznLabel, _colInvoicePrice),
-            _headerCell(l10n.costPrice, _colCostPrice),
+            if (showCostPrices) _headerCell(l10n.invoicePriceAznLabel, _colInvoicePrice),
+            if (showCostPrices) _headerCell(l10n.costPrice, _colCostPrice),
             _headerCell(l10n.wholesalePrice, _colWholePrice),
             _headerCell(l10n.retailPrice, _colRetailPrice),
             _headerCell(l10n.status, _colStatus),
@@ -458,7 +461,7 @@ class _StockPageState extends State<StockPage> {
     );
   }
 
-  Widget _buildTableRow(StockProductItemModel item, AppLocalizations l10n) {
+  Widget _buildTableRow(StockProductItemModel item, AppLocalizations l10n, {bool showCostPrices = true}) {
     final status = _resolveStatus(item);
 
     return Container(
@@ -467,7 +470,7 @@ class _StockPageState extends State<StockPage> {
         border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
       ),
       child: SizedBox(
-        width: _tableWidth - 32,
+        width: _tableWidth(showCostPrices: showCostPrices) - 32,
         child: Row(
           children: [
             _cell(item.modelCode ?? '—', _colModelCode),
@@ -480,8 +483,8 @@ class _StockPageState extends State<StockPage> {
             _cell('${item.quantity}', _colQuantity, bold: true),
             _cell(item.barcode ?? '—', _colBarcode),
             _cell(item.inventoryName, _colInventory),
-            _cell(item.invoiceUnitPriceAzn != null ? '₼ ${item.invoiceUnitPriceAzn!.toStringAsFixed(2)}' : '—', _colInvoicePrice),
-            _cell(item.costUnitPrice != null ? '₼ ${item.costUnitPrice!.toStringAsFixed(2)}' : '—', _colCostPrice),
+            if (showCostPrices) _cell(item.invoiceUnitPriceAzn != null ? '₼ ${item.invoiceUnitPriceAzn!.toStringAsFixed(2)}' : '—', _colInvoicePrice),
+            if (showCostPrices) _cell(item.costUnitPrice != null ? '₼ ${item.costUnitPrice!.toStringAsFixed(2)}' : '—', _colCostPrice),
             _cell(item.wholeUnitSalesPrice != null ? '₼ ${item.wholeUnitSalesPrice!.toStringAsFixed(2)}' : '—', _colWholePrice),
             _cell(item.retailUnitPrice != null ? '₼ ${item.retailUnitPrice!.toStringAsFixed(2)}' : '—', _colRetailPrice),
             _statusCell(status, l10n, _colStatus),

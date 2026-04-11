@@ -81,6 +81,34 @@ enum UserRole {
   }
 }
 
+// ── Role Permissions ──────────────────────────────────────────────────────────
+
+extension UserRolePermissions on UserRole {
+  /// Returns true if the role can see the Invoices module in the sidebar.
+  bool get canSeeInvoices => this != UserRole.salesRep;
+
+  /// Returns true if the role can see the Finance module (analytics, price
+  /// calculation, expense tracking) in the sidebar.
+  /// sales_rep can see finance but only the expense tracking sub-item.
+  bool get canSeeFinance => true;
+
+  /// Returns true if the role can see analytics & price calculation sub-items.
+  bool get canSeeFinanceAnalyticsAndPricing => this != UserRole.salesRep;
+
+  /// Returns true if the role can see invoice & actual price columns
+  /// (invoice_unit_price_usd, invoice_unit_price_azn, invoice_total_price,
+  /// actual_total_price) in the Inventory table.
+  bool get canSeeInventoryPrices => this != UserRole.salesRep;
+
+  /// Returns true if the role can see invoice & cost price columns
+  /// (invoice_unit_price_azn, cost_unit_price) in the Stock table.
+  bool get canSeeStockCostPrices => this != UserRole.salesRep;
+
+  /// Modules visible to warehouse_staff: invoices + inventory only.
+  /// All other roles follow their own restrictions defined above.
+  bool get canSeeInventoryModule => true; // all roles can see inventory
+}
+
 // ── Auth User ─────────────────────────────────────────────────────────────────
 
 class AuthUser {
