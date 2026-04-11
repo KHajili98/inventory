@@ -323,13 +323,9 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                                             } else {
                                               _expandedItems.add(index);
                                             }
-                                            // Collapse sidebar when a module is clicked
-                                            _collapsed = true;
                                           });
                                           if (!isExpanded) context.go(item.path);
                                         } else {
-                                          // Collapse sidebar when navigating to a module
-                                          setState(() => _collapsed = true);
                                           context.go(item.path);
                                         }
                                       },
@@ -342,8 +338,10 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
                                           sub: sub,
                                           isSelected: isSubSelected,
                                           onTap: () {
-                                            // Collapse sidebar when a sub-item is clicked
-                                            setState(() => _collapsed = true);
+                                            // Collapse sidebar only when navigating to POS
+                                            if (sub.path == '/sell-module/pos') {
+                                              setState(() => _collapsed = true);
+                                            }
                                             context.go(sub.path);
                                           },
                                           label: _getNavLabel(context, sub.labelKey),
