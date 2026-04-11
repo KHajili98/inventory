@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:inventory/core/network/api_result.dart';
+import 'package:inventory/features/barcode/data/repositories/barcode_repository.dart';
 import 'package:inventory/features/inventory_products/data/models/inventory_model.dart';
 import 'package:inventory/features/stocks/cubit/stocks_cubit.dart';
 import 'package:inventory/features/stocks/data/models/stock_product_response_model.dart';
@@ -120,7 +121,13 @@ class _AddStockItemDialogState extends State<AddStockItemDialog> {
                       const SizedBox(height: 20),
 
                       // Product Name (required)
-                      _buildField(l10n: l10n, controller: _productNameCtrl, label: l10n.productName, hint: 'e.g. 3 gang 1 way switch', required: true),
+                      _buildField(
+                        l10n: l10n,
+                        controller: _productNameCtrl,
+                        label: l10n.productName,
+                        hint: 'e.g. 3 gang 1 way switch',
+                        required: true,
+                      ),
                       const SizedBox(height: 14),
 
                       // Model Code + Product Code
@@ -178,7 +185,55 @@ class _AddStockItemDialogState extends State<AddStockItemDialog> {
                           ),
                           const SizedBox(width: 14),
                           Expanded(
-                            child: _buildField(l10n: l10n, controller: _barcodeCtrl, label: l10n.barcode, hint: 'e.g. AY-000001', required: true),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      l10n.barcode,
+                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                                    ),
+                                    const SizedBox(width: 3),
+                                    const Text(
+                                      '*',
+                                      style: TextStyle(fontSize: 12, color: Color(0xFFEF4444), fontWeight: FontWeight.w600),
+                                    ),
+                                    const Spacer(),
+                                    _GenerateBarcodeButton(ctrl: _barcodeCtrl),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                TextFormField(
+                                  controller: _barcodeCtrl,
+                                  style: const TextStyle(fontSize: 14, color: Color(0xFF1E293B)),
+                                  decoration: InputDecoration(
+                                    hintText: 'e.g. AY-000001',
+                                    hintStyle: const TextStyle(fontSize: 14, color: Color(0xFF94A3B8)),
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(9),
+                                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(9),
+                                      borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
+                                    ),
+                                    errorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(9),
+                                      borderSide: const BorderSide(color: Color(0xFFEF4444)),
+                                    ),
+                                    focusedErrorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(9),
+                                      borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+                                    ),
+                                  ),
+                                  validator: (v) => (v == null || v.trim().isEmpty) ? l10n.required : null,
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -192,8 +247,15 @@ class _AddStockItemDialogState extends State<AddStockItemDialog> {
                           controller: _invoicePriceCtrl,
                           label: l10n.invoicePriceAznLabel,
                           hint: '0.00',
+                          required: true,
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
                           inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) return l10n.fieldRequired;
+                            final n = double.tryParse(v);
+                            if (n == null || n < 0) return l10n.invalidNumber;
+                            return null;
+                          },
                         ),
                       ),
                     ],
@@ -382,6 +444,72 @@ class _AddStockItemDialogState extends State<AddStockItemDialog> {
           validator: validator ?? (required ? (v) => (v == null || v.trim().isEmpty) ? l10n.required : null : null),
         ),
       ],
+    );
+  }
+}
+
+// ── Generate Barcode Button ────────────────────────────────────────────────
+class _GenerateBarcodeButton extends StatefulWidget {
+  final TextEditingController ctrl;
+
+  const _GenerateBarcodeButton({required this.ctrl});
+
+  @override
+  State<_GenerateBarcodeButton> createState() => _GenerateBarcodeButtonState();
+}
+
+class _GenerateBarcodeButtonState extends State<_GenerateBarcodeButton> {
+  bool _loading = false;
+
+  Future<void> _generate() async {
+    setState(() => _loading = true);
+    final result = await BarcodeRepository.instance.generateBarcode();
+    if (!mounted) return;
+    setState(() => _loading = false);
+    final l10n = AppLocalizations.of(context)!;
+    switch (result) {
+      case Success(:final data):
+        widget.ctrl.text = data;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.barcodeGeneratedSuccess),
+            backgroundColor: const Color(0xFF22C55E),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      case Failure(:final message):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.barcodeGenerateFailed(message)),
+            backgroundColor: const Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return SizedBox(
+      height: 28,
+      child: TextButton.icon(
+        onPressed: _loading ? null : _generate,
+        style: TextButton.styleFrom(
+          foregroundColor: const Color(0xFF6366F1),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        ),
+        icon: _loading
+            ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 1.5, color: Color(0xFF6366F1)))
+            : const Icon(Icons.auto_awesome_rounded, size: 13),
+        label: Text(_loading ? l10n.generatingBarcode : l10n.generateBarcode, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+      ),
     );
   }
 }
