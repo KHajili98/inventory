@@ -4142,6 +4142,18 @@ abstract class AppLocalizations {
   /// **'Please select a payment date'**
   String get payNisyeDateRequired;
 
+  /// Label for payment method selector in pay nisye dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Method'**
+  String get payNisyePaymentMethod;
+
+  /// Validation error when payment method is not selected
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a payment method'**
+  String get payNisyePaymentMethodRequired;
+
   /// Section title for nisye payment history
   ///
   /// In en, this message translates to:

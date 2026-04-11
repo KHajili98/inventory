@@ -290,15 +290,23 @@ class PayNisyeRequest {
   final String receiptNumber;
   final double paymentAmount;
   final DateTime paymentDate;
+  final String paymentMethod; // 'cash' | 'card' | 'transfer'
   final String? note;
 
-  const PayNisyeRequest({required this.receiptNumber, required this.paymentAmount, required this.paymentDate, this.note});
+  const PayNisyeRequest({
+    required this.receiptNumber,
+    required this.paymentAmount,
+    required this.paymentDate,
+    required this.paymentMethod,
+    this.note,
+  });
 
   Map<String, dynamic> toJson() => {
     'receipt_number': receiptNumber,
     'payment_amount': paymentAmount.toStringAsFixed(2),
     'payment_date':
         '${paymentDate.year.toString().padLeft(4, '0')}-${paymentDate.month.toString().padLeft(2, '0')}-${paymentDate.day.toString().padLeft(2, '0')}',
+    'payment_method': paymentMethod,
     if (note != null && note!.isNotEmpty) 'note': note,
   };
 }
@@ -314,15 +322,7 @@ class NisyePaymentCreatorInfo {
   final String? phone;
   final String? role;
 
-  const NisyePaymentCreatorInfo({
-    required this.id,
-    required this.username,
-    this.firstName,
-    this.lastName,
-    this.email,
-    this.phone,
-    this.role,
-  });
+  const NisyePaymentCreatorInfo({required this.id, required this.username, this.firstName, this.lastName, this.email, this.phone, this.role});
 
   factory NisyePaymentCreatorInfo.fromJson(Map<String, dynamic> json) => NisyePaymentCreatorInfo(
     id: json['id'] as String? ?? '',

@@ -2181,6 +2181,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get payNisyeDateRequired => 'Please select a payment date';
 
   @override
+  String get payNisyePaymentMethod => 'Payment Method';
+
+  @override
+  String get payNisyePaymentMethodRequired => 'Please select a payment method';
+
+  @override
   String get nisyeHistory => 'Payment History';
 
   @override

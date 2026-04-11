@@ -1449,6 +1449,7 @@ class _PayNisyeDialogState extends State<_PayNisyeDialog> {
   bool _isLoading = false;
   String? _errorMessage;
   DateTime? _selectedDate;
+  String? _selectedPaymentMethod; // 'cash' | 'card' | 'transfer'
 
   double get _remaining => widget.transaction.totalSellingPrice - (widget.transaction.paidAmount ?? 0);
   final _fmt = NumberFormat('#,##0.00');
@@ -1494,6 +1495,10 @@ class _PayNisyeDialogState extends State<_PayNisyeDialog> {
       setState(() => _errorMessage = widget.l10n.payNisyeDateRequired);
       return;
     }
+    if (_selectedPaymentMethod == null) {
+      setState(() => _errorMessage = widget.l10n.payNisyePaymentMethodRequired);
+      return;
+    }
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -1505,6 +1510,7 @@ class _PayNisyeDialogState extends State<_PayNisyeDialog> {
         receiptNumber: widget.transaction.receiptNumber,
         paymentAmount: amount,
         paymentDate: _selectedDate!,
+        paymentMethod: _selectedPaymentMethod!,
         note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
       ),
     );
@@ -1681,6 +1687,70 @@ class _PayNisyeDialogState extends State<_PayNisyeDialog> {
                           if (parsed > _remaining + 0.001) return l10n.payNisyeAmountExceeds;
                           return null;
                         },
+                      ),
+                      const SizedBox(height: 14),
+                      // Payment method selector
+                      Text(
+                        l10n.payNisyePaymentMethod,
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          for (final method in [
+                            ('cash', l10n.expensePaymentCash, Icons.payments_outlined),
+                            ('card', l10n.expensePaymentCard, Icons.credit_card_rounded),
+                            ('transfer', l10n.expensePaymentTransfer, Icons.swap_horiz_rounded),
+                          ]) ...[
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: _isLoading
+                                    ? null
+                                    : () => setState(() {
+                                        _selectedPaymentMethod = method.$1;
+                                        if (_errorMessage == l10n.payNisyePaymentMethodRequired) {
+                                          _errorMessage = null;
+                                        }
+                                      }),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 150),
+                                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+                                  decoration: BoxDecoration(
+                                    color: _selectedPaymentMethod == method.$1
+                                        ? const Color(0xFFE87C0A).withValues(alpha: 0.1)
+                                        : const Color(0xFFF8FAFC),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: _selectedPaymentMethod == method.$1 ? const Color(0xFFE87C0A) : const Color(0xFFE2E8F0),
+                                      width: _selectedPaymentMethod == method.$1 ? 1.5 : 1.0,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        method.$3,
+                                        size: 18,
+                                        color: _selectedPaymentMethod == method.$1 ? const Color(0xFFE87C0A) : const Color(0xFF94A3B8),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        method.$2,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: _selectedPaymentMethod == method.$1 ? const Color(0xFFE87C0A) : const Color(0xFF64748B),
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            if (method.$1 != 'transfer') const SizedBox(width: 8),
+                          ],
+                        ],
                       ),
                       const SizedBox(height: 14),
                       // Date field

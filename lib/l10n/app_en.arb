@@ -2445,6 +2445,12 @@
   "payNisyeDateRequired": "Please select a payment date",
   "@payNisyeDateRequired": { "description": "Validation error when date is not selected" },
 
+  "payNisyePaymentMethod": "Payment Method",
+  "@payNisyePaymentMethod": { "description": "Label for payment method selector in pay nisye dialog" },
+
+  "payNisyePaymentMethodRequired": "Please select a payment method",
+  "@payNisyePaymentMethodRequired": { "description": "Validation error when payment method is not selected" },
+
   "nisyeHistory": "Payment History",
   "@nisyeHistory": { "description": "Section title for nisye payment history" },
 

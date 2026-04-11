@@ -31,6 +31,10 @@ class ReturnedProduct {
   final bool isDefected;
   @JsonKey(name: 'receipt_number')
   final String receiptNumber;
+  @JsonKey(name: 'refund_amount')
+  final double? refundAmount;
+  @JsonKey(name: 'payment_method')
+  final String? paymentMethod;
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
   @JsonKey(name: 'updated_at')
@@ -43,6 +47,8 @@ class ReturnedProduct {
     required this.count,
     required this.isDefected,
     required this.receiptNumber,
+    this.refundAmount,
+    this.paymentMethod,
     required this.createdAt,
     required this.updatedAt,
   });
