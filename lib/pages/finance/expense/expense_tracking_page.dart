@@ -700,6 +700,7 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
           Expanded(flex: 2, child: Text(l10n.expensePaymentType, style: style)),
           Expanded(flex: 2, child: Text(l10n.expenseAmount, style: style)),
           Expanded(flex: 2, child: Text(l10n.expenseDate, style: style)),
+          Expanded(flex: 2, child: Text(l10n.operator, style: style)),
           Expanded(flex: 2, child: Text(l10n.expenseDocument, style: style)),
           Expanded(flex: 3, child: Text(l10n.expenseNote, style: style)),
         ],
@@ -760,6 +761,18 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
           Expanded(
             flex: 2,
             child: Text(dateStr, style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              e.creatorDetails?.username ?? '—',
+              style: TextStyle(
+                fontSize: 13,
+                color: e.creatorDetails != null ? const Color(0xFF1E293B) : const Color(0xFFCBD5E1),
+                fontWeight: e.creatorDetails != null ? FontWeight.w500 : FontWeight.w400,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           Expanded(
             flex: 2,
@@ -844,6 +857,18 @@ class _ExpenseTrackingPageState extends State<ExpenseTrackingPage> {
                     const Icon(Icons.calendar_today_outlined, size: 12, color: Color(0xFF94A3B8)),
                     const SizedBox(width: 4),
                     Text(dateStr, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                    if (e.creatorDetails != null) ...[
+                      const SizedBox(width: 10),
+                      const Icon(Icons.person_outline_rounded, size: 12, color: Color(0xFF94A3B8)),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          e.creatorDetails!.username,
+                          style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                     if (e.fileUrl != null) ...[
                       const SizedBox(width: 10),
                       InkWell(

@@ -4291,6 +4291,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Deducted Card (₼)'**
   String get cuttedCardAmount;
+
+  /// Label for who added/created the record
+  ///
+  /// In en, this message translates to:
+  /// **'Added by'**
+  String get addedBy;
+
+  /// Operator label
+  ///
+  /// In en, this message translates to:
+  /// **'Operator'**
+  String get operator;
 }
 
 class _AppLocalizationsDelegate

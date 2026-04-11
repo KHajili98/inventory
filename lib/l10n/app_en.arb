@@ -2514,5 +2514,11 @@
   "@cuttedCashAmount": { "description": "Cutted cash amount field label" },
 
   "cuttedCardAmount": "Deducted Card (₼)",
-  "@cuttedCardAmount": { "description": "Cutted card amount field label" }
+  "@cuttedCardAmount": { "description": "Cutted card amount field label" },
+
+  "addedBy": "Added by",
+  "@addedBy": { "description": "Label for who added/created the record" },
+
+  "operator": "Operator",
+  "@operator": { "description": "Operator label" }
 }

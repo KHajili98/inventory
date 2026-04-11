@@ -2261,4 +2261,10 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get cuttedCardAmount => 'Kəsilmiş Kart (₼)';
+
+  @override
+  String get addedBy => 'Əlavə edən';
+
+  @override
+  String get operator => 'Operator';
 }

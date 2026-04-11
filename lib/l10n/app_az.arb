@@ -1116,5 +1116,8 @@
   "closedCashAmount": "Fiziki Nağd Məbləği (₼)",
   "closedCardAmount": "Kart Məbləği (₼)",
   "cuttedCashAmount": "Kəsilmiş Nağd (₼)",
-  "cuttedCardAmount": "Kəsilmiş Kart (₼)"
+  "cuttedCardAmount": "Kəsilmiş Kart (₼)",
+
+  "addedBy": "Əlavə edən",
+  "operator": "Operator"
 }

@@ -2,6 +2,25 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'returned_product_models.g.dart';
 
+// ── Creator Details ───────────────────────────────────────────────────────────
+
+@JsonSerializable()
+class ReturnedProductCreatorDetails {
+  final String id;
+  final String username;
+  final String email;
+  @JsonKey(name: 'first_name')
+  final String? firstName;
+  @JsonKey(name: 'last_name')
+  final String? lastName;
+  final String? role;
+
+  const ReturnedProductCreatorDetails({required this.id, required this.username, required this.email, this.firstName, this.lastName, this.role});
+
+  factory ReturnedProductCreatorDetails.fromJson(Map<String, dynamic> json) => _$ReturnedProductCreatorDetailsFromJson(json);
+  Map<String, dynamic> toJson() => _$ReturnedProductCreatorDetailsToJson(this);
+}
+
 // ── API Response (paginated list) ────────────────────────────────────────────
 
 @JsonSerializable()
@@ -35,6 +54,8 @@ class ReturnedProduct {
   final double? refundAmount;
   @JsonKey(name: 'payment_method')
   final String? paymentMethod;
+  @JsonKey(name: 'returned_by_user_details')
+  final ReturnedProductCreatorDetails? creatorDetails;
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
   @JsonKey(name: 'updated_at')
@@ -49,6 +70,7 @@ class ReturnedProduct {
     required this.receiptNumber,
     this.refundAmount,
     this.paymentMethod,
+    this.creatorDetails,
     required this.createdAt,
     required this.updatedAt,
   });

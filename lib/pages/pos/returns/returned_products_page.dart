@@ -160,6 +160,23 @@ class _ReturnedProductsViewState extends State<_ReturnedProductsView> {
               _DetailRow(label: l10n.createdAt, value: DateFormat('dd.MM.yyyy HH:mm').format(product.createdAt.toLocal())),
               const SizedBox(height: 16),
               _DetailRow(label: l10n.updatedAt, value: DateFormat('dd.MM.yyyy HH:mm').format(product.updatedAt.toLocal())),
+              if (product.creatorDetails != null) ...[
+                const SizedBox(height: 16),
+                _DetailRow(
+                  label: l10n.operator,
+                  value: [
+                    product.creatorDetails!.username,
+                    if (product.creatorDetails!.firstName != null || product.creatorDetails!.lastName != null)
+                      '(${[product.creatorDetails!.firstName, product.creatorDetails!.lastName].where((e) => e != null && e.isNotEmpty).join(' ')})',
+                  ].join(' '),
+                ),
+                const SizedBox(height: 16),
+                _DetailRow(label: 'Email', value: product.creatorDetails!.email),
+                if (product.creatorDetails!.role != null) ...[
+                  const SizedBox(height: 16),
+                  _DetailRow(label: 'Role', value: product.creatorDetails!.role!),
+                ],
+              ],
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,

@@ -2255,4 +2255,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cuttedCardAmount => 'Deducted Card (₼)';
+
+  @override
+  String get addedBy => 'Added by';
+
+  @override
+  String get operator => 'Operator';
 }
