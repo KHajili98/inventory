@@ -842,8 +842,8 @@ class _CloseKassaDialogState extends State<_CloseKassaDialog> {
     setState(() {
       _physicalCash = val;
       if (val != null) {
-        final cutted = widget.expectedCash - val;
-        _cuttedCashCtrl.text = cutted > 0 ? cutted.toStringAsFixed(2) : '0.00';
+        final cutted = val - widget.expectedCash;
+        _cuttedCashCtrl.text = cutted != 0 ? cutted.toStringAsFixed(2) : '0.00';
       }
     });
   }
@@ -853,8 +853,8 @@ class _CloseKassaDialogState extends State<_CloseKassaDialog> {
     setState(() {
       _physicalCard = val;
       if (val != null) {
-        final cutted = widget.expectedCard - val;
-        _cuttedCardCtrl.text = cutted > 0 ? cutted.toStringAsFixed(2) : '0.00';
+        final cutted = val - widget.expectedCard;
+        _cuttedCardCtrl.text = cutted != 0 ? cutted.toStringAsFixed(2) : '0.00';
       }
     });
   }
@@ -894,8 +894,8 @@ class _CloseKassaDialogState extends State<_CloseKassaDialog> {
   Widget build(BuildContext context) {
     final fmt = NumberFormat('#,##0.00', 'az');
 
-    final cashDiff = _physicalCash != null ? _physicalCash! - widget.expectedCash : null;
-    final cardDiff = _physicalCard != null ? _physicalCard! - widget.expectedCard : null;
+    final cashDiff = (_physicalCash != null && _physicalCash! - widget.expectedCash != 0) ? _physicalCash! - widget.expectedCash : null;
+    final cardDiff = (_physicalCard != null && _physicalCard! - widget.expectedCard != 0) ? _physicalCard! - widget.expectedCard : null;
 
     final cuttedCash = double.tryParse(_cuttedCashCtrl.text) ?? 0.0;
     final cuttedCard = double.tryParse(_cuttedCardCtrl.text) ?? 0.0;
@@ -1200,7 +1200,7 @@ class _CloseFieldRow extends StatelessWidget {
             child,
           ],
         ),
-        if (diff != null) ...[
+        if (diff != null && diff != 0) ...[
           const SizedBox(height: 6),
           Padding(
             padding: const EdgeInsets.only(left: 34),
@@ -1250,17 +1250,21 @@ class _CuttedReadOnlyRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasValue = value > 0;
+    final hasValue = value != 0;
+    final isPositive = value > 0;
+    final displayColor = hasValue ? (isPositive ? _kSuccess : _kDanger) : const Color(0xFFCBD5E1);
+    final sign = isPositive ? '+' : '';
+
     return Row(
       children: [
-        Icon(icon, size: 14, color: hasValue ? _kDanger : const Color(0xFFCBD5E1)),
+        Icon(icon, size: 14, color: hasValue ? displayColor : const Color(0xFFCBD5E1)),
         const SizedBox(width: 10),
         Expanded(
           child: Text(label, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
         ),
         Text(
-          hasValue ? '-${fmt.format(value)} ₼' : '—',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: hasValue ? _kDanger : const Color(0xFFCBD5E1)),
+          hasValue ? '$sign${fmt.format(value)} ₼' : '—',
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: displayColor),
         ),
       ],
     );
@@ -1474,12 +1478,8 @@ class _HistoryTableRow extends StatelessWidget {
     final totalSales = kassa.totalSellingTransactionCashSum + kassa.totalSellingTransactionCardSum + kassa.totalSellingTransactionInvoiceSum;
     final totalFees = kassa.totalFeeTransactionCashSum + kassa.totalFeeTransactionCardSum + kassa.totalFeeTransactionInvoiceSum;
 
-    // Kəsir/Artıq = closed_cash - (opened_cash + total_cash_sales - total_cash_fees)
-    double? diff;
-    if (kassa.closedCashAmount != null) {
-      final expected = kassa.openedCashAmount + kassa.totalSellingTransactionCashSum - kassa.totalFeeTransactionCashSum;
-      diff = kassa.closedCashAmount! - expected;
-    }
+    // Use diffTotal from API
+    final diff = kassa.diffTotal;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -1586,11 +1586,8 @@ class _MobileHistoryCard extends StatelessWidget {
     final totalSales = kassa.totalSellingTransactionCashSum + kassa.totalSellingTransactionCardSum + kassa.totalSellingTransactionInvoiceSum;
     final totalFees = kassa.totalFeeTransactionCashSum + kassa.totalFeeTransactionCardSum + kassa.totalFeeTransactionInvoiceSum;
 
-    double? diff;
-    if (kassa.closedCashAmount != null) {
-      final expected = kassa.openedCashAmount + kassa.totalSellingTransactionCashSum - kassa.totalFeeTransactionCashSum;
-      diff = kassa.closedCashAmount! - expected;
-    }
+    // Use diffTotal from API
+    final diff = kassa.diffTotal;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 10),
@@ -1696,11 +1693,8 @@ class _KassaDetailDialog extends StatelessWidget {
     final totalSales = kassa.totalSellingTransactionCashSum + kassa.totalSellingTransactionCardSum + kassa.totalSellingTransactionInvoiceSum;
     final totalFees = kassa.totalFeeTransactionCashSum + kassa.totalFeeTransactionCardSum + kassa.totalFeeTransactionInvoiceSum;
 
-    double? diff;
-    if (kassa.closedCashAmount != null) {
-      final expected = kassa.openedCashAmount + kassa.totalSellingTransactionCashSum - kassa.totalFeeTransactionCashSum;
-      diff = kassa.closedCashAmount! - expected;
-    }
+    // Use diffTotal from API
+    final diff = kassa.diffTotal;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

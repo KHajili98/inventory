@@ -109,6 +109,9 @@ class Kassa {
   final double totalFeeTransactionCardSum;
   final double totalFeeTransactionInvoiceSum;
   final double totalDiscountAmountSum;
+  final double? diffCash;
+  final double? diffCard;
+  final double? diffTotal;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -135,6 +138,9 @@ class Kassa {
     required this.totalFeeTransactionCardSum,
     required this.totalFeeTransactionInvoiceSum,
     required this.totalDiscountAmountSum,
+    this.diffCash,
+    this.diffCard,
+    this.diffTotal,
     this.createdAt,
     this.updatedAt,
   });
@@ -173,6 +179,9 @@ class Kassa {
       totalFeeTransactionCardSum: _toDouble(json['total_fee_transaction_card_sum']),
       totalFeeTransactionInvoiceSum: _toDouble(json['total_fee_transaction_invoice_sum']),
       totalDiscountAmountSum: _toDouble(json['total_discount_amount_sum']),
+      diffCash: json['diff_cash'] != null ? _toDouble(json['diff_cash']) : null,
+      diffCard: json['diff_card'] != null ? _toDouble(json['diff_card']) : null,
+      diffTotal: json['diff_total'] != null ? _toDouble(json['diff_total']) : null,
       createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'] as String) : null,
       updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at'] as String) : null,
     );
