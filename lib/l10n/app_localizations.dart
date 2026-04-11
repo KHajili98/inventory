@@ -1424,6 +1424,18 @@ abstract class AppLocalizations {
   /// **'Are you sure you want to delete this expense?'**
   String get expenseDeleteConfirm;
 
+  /// No description provided for @expenseConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure?'**
+  String get expenseConfirmTitle;
+
+  /// No description provided for @expenseConfirmSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Please review the following details:'**
+  String get expenseConfirmSubtitle;
+
   /// No description provided for @expenseAdded.
   ///
   /// In en, this message translates to:

@@ -443,6 +443,8 @@
   "expenseEditTitle": "Xərci Redaktə Et",
   "expenseDeleteTitle": "Xərci Sil",
   "expenseDeleteConfirm": "Bu xərci silmək istədiyinizə əminsiniz?",
+  "expenseConfirmTitle": "Əminsinizmi?",
+  "expenseConfirmSubtitle": "Aşağıdakı məlumatları yoxlayın:",
   "expenseAdded": "Xərc uğurla əlavə edildi",
   "expenseUpdated": "Xərc yeniləndi",
   "expenseDeleted": "Xərc silindi",

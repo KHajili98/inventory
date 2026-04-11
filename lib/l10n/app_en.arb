@@ -1035,6 +1035,8 @@
   "expenseEditTitle": "Edit Expense",
   "expenseDeleteTitle": "Delete Expense",
   "expenseDeleteConfirm": "Are you sure you want to delete this expense?",
+  "expenseConfirmTitle": "Are you sure?",
+  "expenseConfirmSubtitle": "Please review the following details:",
   "expenseAdded": "Expense added successfully",
   "expenseUpdated": "Expense updated",
   "expenseDeleted": "Expense deleted",

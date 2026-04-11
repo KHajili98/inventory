@@ -719,6 +719,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Are you sure you want to delete this expense?';
 
   @override
+  String get expenseConfirmTitle => 'Are you sure?';
+
+  @override
+  String get expenseConfirmSubtitle => 'Please review the following details:';
+
+  @override
   String get expenseAdded => 'Expense added successfully';
 
   @override

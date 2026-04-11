@@ -723,6 +723,12 @@ class AppLocalizationsAz extends AppLocalizations {
   String get expenseDeleteConfirm => 'Bu xərci silmək istədiyinizə əminsiniz?';
 
   @override
+  String get expenseConfirmTitle => 'Əminsinizmi?';
+
+  @override
+  String get expenseConfirmSubtitle => 'Aşağıdakı məlumatları yoxlayın:';
+
+  @override
   String get expenseAdded => 'Xərc uğurla əlavə edildi';
 
   @override

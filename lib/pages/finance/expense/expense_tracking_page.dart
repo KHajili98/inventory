@@ -1046,9 +1046,103 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedCategory == null || _paymentType == null) return;
 
-    setState(() => _submitting = true);
-    final amount = double.parse(_amountCtrl.text.replaceAll(',', '.'));
     final l10n = AppLocalizations.of(context)!;
+    final amount = double.parse(_amountCtrl.text.replaceAll(',', '.'));
+
+    // ── Confirm dialog only for new expenses ──────────────────────────────
+    if (!_isEdit) {
+      final fmt = NumberFormat('#,##0.00');
+      final dateStr = DateFormat('dd.MM.yyyy').format(_date);
+      final payLabel = switch (_paymentType!.apiValue) {
+        'cash' => l10n.expensePaymentCash,
+        'card' => l10n.expensePaymentCard,
+        'transfer' => l10n.expensePaymentTransfer,
+        _ => _paymentType!.apiValue,
+      };
+
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+          contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+          actionsPadding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+          title: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(color: const Color(0xFFFFFBEB), borderRadius: BorderRadius.circular(10)),
+                child: const Icon(Icons.warning_amber_rounded, color: Color(0xFFF59E0B), size: 20),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                l10n.expenseConfirmTitle,
+                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.expenseConfirmSubtitle, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFBEB),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFFDE68A)),
+                ),
+                child: Column(
+                  children: [
+                    _ConfirmRow(
+                      icon: Icons.account_balance_wallet_outlined,
+                      label: l10n.expenseAmount,
+                      value: '${fmt.format(amount)} ₼',
+                      valueColor: const Color(0xFF1E293B),
+                    ),
+                    const SizedBox(height: 10),
+                    _ConfirmRow(icon: Icons.calendar_today_outlined, label: l10n.expenseDate, value: dateStr, valueColor: const Color(0xFF1E293B)),
+                    const SizedBox(height: 10),
+                    _ConfirmRow(icon: Icons.payment_outlined, label: l10n.expensePaymentType, value: payLabel, valueColor: const Color(0xFF1E293B)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            OutlinedButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFFE2E8F0)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
+              child: Text(
+                l10n.cancel,
+                style: const TextStyle(color: Color(0xFF475569), fontWeight: FontWeight.w600),
+              ),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF6366F1),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
+              child: Text(l10n.save, style: const TextStyle(fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed != true || !mounted) return;
+    }
+
+    setState(() => _submitting = true);
 
     if (_isEdit) {
       final result = await _feeRepo.updateFee(
@@ -1279,7 +1373,7 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
                     decoration: inputDecoration.copyWith(hintText: l10n.expenseSelectPaymentType),
                     borderRadius: BorderRadius.circular(10),
                     items: paymentTypes.map((p) => DropdownMenuItem(value: p.$1, child: Text(p.$2))).toList(),
-                    onChanged: (v) => setState(() => _paymentType = v),
+                    onChanged: _isEdit ? null : (v) => setState(() => _paymentType = v),
                     validator: (v) => v == null ? l10n.required : null,
                   ),
                   const SizedBox(height: 16),
@@ -1289,7 +1383,12 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
                   const SizedBox(height: 6),
                   TextFormField(
                     controller: _amountCtrl,
-                    decoration: inputDecoration.copyWith(hintText: l10n.expenseAmountHint, suffixText: '₼'),
+                    readOnly: _isEdit,
+                    decoration: inputDecoration.copyWith(
+                      hintText: l10n.expenseAmountHint,
+                      suffixText: '₼',
+                      fillColor: _isEdit ? const Color(0xFFF8FAFC) : Colors.white,
+                    ),
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.,]'))],
                     validator: (v) {
@@ -1305,22 +1404,22 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
                   _FieldLabel(l10n.expenseDate),
                   const SizedBox(height: 6),
                   InkWell(
-                    onTap: _pickDate,
+                    onTap: _isEdit ? null : _pickDate,
                     borderRadius: BorderRadius.circular(10),
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: _isEdit ? const Color(0xFFF8FAFC) : Colors.white,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.calendar_today_outlined, size: 18, color: Color(0xFF6366F1)),
+                          Icon(Icons.calendar_today_outlined, size: 18, color: _isEdit ? const Color(0xFFCBD5E1) : const Color(0xFF6366F1)),
                           const SizedBox(width: 10),
-                          Text(dateStr, style: const TextStyle(fontSize: 14, color: Color(0xFF1E293B))),
+                          Text(dateStr, style: TextStyle(fontSize: 14, color: _isEdit ? const Color(0xFF94A3B8) : const Color(0xFF1E293B))),
                           const Spacer(),
-                          const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: Color(0xFF94A3B8)),
+                          if (!_isEdit) const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: Color(0xFF94A3B8)),
                         ],
                       ),
                     ),
@@ -1699,6 +1798,34 @@ class _HeaderDateChip extends StatelessWidget {
           style: TextStyle(color: isActive ? Colors.white : Colors.white70, fontSize: 14, fontWeight: isActive ? FontWeight.w700 : FontWeight.w400),
         ),
       ),
+    );
+  }
+}
+
+// ── Confirm row ───────────────────────────────────────────────────────────────
+
+class _ConfirmRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color valueColor;
+
+  const _ConfirmRow({required this.icon, required this.label, required this.value, required this.valueColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: const Color(0xFFF59E0B)),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(label, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+        ),
+        Text(
+          value,
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: valueColor),
+        ),
+      ],
     );
   }
 }
