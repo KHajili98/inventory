@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -154,57 +155,123 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     final isMobile = context.isMobile;
     final fmt = DateFormat('dd MMM yyyy');
 
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(isMobile ? 16 : 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── Header ──────────────────────────────────────────────────────
-          _PageHeader(l10n: l10n, isMobile: isMobile),
-          const SizedBox(height: 20),
+    return Stack(
+      children: [
+        // ── Blurred content ───────────────────────────────────────────────
+        SingleChildScrollView(
+          padding: EdgeInsets.all(isMobile ? 16 : 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Header ──────────────────────────────────────────────────────
+              _PageHeader(l10n: l10n, isMobile: isMobile),
+              const SizedBox(height: 20),
 
-          // ── Date range picker ────────────────────────────────────────────
-          _DateRangeBar(range: _range, fmt: fmt, l10n: l10n, onTap: _pickDateRange, isMobile: isMobile),
-          const SizedBox(height: 24),
+              // ── Date range picker ────────────────────────────────────────────
+              _DateRangeBar(range: _range, fmt: fmt, l10n: l10n, onTap: _pickDateRange, isMobile: isMobile),
+              const SizedBox(height: 24),
 
-          // ── Summary cards ────────────────────────────────────────────────
-          _SummaryCards(revenue: _revenue, totalExpenses: _totalExpenses, tax: _tax, netProfit: _netProfit, l10n: l10n, isMobile: isMobile),
-          const SizedBox(height: 28),
+              // ── Summary cards ────────────────────────────────────────────────
+              _SummaryCards(revenue: _revenue, totalExpenses: _totalExpenses, tax: _tax, netProfit: _netProfit, l10n: l10n, isMobile: isMobile),
+              const SizedBox(height: 28),
 
-          // ── Charts row (bar + pie) ───────────────────────────────────────
-          if (isMobile) ...[
-            _BarChartCard(range: _range, l10n: l10n),
-            const SizedBox(height: 24),
-            _PieChartCard(range: _range, l10n: l10n),
-            const SizedBox(height: 24),
-            _LineChartCard(range: _range, l10n: l10n),
-            const SizedBox(height: 24),
-            _DailyBreakdownTableWithExport(range: _range, l10n: l10n),
-          ] else ...[
-            IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    flex: 5,
-                    child: _BarChartCard(range: _range, l10n: l10n),
+              // ── Charts row (bar + pie) ───────────────────────────────────────
+              if (isMobile) ...[
+                _BarChartCard(range: _range, l10n: l10n),
+                const SizedBox(height: 24),
+                _PieChartCard(range: _range, l10n: l10n),
+                const SizedBox(height: 24),
+                _LineChartCard(range: _range, l10n: l10n),
+                const SizedBox(height: 24),
+                _DailyBreakdownTableWithExport(range: _range, l10n: l10n),
+              ] else ...[
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: _BarChartCard(range: _range, l10n: l10n),
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        flex: 4,
+                        child: _PieChartCard(range: _range, l10n: l10n),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 20),
-                  Expanded(
-                    flex: 4,
-                    child: _PieChartCard(range: _range, l10n: l10n),
+                ),
+                const SizedBox(height: 24),
+                _LineChartCard(range: _range, l10n: l10n),
+                const SizedBox(height: 24),
+                _DailyBreakdownTableWithExport(range: _range, l10n: l10n),
+              ],
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
+
+        // ── Coming Soon Overlay ───────────────────────────────────────────
+        Positioned.fill(
+          child: ClipRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+              child: Container(
+                color: Colors.black.withValues(alpha: 0.15),
+                child: Center(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: isMobile ? 32 : 48, vertical: isMobile ? 24 : 32),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: _kPrimary.withValues(alpha: 0.3), width: 2),
+                      boxShadow: [BoxShadow(color: _kPrimary.withValues(alpha: 0.2), blurRadius: 32, offset: const Offset(0, 8))],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Icon
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(color: _kPrimary.withValues(alpha: 0.1), shape: BoxShape.circle),
+                          child: Icon(Icons.analytics_outlined, size: isMobile ? 48 : 64, color: _kPrimary),
+                        ),
+                        SizedBox(height: isMobile ? 20 : 28),
+                        // Title
+                        Text(
+                          'Tezliklə',
+                          style: TextStyle(fontSize: isMobile ? 28 : 36, fontWeight: FontWeight.w900, color: _kPrimary, letterSpacing: -0.5),
+                        ),
+                        const SizedBox(height: 8),
+                        // Subtitle
+                        Text(
+                          'Coming Soon',
+                          style: TextStyle(
+                            fontSize: isMobile ? 16 : 20,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF64748B),
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        SizedBox(height: isMobile ? 12 : 16),
+                        // Description
+                        Container(
+                          constraints: BoxConstraints(maxWidth: isMobile ? 280 : 400),
+                          child: Text(
+                            'Analitika səhifəsi hazırlanır. Tezliklə ətraflı statistika və hesabatlar burada əlçatan olacaq.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: isMobile ? 13 : 15, color: const Color(0xFF94A3B8), height: 1.5),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ],
+                ),
               ),
             ),
-            const SizedBox(height: 24),
-            _LineChartCard(range: _range, l10n: l10n),
-            const SizedBox(height: 24),
-            _DailyBreakdownTableWithExport(range: _range, l10n: l10n),
-          ],
-          const SizedBox(height: 24),
-        ],
-      ),
+          ),
+        ),
+      ],
     );
   }
 }
