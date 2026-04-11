@@ -151,9 +151,7 @@ class KassaRepository {
       final response = await _dio.get<List<int>>(
         ApiConstants.kassaExportZCheck,
         queryParameters: {'kassa_id': kassaId},
-        options: Options(
-          responseType: ResponseType.bytes,
-        ),
+        options: Options(responseType: ResponseType.bytes),
       );
 
       if (response.statusCode == 200 && response.data != null) {

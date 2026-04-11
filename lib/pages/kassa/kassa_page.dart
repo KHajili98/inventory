@@ -1883,17 +1883,13 @@ class _KassaDetailDialog extends StatelessWidget {
 
   void _downloadZReport(BuildContext context, String kassaId) async {
     try {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Z Hesabatı yüklənir...'),
-          backgroundColor: _kSuccess,
-          duration: Duration(seconds: 2),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Z Hesabatı yüklənir...'), backgroundColor: _kSuccess, duration: Duration(seconds: 2)));
 
       // Download PDF through Dio (with auth token from interceptor)
       final result = await context.read<KassaCubit>().downloadZReport(kassaId);
-      
+
       switch (result) {
         case Success(:final data):
           // Create blob and download
@@ -1902,31 +1898,22 @@ class _KassaDetailDialog extends StatelessWidget {
           final anchor = html.AnchorElement(href: url)
             ..setAttribute('download', 'z-hesabat-$kassaId.pdf')
             ..click();
-          
+
           // Cleanup
           html.Url.revokeObjectUrl(url);
           anchor.remove();
-          
+
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Z Hesabatı yükləndi'),
-                backgroundColor: _kSuccess,
-                duration: Duration(seconds: 2),
-              ),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Z Hesabatı yükləndi'), backgroundColor: _kSuccess, duration: Duration(seconds: 2)));
           }
         case Failure(:final message):
           throw message;
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Rapor yüklenirken xəta baş verdi: $e'),
-            backgroundColor: _kDanger,
-          ),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Rapor yüklenirken xəta baş verdi: $e'), backgroundColor: _kDanger));
       }
     }
   }
