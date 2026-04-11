@@ -248,10 +248,10 @@ class _ActiveSessionBody extends StatelessWidget {
     final expTransfer = session.totalExpensesTransfer;
     final totalExp = session.totalExpenses;
 
-    // Compute expected cash in register: opening cash + cash sales - cash expenses
-    final expectedCash = session.openedCashAmount + salesCash - expCash;
-    // Compute expected card in register: opening card + card sales - card expenses
-    final expectedCard = session.openedCardAmount + salesCard - expCard;
+    // Compute expected cash in register: opening cash + cash sales - cash expenses (min 0)
+    final expectedCash = (session.openedCashAmount + salesCash - expCash).clamp(0.0, double.infinity);
+    // Compute expected card in register: opening card + card sales - card expenses (min 0)
+    final expectedCard = (session.openedCardAmount + salesCard - expCard).clamp(0.0, double.infinity);
 
     return Padding(
       padding: EdgeInsets.all(isMobile ? 16 : 20),
@@ -679,8 +679,8 @@ class _CloseKassaButton extends StatelessWidget {
   }
 
   void _showCloseDialog(BuildContext context) {
-    final expectedCash = session.openedCashAmount + session.totalSalesCash - session.totalExpensesCash;
-    final expectedCard = session.openedCardAmount + session.totalSalesCard - session.totalExpensesCard;
+    final expectedCash = (session.openedCashAmount + session.totalSalesCash - session.totalExpensesCash).clamp(0.0, double.infinity);
+    final expectedCard = (session.openedCardAmount + session.totalSalesCard - session.totalExpensesCard).clamp(0.0, double.infinity);
     showDialog<void>(
       context: context,
       builder: (ctx) => BlocProvider.value(
@@ -819,8 +819,8 @@ class _CloseKassaDialog extends StatefulWidget {
 
 class _CloseKassaDialogState extends State<_CloseKassaDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _closedCashCtrl = TextEditingController(text: '0.00');
-  final _closedCardCtrl = TextEditingController(text: '0.00');
+  final _closedCashCtrl = TextEditingController();
+  final _closedCardCtrl = TextEditingController();
   final _cuttedCashCtrl = TextEditingController(text: '0.00');
   final _cuttedCardCtrl = TextEditingController(text: '0.00');
   final _noteCtrl = TextEditingController();
