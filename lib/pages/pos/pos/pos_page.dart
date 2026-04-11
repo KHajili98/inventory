@@ -1238,7 +1238,7 @@ class _PosPageState extends State<PosPage> {
                   ),
                 ),
                 SizedBox(
-                  width: 100,
+                  width: 140,
                   child: Center(
                     child: Text(
                       l10n.posQuantity,
@@ -1352,25 +1352,53 @@ class _PosPageState extends State<PosPage> {
                               ),
                             ),
                             SizedBox(
-                              width: 100,
+                              width: 140,
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   _buildQuantityButton(Icons.remove, () => _updateQuantity(index, item.quantity - 1)),
-                                  Container(
-                                    width: 40,
+                                  const SizedBox(width: 4),
+                                  SizedBox(
+                                    width: 60,
                                     height: 36,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      border: Border.all(color: const Color(0xFFE2E8F0)),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      '${item.quantity}',
+                                    child: TextField(
+                                      controller: TextEditingController(text: '${item.quantity}'),
+                                      keyboardType: TextInputType.number,
+                                      textAlign: TextAlign.center,
                                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF2D3748)),
+                                      decoration: InputDecoration(
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                          borderSide: const BorderSide(color: Color(0xFF667EEA), width: 2),
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        isDense: true,
+                                      ),
+                                      onSubmitted: (value) {
+                                        final newQty = int.tryParse(value) ?? item.quantity;
+                                        _updateQuantity(index, newQty);
+                                        _searchFocusNode.requestFocus();
+                                      },
+                                      onTapOutside: (event) {
+                                        final controller = TextEditingController(text: '${item.quantity}');
+                                        final newQty = int.tryParse(controller.text) ?? item.quantity;
+                                        if (newQty != item.quantity) {
+                                          _updateQuantity(index, newQty);
+                                        }
+                                      },
                                     ),
                                   ),
+                                  const SizedBox(width: 4),
                                   _buildQuantityButton(Icons.add, () => _updateQuantity(index, item.quantity + 1)),
                                 ],
                               ),
