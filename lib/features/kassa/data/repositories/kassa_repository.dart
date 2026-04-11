@@ -108,6 +108,24 @@ class KassaRepository {
     }
   }
 
+  /// GET /api/kassa/kassa-status/ — returns whether kassa is opened or closed
+  Future<ApiResult<String>> fetchKassaStatus() async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(ApiConstants.kassaStatus);
+
+      if (response.statusCode == 200) {
+        final status = response.data?['status'] as String? ?? 'closed';
+        return Success(status);
+      }
+
+      return Failure('Unexpected status: ${response.statusCode}', statusCode: response.statusCode);
+    } on DioException catch (e) {
+      return Failure(_parseDioError(e), statusCode: e.response?.statusCode);
+    } catch (e) {
+      return Failure(e.toString());
+    }
+  }
+
   /// GET /api/kassa/current-session-summary/ — live session summary
   Future<ApiResult<KassaSessionSummary>> fetchCurrentSessionSummary() async {
     try {

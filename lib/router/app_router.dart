@@ -19,6 +19,7 @@ import 'package:inventory/pages/pos/transactions/transaction_list_page.dart';
 import 'package:inventory/pages/pos/returns/returned_products_page.dart';
 import 'package:inventory/pages/customers/loyal_customers_page.dart';
 import 'package:inventory/widgets/app_shell.dart';
+import 'package:inventory/widgets/kassa_status_guard.dart';
 
 /// Global navigator key — used by the Dio interceptor to redirect on 401
 /// without needing a BuildContext.
@@ -96,7 +97,10 @@ GoRouter createRouter(AuthCubit authCubit) {
         observers: [RouteLogger()],
         builder: (context, state, child) => AppShell(child: child),
         routes: [
-          GoRoute(path: '/sell-module/pos', builder: (context, state) => const PosPage()),
+          GoRoute(
+            path: '/sell-module/pos',
+            builder: (context, state) => const KassaStatusGuard(child: PosPage()),
+          ),
           GoRoute(path: '/sell-module/transactions', builder: (context, state) => const TransactionListPage()),
           GoRoute(path: '/sell-module/returns', builder: (context, state) => const ReturnedProductsPage()),
           GoRoute(path: '/invoices', builder: (context, state) => const InvoicesPage()),
@@ -105,7 +109,10 @@ GoRouter createRouter(AuthCubit authCubit) {
           GoRoute(path: '/product-requests', builder: (context, state) => const ProductRequestsPage()),
           GoRoute(path: '/loyal-customers', builder: (context, state) => const LoyalCustomersPage()),
           GoRoute(path: '/finance/price-calculation', builder: (context, state) => const PriceCalculationPage()),
-          GoRoute(path: '/finance/expense-tracking', builder: (context, state) => const ExpenseTrackingPage()),
+          GoRoute(
+            path: '/finance/expense-tracking',
+            builder: (context, state) => const KassaStatusGuard(child: ExpenseTrackingPage()),
+          ),
           GoRoute(path: '/finance/analytics', builder: (context, state) => const AnalyticsPage()),
           GoRoute(path: '/kassa', builder: (context, state) => const KassaPage()),
         ],

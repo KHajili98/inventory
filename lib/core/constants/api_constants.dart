@@ -74,6 +74,7 @@ abstract class ApiConstants {
   static const String kassaList = '/api/kassa/';
   static const String changeKassa = '/api/kassa/change-kassa/';
   static const String kassaCurrentSession = '/api/kassa/current-session-summary/';
+  static const String kassaStatus = '/api/kassa/kassa-status/';
 
   /// Single kassa record by UUID.
   static String kassaDetail(String id) => '/api/kassa/$id/';
