@@ -39,11 +39,7 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
         _SubNavItem(labelKey: 'returnedProducts', path: '/sell-module/returns'),
       ],
     ),
-    _NavItem(labelKey: 'invoices', icon: Icons.receipt_long_rounded, path: '/invoices'),
-    _NavItem(labelKey: 'inventoryProducts', icon: Icons.inventory_2_rounded, path: '/inventory-products'),
-    _NavItem(labelKey: 'stock', icon: Icons.warehouse_rounded, path: '/stock'),
-    _NavItem(labelKey: 'productRequests', icon: Icons.swap_horiz_rounded, path: '/product-requests'),
-    _NavItem(labelKey: 'loyalCustomers', icon: Icons.loyalty_rounded, path: '/loyal-customers'),
+    _NavItem(labelKey: 'kassa', icon: Icons.point_of_sale_rounded, path: '/kassa'),
     _NavItem(
       labelKey: 'finance',
       icon: Icons.account_balance_wallet_rounded,
@@ -54,7 +50,11 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
         _SubNavItem(labelKey: 'expenseTracking', path: '/finance/expense-tracking'),
       ],
     ),
-    _NavItem(labelKey: 'kassa', icon: Icons.point_of_sale_rounded, path: '/kassa'),
+    _NavItem(labelKey: 'invoices', icon: Icons.receipt_long_rounded, path: '/invoices'),
+    _NavItem(labelKey: 'inventoryProducts', icon: Icons.inventory_2_rounded, path: '/inventory-products'),
+    _NavItem(labelKey: 'stock', icon: Icons.warehouse_rounded, path: '/stock'),
+    _NavItem(labelKey: 'productRequests', icon: Icons.swap_horiz_rounded, path: '/product-requests'),
+    _NavItem(labelKey: 'loyalCustomers', icon: Icons.loyalty_rounded, path: '/loyal-customers'),
   ];
 
   /// Returns the nav items visible to the given role.

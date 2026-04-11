@@ -21,7 +21,7 @@ class AppLocalizationsAz extends AppLocalizations {
   String get invoices => 'Qaimələr';
 
   @override
-  String get inventoryProducts => 'İnventar Məhsulları';
+  String get inventoryProducts => 'Anbar Məhsulları';
 
   @override
   String get finance => 'Maliyyə';
@@ -917,7 +917,7 @@ class AppLocalizationsAz extends AppLocalizations {
   String get exportError => 'İxrac xətası';
 
   @override
-  String get stock => 'Stok';
+  String get stock => 'Mağaza Stoku';
 
   @override
   String get activeStockAmount => 'Aktiv Stok Miqdarı';
@@ -1260,7 +1260,7 @@ class AppLocalizationsAz extends AppLocalizations {
   String get savingPrice => 'Saxlanılır…';
 
   @override
-  String get loyalCustomers => 'Sadiq Müştərilər';
+  String get loyalCustomers => 'Müştərilər';
 
   @override
   String get loyalCustomersSubtitle =>
@@ -1285,7 +1285,7 @@ class AppLocalizationsAz extends AppLocalizations {
   String get discount => 'Endirim';
 
   @override
-  String get loyaltyId => 'Sadiqlik ID';
+  String get loyaltyId => 'Müştəri ID';
 
   @override
   String get customerCreated => 'Müştəri uğurla əlavə edildi';
