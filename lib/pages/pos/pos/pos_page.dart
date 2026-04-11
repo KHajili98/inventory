@@ -44,9 +44,9 @@ class _PosPageState extends State<PosPage> {
   int? _selectedDiscountBadge;
   bool _discountIsPercent = true; // true for %, false for AZN
 
-  PriceType _priceType = PriceType.retail;
+  PriceType? _priceType; // Required - null until user selects
   CustomerModel? _selectedCustomer;
-  PaymentMethod _selectedPaymentMethod = PaymentMethod.card;
+  PaymentMethod? _selectedPaymentMethod; // Required - null until user selects
 
   // Nisye (credit) state
   bool _nisyeEnabled = false;
@@ -183,6 +183,8 @@ class _PosPageState extends State<PosPage> {
   }
 
   double _getCurrentPrice(StockProductItemModel product) {
+    // If price type not selected yet, return retail price as default for display
+    if (_priceType == null) return product.retailUnitPrice ?? 0.0;
     return _priceType == PriceType.retail ? (product.retailUnitPrice ?? 0.0) : (product.wholeUnitSalesPrice ?? 0.0);
   }
 
@@ -334,7 +336,10 @@ class _PosPageState extends State<PosPage> {
     Future.microtask(() => _searchFocusNode.requestFocus());
   }
 
-  SellingPriceType get _sellingPriceType => _priceType == PriceType.retail ? SellingPriceType.retailSale : SellingPriceType.wholeSale;
+  SellingPriceType get _sellingPriceType {
+    if (_priceType == null) throw Exception('Price type not selected');
+    return _priceType == PriceType.retail ? SellingPriceType.retailSale : SellingPriceType.wholeSale;
+  }
 
   SellingPaymentMethod get _sellingPaymentMethod {
     switch (_selectedPaymentMethod) {
@@ -344,7 +349,14 @@ class _PosPageState extends State<PosPage> {
         return SellingPaymentMethod.card;
       case PaymentMethod.transfer:
         return SellingPaymentMethod.transfer;
+      case null:
+        throw Exception('Payment method not selected');
     }
+  }
+
+  /// Returns true if all required fields are selected and cart is not empty
+  bool get _canCompleteSale {
+    return _cartItems.isNotEmpty && _priceType != null && _selectedPaymentMethod != null;
   }
 
   /// Rounds a monetary price/amount value to max 3 decimal places.
@@ -2003,7 +2015,7 @@ class _PosPageState extends State<PosPage> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: (_cartItems.isEmpty || _isCompletingSale) ? null : _completeSale,
+                      onPressed: _canCompleteSale && !_isCompletingSale ? _completeSale : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF48BB78),
                         foregroundColor: Colors.white,
