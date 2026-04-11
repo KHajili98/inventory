@@ -1686,8 +1686,9 @@ class _KassaDetailDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final openedStr = kassa.openedDate != null ? dateFmt.format(kassa.openedDate!.toLocal()) : '—';
-    final closedStr = kassa.closedDate != null ? dateFmt.format(kassa.closedDate!.toLocal()) : '—';
+    final dateTimeFmt = DateFormat('dd.MM.yyyy, HH:mm');
+    final openedStr = kassa.openedDate != null ? dateTimeFmt.format(kassa.openedDate!.toLocal()) : '—';
+    final closedStr = kassa.closedDate != null ? dateTimeFmt.format(kassa.closedDate!.toLocal()) : '—';
     final openedBy = kassa.openedUserDetails?.fullName ?? '—';
     final closedBy = kassa.closedByUserDetails?.fullName ?? '—';
     final totalSales = kassa.totalSellingTransactionCashSum + kassa.totalSellingTransactionCardSum + kassa.totalSellingTransactionInvoiceSum;
