@@ -57,12 +57,18 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
     _NavItem(labelKey: 'loyalCustomers', icon: Icons.loyalty_rounded, path: '/loyal-customers'),
   ];
 
-  /// Returns the nav items visible to the given role.
+  /// Returns the nav items visible to the given role and inventory type.
   ///
-  /// warehouse_staff  → invoices + inventory only
-  /// sales_rep        → no invoices; finance shows only expense tracking
-  /// everyone else    → all items
-  static List<_NavItem> _navItemsForRole(UserRole role) {
+  /// non-stock inventory (isStock == false) → invoices + inventory only (same as warehouse_staff)
+  /// warehouse_staff                        → invoices + inventory only
+  /// sales_rep                              → no invoices; finance shows only expense tracking
+  /// everyone else                          → all items
+  static List<_NavItem> _navItemsForRole(UserRole role, {bool isStockInventory = false}) {
+    // If the inventory is NOT a stock inventory (isStock == false), show only invoices + inventory
+    if (!isStockInventory) {
+      return _allNavItems.where((item) => item.path == '/invoices' || item.path == '/inventory-products').toList();
+    }
+
     if (role == UserRole.warehouseStaff) {
       return _allNavItems.where((item) => item.path == '/invoices' || item.path == '/inventory-products').toList();
     }
@@ -197,7 +203,8 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     final authState = context.watch<AuthCubit>().state;
     final role = authState is AuthAuthenticated ? authState.response.user.role : UserRole.unknown;
-    final navItems = _navItemsForRole(role);
+    final isStockInventory = authState is AuthAuthenticated ? (authState.response.loggedInInventory?.isStock ?? false) : false;
+    final navItems = _navItemsForRole(role, isStockInventory: isStockInventory);
     final selectedIndex = _selectedIndex(context, navItems);
     final l10n = AppLocalizations.of(context)!;
     final isMobile = context.isMobile;
