@@ -364,9 +364,9 @@ class _SessionInfoColumn extends StatelessWidget {
         const SizedBox(height: 12),
         const Divider(height: 1, color: Color(0xFFF1F5F9)),
         const SizedBox(height: 12),
-        _SalesRow(label: 'Açılış Nağd:', value: openedCash, fmt: fmt, color: _kCash, icon: Icons.payments_outlined),
-        const SizedBox(height: 6),
-        _SalesRow(label: 'Açılış Kart:', value: openedCard, fmt: fmt, color: _kCard, icon: Icons.credit_card_outlined),
+        _SalesRow(label: 'Açılış Nağd:', value: openedCash, fmt: fmt, color: _kCash, icon: Icons.payments_outlined, fontSize: 15),
+        const SizedBox(height: 8),
+        _SalesRow(label: 'Açılış Kart:', value: openedCard, fmt: fmt, color: _kCard, icon: Icons.credit_card_outlined, fontSize: 15),
       ],
     );
   }
@@ -423,20 +423,24 @@ class _SalesRow extends StatelessWidget {
   final NumberFormat fmt;
   final Color color;
   final IconData icon;
+  final double fontSize;
 
-  const _SalesRow({required this.label, required this.value, required this.fmt, required this.color, required this.icon});
+  const _SalesRow({required this.label, required this.value, required this.fmt, required this.color, required this.icon, this.fontSize = 13});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 14, color: color),
+        Icon(icon, size: fontSize + 1, color: color),
         const SizedBox(width: 6),
-        Text(label, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+        Text(
+          label,
+          style: TextStyle(fontSize: fontSize, color: const Color(0xFF64748B)),
+        ),
         const Spacer(),
         Text(
           '${fmt.format(value)} ₼',
-          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: color),
+          style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w600, color: color),
         ),
       ],
     );
@@ -524,12 +528,12 @@ class _CashStatusColumn extends StatelessWidget {
       children: [
         const Text(
           'SİSTEMDƏ OLMALI OLAN',
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8), letterSpacing: 0.8),
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8), letterSpacing: 0.8),
         ),
-        const SizedBox(height: 10),
-        _SalesRow(label: 'Nağd:', value: expectedCash, fmt: fmt, color: _kCash, icon: Icons.payments_outlined),
-        const SizedBox(height: 6),
-        _SalesRow(label: 'Kart:', value: expectedCard, fmt: fmt, color: _kCard, icon: Icons.credit_card_outlined),
+        const SizedBox(height: 12),
+        _SalesRow(label: 'Nağd:', value: expectedCash, fmt: fmt, color: _kCash, icon: Icons.payments_outlined, fontSize: 15),
+        const SizedBox(height: 8),
+        _SalesRow(label: 'Kart:', value: expectedCard, fmt: fmt, color: _kCard, icon: Icons.credit_card_outlined, fontSize: 15),
         const SizedBox(height: 16),
       ],
     );
@@ -663,7 +667,7 @@ class _CloseKassaButton extends StatelessWidget {
       icon: isLoading
           ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
           : const Icon(Icons.receipt_long_rounded, size: 18),
-      label: const Text('[Smenanı Bağla / Z-Hesabat]', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+      label: const Text('Kassanı Bağla', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
       style: ElevatedButton.styleFrom(
         backgroundColor: _kSuccess,
         foregroundColor: Colors.white,
@@ -1338,7 +1342,7 @@ class _KassaHistorySectionState extends State<_KassaHistorySection> {
                     onChanged: (v) => setState(() => _search = v),
                     style: const TextStyle(fontSize: 13),
                     decoration: InputDecoration(
-                      hintText: '[Axtar...]',
+                      hintText: 'Axtar...',
                       hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
                       isDense: true,
                       prefixIcon: const Icon(Icons.search_rounded, size: 18, color: Color(0xFF94A3B8)),
@@ -1359,17 +1363,6 @@ class _KassaHistorySectionState extends State<_KassaHistorySection> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.tune_rounded, size: 16),
-                  label: const Text('[Filtrlə]', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: _kPrimary,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    side: const BorderSide(color: _kPrimary),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                ),
               ],
             ),
           ),
@@ -1543,7 +1536,7 @@ class _HistoryTableRow extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(color: const Color(0xFFEFF6FF), borderRadius: BorderRadius.circular(6)),
                 child: const Text(
-                  '[Bax/Çap et]',
+                  'Bax/Çap et',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF3B82F6)),
                 ),
               ),
