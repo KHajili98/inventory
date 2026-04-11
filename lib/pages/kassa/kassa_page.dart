@@ -704,8 +704,8 @@ class _OpenKassaDialog extends StatefulWidget {
 
 class _OpenKassaDialogState extends State<_OpenKassaDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _cashCtrl = TextEditingController(text: '0.00');
-  final _cardCtrl = TextEditingController(text: '0.00');
+  final _cashCtrl = TextEditingController();
+  final _cardCtrl = TextEditingController();
   bool _loading = false;
   String? _error;
 
@@ -2019,22 +2019,33 @@ class _AmountField extends StatelessWidget {
 InputDecoration _inputDecoration(String label, String hint) => InputDecoration(
   labelText: label,
   hintText: hint,
+  hintStyle: const TextStyle(color: Color(0xFFCBD5E1), fontSize: 14),
+  labelStyle: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
+  floatingLabelStyle: const TextStyle(color: _kPrimary, fontSize: 14, fontWeight: FontWeight.w600),
+  suffixText: '₼',
+  suffixStyle: const TextStyle(color: Color(0xFF64748B), fontSize: 14, fontWeight: FontWeight.w600),
+  filled: true,
+  fillColor: const Color(0xFFFAFAFC),
   isDense: true,
-  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
   border: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(8),
-    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+    borderRadius: BorderRadius.circular(12),
+    borderSide: const BorderSide(color: Color(0xFFCBD5E1), width: 1.5),
   ),
   enabledBorder: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(8),
-    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+    borderRadius: BorderRadius.circular(12),
+    borderSide: const BorderSide(color: Color(0xFFCBD5E1), width: 1.5),
   ),
   focusedBorder: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(8),
-    borderSide: const BorderSide(color: _kPrimary, width: 1.5),
+    borderRadius: BorderRadius.circular(12),
+    borderSide: const BorderSide(color: _kPrimary, width: 2),
   ),
   errorBorder: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(8),
-    borderSide: const BorderSide(color: _kDanger),
+    borderRadius: BorderRadius.circular(12),
+    borderSide: const BorderSide(color: _kDanger, width: 1.5),
+  ),
+  focusedErrorBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(12),
+    borderSide: const BorderSide(color: _kDanger, width: 2),
   ),
 );
