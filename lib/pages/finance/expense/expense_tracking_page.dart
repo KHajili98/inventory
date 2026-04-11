@@ -1331,13 +1331,13 @@ class _ExpenseFormDialogState extends State<_ExpenseFormDialog> {
                         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
                       ),
                       const Spacer(),
-                      if (_isEdit)
-                        IconButton(
-                          onPressed: _submitting ? null : _confirmDelete,
-                          icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444)),
-                          tooltip: l10n.delete,
-                          style: IconButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                        ),
+                      // if (_isEdit)
+                      //   IconButton(
+                      //     onPressed: _submitting ? null : _confirmDelete,
+                      //     icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444)),
+                      //     tooltip: l10n.delete,
+                      //     style: IconButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                      //   ),
                       IconButton(
                         onPressed: _submitting ? null : () => Navigator.of(context).pop(),
                         icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
