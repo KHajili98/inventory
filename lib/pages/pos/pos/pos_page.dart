@@ -988,6 +988,10 @@ class _PosPageState extends State<PosPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final String currentUser = _authUser != null ? '${_authUser!.firstName} ${_authUser!.lastName[0]}.' : '—';
+    final String inventoryName = _loggedInInventory?.name ?? l10n.posKassa;
+
     return GestureDetector(
       onTap: () {
         // Re-focus search when clicking anywhere in the POS area
@@ -995,6 +999,55 @@ class _PosPageState extends State<PosPage> {
       },
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F7FA),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          toolbarHeight: 70,
+          titleSpacing: 24,
+          title: Row(
+            children: [
+              // Left side - Search
+              Expanded(child: _buildSearchBar()),
+              const SizedBox(width: 24),
+              // Right side - Info
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.point_of_sale, color: Colors.white, size: 20),
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'POS - $inventoryName',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      const Icon(Icons.person_outline, size: 12, color: Color(0xFF667EEA)),
+                      const SizedBox(width: 4),
+                      Text(currentUser, style: const TextStyle(fontSize: 11, color: Color(0xFF718096))),
+                      const SizedBox(width: 12),
+                      const Icon(Icons.calendar_today, size: 12, color: Color(0xFF667EEA)),
+                      const SizedBox(width: 4),
+                      Text(_currentDate, style: const TextStyle(fontSize: 11, color: Color(0xFF718096))),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
         body: Column(
           children: [
             Expanded(
@@ -1007,11 +1060,6 @@ class _PosPageState extends State<PosPage> {
                       flex: 3,
                       child: Column(
                         children: [
-                          _buildTopBar(),
-                          const SizedBox(height: 16),
-
-                          _buildSearchBar(),
-                          const SizedBox(height: 16),
                           Expanded(child: _buildProductTable()),
                           const SizedBox(height: 16),
                           _buildBottomButtons(),
@@ -1030,179 +1078,125 @@ class _PosPageState extends State<PosPage> {
     );
   }
 
-  Widget _buildTopBar() {
-    final l10n = AppLocalizations.of(context)!;
-    final String currentUser = _authUser != null ? '${_authUser!.firstName} ${_authUser!.lastName[0]}.' : '—';
-    final String inventoryName = _loggedInInventory?.name ?? l10n.posKassa;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 4))],
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [Color(0xFF667EEA), Color(0xFF764BA2)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.point_of_sale, color: Colors.white, size: 28),
-            ),
-            const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'POS - $inventoryName',
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(Icons.person_outline, size: 14, color: Color(0xFF667EEA)),
-                    const SizedBox(width: 4),
-                    Text(currentUser, style: const TextStyle(fontSize: 13, color: Color(0xFF718096))),
-                    const SizedBox(width: 16),
-                    const Icon(Icons.calendar_today, size: 14, color: Color(0xFF667EEA)),
-                    const SizedBox(width: 4),
-                    Text(_currentDate, style: const TextStyle(fontSize: 13, color: Color(0xFF718096))),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildSearchBar() {
     final l10n = AppLocalizations.of(context)!;
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 4))],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Color(0xFF667EEA), Color(0xFF764BA2)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: _isSearching
-                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : const Icon(Icons.search, color: Colors.white, size: 18),
+    return Row(
+      children: [
+        // Search icon/spinner
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(colors: [Color(0xFF667EEA), Color(0xFF764BA2)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+            borderRadius: BorderRadius.circular(8),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              focusNode: _searchFocusNode,
-              decoration: InputDecoration(
-                hintText: l10n.posScanOrSearch,
-                hintStyle: const TextStyle(color: Color(0xFFA0AEC0), fontSize: 15),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
-              style: const TextStyle(fontSize: 15, color: Color(0xFF2D3748)),
-              onChanged: _onSearchChanged,
-              onSubmitted: _onSearchSubmitted,
+          child: _isSearching
+              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+              : const Icon(Icons.search, color: Colors.white, size: 16),
+        ),
+        const SizedBox(width: 12),
+        // Search input
+        Expanded(
+          flex: 2,
+          child: TextField(
+            controller: _searchController,
+            focusNode: _searchFocusNode,
+            decoration: InputDecoration(
+              hintText: l10n.posScanOrSearch,
+              hintStyle: const TextStyle(color: Color(0xFFA0AEC0), fontSize: 14),
+              border: InputBorder.none,
+              isDense: true,
+              contentPadding: EdgeInsets.zero,
             ),
+            style: const TextStyle(fontSize: 14, color: Color(0xFF2D3748)),
+            onChanged: _onSearchChanged,
+            onSubmitted: _onSearchSubmitted,
           ),
-          if (_searchController.text.isNotEmpty) ...[
-            const SizedBox(width: 12),
-            IconButton(
-              icon: const Icon(Icons.clear, size: 20, color: Color(0xFF718096)),
-              onPressed: () {
-                _searchController.clear();
-                setState(() {
-                  _searchResults = [];
-                  _selectedDropdownProduct = null;
-                });
-                _searchFocusNode.requestFocus();
-              },
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-            ),
-          ],
-          const SizedBox(width: 16),
-          Container(width: 1, height: 40, color: const Color(0xFFE2E8F0)),
-          const SizedBox(width: 16),
-          Expanded(
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<StockProductItemModel>(
-                value: _selectedDropdownProduct,
-                hint: Text(
-                  _searchController.text.isEmpty
-                      ? l10n.posSelectFromList
-                      : _isSearching
-                      ? l10n.posSearching
-                      : _searchResults.isEmpty
-                      ? l10n.posNoResults
-                      : l10n.posSelectFromList,
-                  style: const TextStyle(color: Color(0xFFA0AEC0), fontSize: 15),
-                ),
-                isExpanded: true,
-                icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF667EEA)),
-                items: _searchResults.map((product) {
-                  final price = _getCurrentPrice(product);
-                  return DropdownMenuItem<StockProductItemModel>(
-                    value: product,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                product.displayName,
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                l10n.posBarcodeStockInfo(product.barcode ?? '—', product.quantity),
-                                style: const TextStyle(fontSize: 12, color: Color(0xFF718096)),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(colors: [Color(0xFF48BB78), Color(0xFF38A169)]),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            '${price.toStringAsFixed(2)} AZN',
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-                onChanged: _onDropdownChanged,
-                dropdownColor: Colors.white,
-                menuMaxHeight: 300,
-              ),
-            ),
+        ),
+        if (_searchController.text.isNotEmpty) ...[
+          IconButton(
+            icon: const Icon(Icons.clear, size: 18, color: Color(0xFF718096)),
+            onPressed: () {
+              _searchController.clear();
+              setState(() {
+                _searchResults = [];
+                _selectedDropdownProduct = null;
+              });
+              _searchFocusNode.requestFocus();
+            },
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            iconSize: 18,
           ),
+          const SizedBox(width: 8),
         ],
-      ),
+        // Divider
+        Container(width: 1, height: 32, color: const Color(0xFFE2E8F0)),
+        const SizedBox(width: 12),
+        // Dropdown
+        Expanded(
+          flex: 3,
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<StockProductItemModel>(
+              value: _selectedDropdownProduct,
+              hint: Text(
+                _searchController.text.isEmpty
+                    ? l10n.posSelectFromList
+                    : _isSearching
+                    ? l10n.posSearching
+                    : _searchResults.isEmpty
+                    ? l10n.posNoResults
+                    : l10n.posSelectFromList,
+                style: const TextStyle(color: Color(0xFFA0AEC0), fontSize: 14),
+              ),
+              isExpanded: true,
+              icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF667EEA), size: 20),
+              items: _searchResults.map((product) {
+                final price = _getCurrentPrice(product);
+                return DropdownMenuItem<StockProductItemModel>(
+                  value: product,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              product.displayName,
+                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF2D3748)),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              l10n.posBarcodeStockInfo(product.barcode ?? '—', product.quantity),
+                              style: const TextStyle(fontSize: 11, color: Color(0xFF718096)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(colors: [Color(0xFF48BB78), Color(0xFF38A169)]),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Text(
+                          '${price.toStringAsFixed(2)} AZN',
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+              onChanged: _onDropdownChanged,
+              dropdownColor: Colors.white,
+              menuMaxHeight: 300,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
