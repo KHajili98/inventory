@@ -106,7 +106,6 @@ class _StockPageState extends State<StockPage> {
     super.initState();
     _hScrollController.addListener(_onHScroll);
     _loadInventories();
-    _cubit.fetchStocks();
   }
 
   @override
@@ -136,7 +135,22 @@ class _StockPageState extends State<StockPage> {
     final result = await InventoryRepository.instance.fetchInventories(pageSize: 200);
     if (!mounted) return;
     if (result is Success<InventoryListResponse>) {
-      setState(() => _inventories = result.data.results);
+      final authState = context.read<AuthCubit>().state;
+      final loggedInInventoryId = authState is AuthAuthenticated ? authState.response.loggedInInventory?.id : null;
+
+      setState(() {
+        _inventories = result.data.results;
+        // Set initial selected inventory to the logged-in user's stock inventory
+        if (loggedInInventoryId != null) {
+          _selectedInventory = _inventories.firstWhere(
+            (inv) => inv.id == loggedInInventoryId && inv.isStock,
+            orElse: () => _inventories.firstWhere((inv) => inv.isStock, orElse: () => _inventories.first),
+          );
+        }
+      });
+
+      // Fetch stocks with the initially selected inventory
+      _fetch();
     }
   }
 
@@ -305,12 +319,14 @@ class _StockPageState extends State<StockPage> {
               onChanged: _onInventoryChanged,
               items: [
                 DropdownMenuItem<InventoryModel?>(value: null, child: Text(l10n.allInventories, style: const TextStyle(fontSize: 14))),
-                ..._inventories.map(
-                  (inv) => DropdownMenuItem<InventoryModel?>(
-                    value: inv,
-                    child: Text(inv.name, style: const TextStyle(fontSize: 14), overflow: TextOverflow.ellipsis),
-                  ),
-                ),
+                ..._inventories
+                    .where((inv) => inv.isStock)
+                    .map(
+                      (inv) => DropdownMenuItem<InventoryModel?>(
+                        value: inv,
+                        child: Text(inv.name, style: const TextStyle(fontSize: 14), overflow: TextOverflow.ellipsis),
+                      ),
+                    ),
               ],
             ),
           ),
