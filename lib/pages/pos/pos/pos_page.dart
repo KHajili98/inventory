@@ -234,12 +234,11 @@ class _PosPageState extends State<PosPage> {
     setState(() {
       _discountEnabled = value ?? false;
       if (!_discountEnabled) {
+        // Only clear global discount fields, do NOT reset individual item discounts
         _globalDiscountPercent = 0.0;
         _selectedDiscountBadge = null;
         _discountController.clear();
-        for (var item in _cartItems) {
-          item.discountPercent = 0.0;
-        }
+        // Individual item discounts remain unchanged
       }
     });
   }
@@ -306,15 +305,29 @@ class _PosPageState extends State<PosPage> {
   }
 
   double _calculateTotalDiscount() {
+    // Calculate discount from individual items (using their individual discount percentages)
+    final itemDiscounts = _cartItems.fold(0.0, (sum, item) {
+      final price = _getCurrentPrice(item.product);
+      final itemSubtotal = price * item.quantity;
+      return sum + (itemSubtotal * item.discountPercent / 100);
+    });
+
+    // Add customer loyalty discount (applied to entire subtotal)
     final subtotal = _calculateSubtotal();
-    return subtotal * _combinedDiscountPercent() / 100;
+    final customerPercent = _selectedCustomer?.discountPercentage ?? 0.0;
+    final customerDiscount = subtotal * customerPercent / 100;
+
+    return itemDiscounts + customerDiscount;
   }
 
   /// Portion of the total discount attributable to the custom (manual) discount.
   double _calculateCustomDiscount() {
-    if (!_discountEnabled || _globalDiscountPercent == 0) return 0.0;
-    final subtotal = _calculateSubtotal();
-    return subtotal * _globalDiscountPercent / 100;
+    // Calculate discount from individual items
+    return _cartItems.fold(0.0, (sum, item) {
+      final price = _getCurrentPrice(item.product);
+      final itemSubtotal = price * item.quantity;
+      return sum + (itemSubtotal * item.discountPercent / 100);
+    });
   }
 
   /// Portion of the total discount attributable to the customer loyalty discount.
@@ -1449,12 +1462,16 @@ class _PosPageState extends State<PosPage> {
                                         hintText: '0',
                                         hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFCBD5E0)),
                                       ),
-                                      onChanged: (value) {
+                                      onSubmitted: (value) {
                                         final percent = double.tryParse(value) ?? 0.0;
                                         // Limit to max discount percent
                                         final limitedPercent = percent > maxDiscountPercent ? maxDiscountPercent : percent;
                                         setState(() {
                                           _cartItems[index].discountPercent = limitedPercent;
+                                          // Auto-enable discount checkbox if value is entered
+                                          if (limitedPercent > 0 && !_discountEnabled) {
+                                            _discountEnabled = true;
+                                          }
                                         });
                                         // Show warning if exceeded
                                         if (percent > maxDiscountPercent) {
@@ -1466,6 +1483,9 @@ class _PosPageState extends State<PosPage> {
                                             ),
                                           );
                                         }
+                                        // Unfocus and return to search
+                                        FocusScope.of(context).unfocus();
+                                        Future.microtask(() => _searchFocusNode.requestFocus());
                                       },
                                     ),
                                   ),
@@ -1504,13 +1524,17 @@ class _PosPageState extends State<PosPage> {
                                         hintText: '0',
                                         hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFCBD5E0)),
                                       ),
-                                      onChanged: (value) {
+                                      onSubmitted: (value) {
                                         final amount = double.tryParse(value) ?? 0.0;
                                         // Limit to max discount amount
                                         final limitedAmount = amount > maxDiscountAmount ? maxDiscountAmount : amount;
                                         final percent = unitPrice > 0 ? (limitedAmount / unitPrice * 100) : 0.0;
                                         setState(() {
                                           _cartItems[index].discountPercent = percent;
+                                          // Auto-enable discount checkbox if value is entered
+                                          if (percent > 0 && !_discountEnabled) {
+                                            _discountEnabled = true;
+                                          }
                                         });
                                         // Show warning if exceeded
                                         if (amount > maxDiscountAmount) {
@@ -1526,6 +1550,9 @@ class _PosPageState extends State<PosPage> {
                                             ),
                                           );
                                         }
+                                        // Unfocus and return to search
+                                        FocusScope.of(context).unfocus();
+                                        Future.microtask(() => _searchFocusNode.requestFocus());
                                       },
                                     ),
                                   ),
@@ -1756,6 +1783,12 @@ class _PosPageState extends State<PosPage> {
                             isDense: true,
                           ),
                           onChanged: _onDiscountFieldChanged,
+                          onSubmitted: (value) {
+                            // When Enter is pressed, unfocus to "lock" the field
+                            FocusScope.of(context).unfocus();
+                            // Refocus on search
+                            Future.microtask(() => _searchFocusNode.requestFocus());
+                          },
                         ),
                       ),
                       const SizedBox(width: 8),
