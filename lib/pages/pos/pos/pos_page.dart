@@ -67,6 +67,7 @@ class _PosPageState extends State<PosPage> {
   StockProductItemModel? _selectedDropdownProduct;
 
   Timer? _debounce;
+  String? _pendingBarcodeQuery; // Store the barcode query waiting for response
 
   @override
   void dispose() {
@@ -106,19 +107,35 @@ class _PosPageState extends State<PosPage> {
     }
   }
 
-  void _onSearchSubmitted(String value) {
+  void _onSearchSubmitted(String value) async {
     if (value.isEmpty) return;
-    // Try exact barcode match from current results
+
+    log('[POS Search] onSearchSubmitted called with: "$value"');
+
+    // Try exact barcode match from current results first
     final product = _searchResults.cast<StockProductItemModel?>().firstWhere((p) => p?.barcode == value, orElse: () => null);
     if (product != null) {
+      log('[POS Search] Found in current results, adding to cart');
       _addToCart(product);
       _searchController.clear();
       setState(() {
         _searchResults = [];
         _selectedDropdownProduct = null;
+        _pendingBarcodeQuery = null;
       });
       _searchFocusNode.requestFocus();
+      return;
     }
+
+    // No match in current results - cancel debounce and search immediately
+    log('[POS Search] No match in current results, triggering immediate search');
+    _debounce?.cancel();
+    setState(() {
+      _pendingBarcodeQuery = value;
+    });
+
+    // Trigger immediate search (bypass debounce for barcode readers)
+    await _searchStocks(value);
   }
 
   void _onDropdownChanged(StockProductItemModel? product) {
@@ -139,8 +156,15 @@ class _PosPageState extends State<PosPage> {
       setState(() {
         _searchResults = [];
         _isSearching = false;
+        _pendingBarcodeQuery = null;
       });
       return;
+    }
+    // Clear pending barcode query when user manually types (to avoid conflicts)
+    if (_pendingBarcodeQuery != null) {
+      setState(() {
+        _pendingBarcodeQuery = null;
+      });
     }
     _debounce = Timer(const Duration(milliseconds: 400), () => _searchStocks(value));
   }
@@ -171,14 +195,47 @@ class _PosPageState extends State<PosPage> {
         // Filter to products with stock and deduplicate by id to prevent
         // DropdownButton assertion errors with duplicate values.
         final seen = <String>{};
+        final filteredResults = data.results.where((p) => p.quantity > 0 && seen.add(p.id)).toList();
+
+        log('[POS Search] After filter: ${filteredResults.length} items');
+
+        // Check if we have a pending barcode query (from barcode reader)
+        if (_pendingBarcodeQuery != null && _pendingBarcodeQuery!.isNotEmpty) {
+          log('[POS Search] Checking pending barcode: $_pendingBarcodeQuery');
+          final matchedProduct = filteredResults.cast<StockProductItemModel?>().firstWhere(
+            (p) => p?.barcode == _pendingBarcodeQuery,
+            orElse: () => null,
+          );
+          if (matchedProduct != null) {
+            log('[POS Search] ✓ Auto-adding product with barcode: $_pendingBarcodeQuery (${matchedProduct.displayName})');
+            _addToCart(matchedProduct);
+            _searchController.clear();
+            setState(() {
+              _searchResults = [];
+              _selectedDropdownProduct = null;
+              _pendingBarcodeQuery = null;
+              _isSearching = false;
+            });
+            Future.microtask(() => _searchFocusNode.requestFocus());
+            return; // Exit early, don't show dropdown
+          } else {
+            log('[POS Search] ✗ No product found with barcode: $_pendingBarcodeQuery');
+          }
+        }
+
+        // Normal search results (not barcode, or barcode not found)
         setState(() {
-          _searchResults = data.results.where((p) => p.quantity > 0 && seen.add(p.id)).toList();
+          _searchResults = filteredResults;
           _isSearching = false;
+          _pendingBarcodeQuery = null; // Clear pending query
         });
-        log('[POS Search] After filter: ${_searchResults.length} items');
+
       case Failure(:final message):
         log('[POS Search] FAILURE: $message');
-        setState(() => _isSearching = false);
+        setState(() {
+          _isSearching = false;
+          _pendingBarcodeQuery = null;
+        });
     }
   }
 
