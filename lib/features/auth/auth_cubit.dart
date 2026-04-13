@@ -32,20 +32,16 @@ class AuthCubit extends Cubit<AuthState> {
 
   /// Check stored session on app start
   Future<void> checkSession() async {
-    print('🔐 [AuthCubit] Checking session...');
+    // print('🔐 [AuthCubit] Checking session...');
     final loginResponse = await _service.getLoginResponse();
     final token = await _service.getAccessToken();
 
     if (loginResponse != null) {
-      print('🔐 [AuthCubit] Found login response: ${loginResponse.loggedInInventory?.name}');
-      print('🔐 [AuthCubit] Is stock: ${loginResponse.loggedInInventory?.isStock}');
     }
 
     if (loginResponse != null && token != null && token.isNotEmpty) {
-      print('🔐 [AuthCubit] Session valid, emitting AuthAuthenticated');
       emit(AuthAuthenticated(loginResponse));
     } else {
-      print('🔐 [AuthCubit] No valid session, emitting AuthUnauthenticated');
       emit(AuthUnauthenticated());
     }
   }
