@@ -59,14 +59,16 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
 
   /// Returns the nav items visible to the given role and inventory type.
   ///
-  /// non-stock inventory (isStock == false) → invoices + inventory only (same as warehouse_staff)
+  /// non-stock inventory (isStock == false) → invoices + inventory + product requests
   /// warehouse_staff                        → invoices + inventory only
   /// sales_rep                              → no invoices; finance shows only expense tracking
   /// everyone else                          → all items
   static List<_NavItem> _navItemsForRole(UserRole role, {bool isStockInventory = false}) {
-    // If the inventory is NOT a stock inventory (isStock == false), show only invoices + inventory
+    // If the inventory is NOT a stock inventory (isStock == false), show invoices + inventory + product requests
     if (!isStockInventory) {
-      return _allNavItems.where((item) => item.path == '/invoices' || item.path == '/inventory-products').toList();
+      return _allNavItems
+          .where((item) => item.path == '/invoices' || item.path == '/inventory-products' || item.path == '/product-requests')
+          .toList();
     }
 
     if (role == UserRole.warehouseStaff) {
