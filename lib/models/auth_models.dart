@@ -166,9 +166,7 @@ class LoginInventory {
   const LoginInventory({required this.id, required this.name, required this.address, required this.isStock});
 
   factory LoginInventory.fromJson(Map<String, dynamic> json) {
-    print('📦 [LoginInventory] Parsing: $json');
     final isStock = json['is_stock'] as bool? ?? false;
-    print('📦 [LoginInventory] is_stock value: $isStock');
     return LoginInventory(id: json['id'] as String, name: json['name'] as String, address: json['address'] as String? ?? '', isStock: isStock);
   }
 

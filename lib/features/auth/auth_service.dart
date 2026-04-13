@@ -44,14 +44,11 @@ class AuthService {
     if (raw == null) return null;
     try {
       // Debug: Print raw JSON
-      print('🔍 [AuthService] Raw stored JSON: $raw');
 
       final jsonData = jsonDecode(raw) as Map<String, dynamic>;
       final response = LoginResponse.fromJson(jsonData);
 
       // Debug: Print parsed values
-      print('🔍 [AuthService] Logged in inventory: ${response.loggedInInventory?.name}');
-      print('🔍 [AuthService] Is stock inventory: ${response.loggedInInventory?.isStock}');
 
       // Migration: If we successfully loaded a response, re-save it to ensure
       // inventory details are in both locations (for old cached data)
