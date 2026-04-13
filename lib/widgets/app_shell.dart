@@ -204,7 +204,18 @@ class _AppShellState extends State<AppShell> with SingleTickerProviderStateMixin
     final authState = context.watch<AuthCubit>().state;
     final role = authState is AuthAuthenticated ? authState.response.user.role : UserRole.unknown;
     final isStockInventory = authState is AuthAuthenticated ? (authState.response.loggedInInventory?.isStock ?? false) : false;
+
+    // Debug logging
+    if (authState is AuthAuthenticated) {
+      print('🏪 [AppShell] Inventory: ${authState.response.loggedInInventory?.name}');
+      print('🏪 [AppShell] Is Stock: ${authState.response.loggedInInventory?.isStock}');
+      print('🏪 [AppShell] isStockInventory variable: $isStockInventory');
+      print('🏪 [AppShell] Role: $role');
+    }
+
     final navItems = _navItemsForRole(role, isStockInventory: isStockInventory);
+    print('🏪 [AppShell] Nav items count: ${navItems.length}');
+
     final selectedIndex = _selectedIndex(context, navItems);
     final l10n = AppLocalizations.of(context)!;
     final isMobile = context.isMobile;

@@ -18,6 +18,10 @@ void main() async {
 
   // Create AuthCubit first so we can wire it into the router's refreshListenable
   final authCubit = AuthCubit();
+
+  // Check for existing session on app start
+  await authCubit.checkSession();
+
   appRouter = createRouter(authCubit);
 
   runApp(

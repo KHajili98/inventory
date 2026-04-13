@@ -43,8 +43,36 @@ class AuthService {
     final raw = prefs.getString(_loginResponse);
     if (raw == null) return null;
     try {
-      return LoginResponse.fromJson(jsonDecode(raw) as Map<String, dynamic>);
-    } catch (_) {
+      // Debug: Print raw JSON
+      print('🔍 [AuthService] Raw stored JSON: $raw');
+
+      final jsonData = jsonDecode(raw) as Map<String, dynamic>;
+      final response = LoginResponse.fromJson(jsonData);
+
+      // Debug: Print parsed values
+      print('🔍 [AuthService] Logged in inventory: ${response.loggedInInventory?.name}');
+      print('🔍 [AuthService] Is stock inventory: ${response.loggedInInventory?.isStock}');
+
+      // Migration: If we successfully loaded a response, re-save it to ensure
+      // inventory details are in both locations (for old cached data)
+      if (response.loggedInInventory != null) {
+        final userJson = jsonData['user'] as Map<String, dynamic>?;
+
+        // Check if inventory_details is missing from user object (old format)
+        if (userJson != null && !userJson.containsKey('logged_in_inventory_details')) {
+          print('🔄 [AuthService] Migrating old format to new format');
+          // Re-save with the new format
+          final newJson = jsonEncode(response.toJson());
+          await prefs.setString(_loginResponse, newJson);
+          print('✅ [AuthService] Migration complete. New JSON: $newJson');
+        } else {
+          print('✅ [AuthService] Already in new format');
+        }
+      }
+
+      return response;
+    } catch (e) {
+      print('❌ [AuthService] Error loading login response: $e');
       return null;
     }
   }

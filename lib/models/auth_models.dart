@@ -165,12 +165,12 @@ class LoginInventory {
 
   const LoginInventory({required this.id, required this.name, required this.address, required this.isStock});
 
-  factory LoginInventory.fromJson(Map<String, dynamic> json) => LoginInventory(
-    id: json['id'] as String,
-    name: json['name'] as String,
-    address: json['address'] as String? ?? '',
-    isStock: json['is_stock'] as bool? ?? false,
-  );
+  factory LoginInventory.fromJson(Map<String, dynamic> json) {
+    print('📦 [LoginInventory] Parsing: $json');
+    final isStock = json['is_stock'] as bool? ?? false;
+    print('📦 [LoginInventory] is_stock value: $isStock');
+    return LoginInventory(id: json['id'] as String, name: json['name'] as String, address: json['address'] as String? ?? '', isStock: isStock);
+  }
 
   Map<String, dynamic> toJson() => {'id': id, 'name': name, 'address': address, 'is_stock': isStock};
 }
@@ -197,5 +197,12 @@ class LoginResponse {
     );
   }
 
-  Map<String, dynamic> toJson() => {'user': user.toJson(), 'access': access, 'refresh': refresh, 'logged_in_inventory': loggedInInventory?.toJson()};
+  Map<String, dynamic> toJson() {
+    final userJson = user.toJson();
+    // Save inventory details in both places to ensure consistent deserialization
+    if (loggedInInventory != null) {
+      userJson['logged_in_inventory_details'] = loggedInInventory!.toJson();
+    }
+    return {'user': userJson, 'access': access, 'refresh': refresh, 'logged_in_inventory': loggedInInventory?.toJson()};
+  }
 }
