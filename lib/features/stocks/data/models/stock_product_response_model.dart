@@ -118,7 +118,7 @@ class StockProductItemModel {
     this.updatedAt,
   });
 
-  String get displayName => productGeneratedName?.isNotEmpty == true ? productGeneratedName! : (productName ?? id);
+  String get displayName => productName?.isNotEmpty == true ? productName! : (productGeneratedName ?? id);
   String get inventoryName => inventoryDetails?.name ?? '';
 
   factory StockProductItemModel.fromJson(Map<String, dynamic> json) => StockProductItemModel(
