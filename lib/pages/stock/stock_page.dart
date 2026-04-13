@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dio/dio.dart';
 import 'package:inventory/core/network/api_result.dart';
+import 'package:inventory/core/network/dio_client.dart';
 import 'package:inventory/core/utils/responsive.dart';
 import 'package:inventory/features/auth/auth_cubit.dart';
 import 'package:inventory/features/inventory_products/data/models/inventory_model.dart';
@@ -81,7 +83,7 @@ class _StockPageState extends State<StockPage> {
   static const double _colWholePrice = 140.0;
   static const double _colRetailPrice = 130.0;
   static const double _colStatus = 140.0;
-  static const double _colActions = 60.0;
+  static const double _colActions = 110.0;
 
   static double _tableWidth({bool showCostPrices = true}) =>
       _colModelCode +
@@ -233,6 +235,134 @@ class _StockPageState extends State<StockPage> {
 
     if (result == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.stockItemCreated), backgroundColor: const Color(0xFF10B981)));
+    }
+  }
+
+  // ── print barcode ─────────────────────────────────────────────────────────
+
+  void _showPrintDialog(StockProductItemModel item) {
+    final countCtrl = TextEditingController(text: '${item.quantity}');
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(color: const Color(0xFFEEF2FF), borderRadius: BorderRadius.circular(10)),
+                child: const Icon(Icons.print_rounded, color: Color(0xFF6366F1), size: 18),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                l10n.printBarcode,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _PrintInfoRow(label: l10n.barcodeLabel, value: item.barcode ?? '—'),
+              const SizedBox(height: 6),
+              _PrintInfoRow(label: l10n.productLabel, value: item.productGeneratedName ?? item.productName ?? '—'),
+              const SizedBox(height: 16),
+              Text(
+                l10n.countLabel,
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
+              ),
+              const SizedBox(height: 6),
+              TextField(
+                controller: countCtrl,
+                keyboardType: TextInputType.number,
+                autofocus: true,
+                style: const TextStyle(fontSize: 14, color: Color(0xFF1E293B)),
+                decoration: InputDecoration(
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFF6366F1), width: 1.5),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF94A3B8))),
+            ),
+            FilledButton.icon(
+              onPressed: () {
+                final count = int.tryParse(countCtrl.text.trim()) ?? 1;
+                Navigator.of(ctx).pop();
+                _printProduct(item, count);
+              },
+              icon: const Icon(Icons.print_rounded, size: 16),
+              label: Text(l10n.printLabel),
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF6366F1),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _printProduct(StockProductItemModel item, int count) async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final Dio dio = DioClient.instance;
+      await dio.post(
+        'http://localhost:3000/print-barcode',
+        data: {'barcode': item.barcode ?? '', 'productName': item.productGeneratedName ?? item.productName ?? '', 'count': count},
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.printedLabelsSuccess(count, item.productGeneratedName ?? item.productName ?? '')),
+          backgroundColor: const Color(0xFF22C55E),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    } on DioException catch (e) {
+      if (!mounted) return;
+      final msg = e.response?.data?.toString() ?? e.message ?? 'Printer error';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.print_disabled_rounded, color: Colors.white, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(l10n.printFailed(msg), style: const TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
     }
   }
 
@@ -541,15 +671,25 @@ class _StockPageState extends State<StockPage> {
             _statusCell(status, l10n, _colStatus),
             SizedBox(
               width: _colActions,
-              child: IconButton(
-                onPressed: () => _confirmDelete(item),
-                icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                color: const Color(0xFFEF4444),
-                style: IconButton.styleFrom(
-                  backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.08),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _IconBtn(
+                      icon: Icons.print_rounded,
+                      tooltip: l10n.printTooltip,
+                      color: const Color(0xFF6366F1),
+                      onTap: () => _showPrintDialog(item),
+                    ),
+                    _IconBtn(
+                      icon: Icons.delete_outline_rounded,
+                      tooltip: l10n.deleteStockItem,
+                      color: const Color(0xFFEF4444),
+                      onTap: () => _confirmDelete(item),
+                    ),
+                  ],
                 ),
-                tooltip: l10n.deleteStockItem,
               ),
             ),
           ],
@@ -848,6 +988,60 @@ class _HScrollButtonState extends State<_HScrollButton> {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ── Icon Button Helper ────────────────────────────────────────────────────────
+
+class _IconBtn extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onTap;
+  final Color color;
+
+  const _IconBtn({required this.icon, required this.tooltip, required this.onTap, this.color = const Color(0xFF64748B)});
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(6),
+        child: Padding(
+          padding: const EdgeInsets.all(6),
+          child: Icon(icon, size: 17, color: color),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Print Info Row Helper ─────────────────────────────────────────────────────
+
+class _PrintInfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _PrintInfoRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 68,
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+          ),
+        ),
+        Expanded(
+          child: Text(value, style: const TextStyle(fontSize: 12, color: Color(0xFF1E293B)), softWrap: true),
+        ),
+      ],
     );
   }
 }
