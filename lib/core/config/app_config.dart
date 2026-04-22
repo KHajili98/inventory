@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 class AppConfig {
   static String? _baseUrl;
 
-  static String get baseUrl => _baseUrl ?? 'http://13.50.244.247:8000';
+  static String get baseUrl => _baseUrl ?? 'http://13.53.43.184:8000';
 
   /// Load configuration from config.json
   /// Call this once at app startup
@@ -17,7 +17,7 @@ class AppConfig {
     } catch (e) {
       // If config.json doesn't exist or fails to load, use default
       print('Failed to load config.json: $e');
-      _baseUrl = 'http://13.50.244.247:8000';
+      _baseUrl = 'http://13.53.43.184:8000';
     }
   }
 }
