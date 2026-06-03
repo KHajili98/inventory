@@ -69,6 +69,9 @@ class StocksRepository {
     required double wholeUnitSalesPrice,
     required double retailUnitPrice,
   }) async {
+    costUnitPrice = double.parse(costUnitPrice.toStringAsFixed(2));
+    wholeUnitSalesPrice = double.parse(wholeUnitSalesPrice.toStringAsFixed(2));
+    retailUnitPrice = double.parse(retailUnitPrice.toStringAsFixed(2));
     try {
       final response = await _dio.put<Map<String, dynamic>>(
         '${ApiConstants.stocks}${item.id}/',

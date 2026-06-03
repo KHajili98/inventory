@@ -34,7 +34,7 @@
 **Production server üçün:**
 ```json
 {
-  "baseUrl": "http://13.53.43.184:8000"
+  "baseUrl": "http://13.50.244.247:8000"
 }
 ```
 
